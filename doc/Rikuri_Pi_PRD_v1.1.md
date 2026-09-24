@@ -1,0 +1,1646 @@
+# RIKURI PI
+
+**Personal Intelligence Platform**  
+**Product Requirements Document**  
+Version 1.1 | September 16, 2026 | Updated Product Baseline
+
+> *“Models are replaceable. Your Personal Intelligence is not.”*
+
+A user may lose or replace a device without losing the accumulated knowledge, context, projects, skills, and continuity of their digital life.
+
+| **Product**  | Rikuri Pi                                                            |
+|--------------|----------------------------------------------------------------------|
+| **Meaning**  | Pi = Personal Intelligence                                           |
+| **Document** | Product Requirements Document v1.1                                   |
+| **Status**   | Updated product baseline incorporating Pi-first local harnessing, native Rikuri developer platform, project-execution trust, Rikuri Link remote access, and Ubuntu-first implementation sequencing |
+
+## Revision 1.1 focus
+
+This revision keeps the original product vision while incorporating implementation decisions made after v1.0:
+
+- **Pi is the primary/default harness substrate for local/open models.** Rikuri builds model-family profiles, skills, security, verification, and project behavior around Pi. Qwen Code, DeepSeek Harness, and future open harnesses are reference implementations and benchmark comparators; a native harness is used only when measured evidence shows a material advantage.
+- **Runtime compatibility and agent compatibility are separate.** llama.cpp/vLLM/Ollama/LM Studio answer “can this model run?” while Rikuri Harness Profiles answer “can Rikuri use it well?”
+- **Privacy is an intent-level user choice.** Auto is default; Private and Local Only/Vault are persistent project/workspace policies translated by AISecurity into execution, egress, model, and sanitization rules.
+- **Projects are data before they are executable.** A newly opened repository is untrusted until explicitly promoted. Read authority does not imply execute authority; project-controlled child processes inherit the same capability boundary.
+- **Monaco is Rikuri's embedded editor, not VS Code.** Rikuri supplies its own developer platform around Monaco using LSP, DAP, Git, terminals, tests, search, formatters/linters, Docker/dev tools, and native plugins/windows. VS Code compatibility is selective rather than a product dependency.
+- **Rikuri Link is the last mile.** Phone/tablet/laptop clients can securely “phone home” to user-owned Rikuri Nodes. Tailscale is the initial transport and later becomes a fallback when a native end-to-end encrypted Rikuri rendezvous/relay path is mature.
+- **Ubuntu is the primary Linux reference platform.** macOS remains a continuously tested Tier-1 target; Windows follows once the OS capability abstraction is stable. Omarchy is a source of patterns, not a dependency.
+
+## Foundation-0 planning baseline — September 24, 2026
+
+The **Foundation-0 Re-baselined Stage Plan v2.0** is the live implementation and gate schedule: six dependent stages from October 2026 toward a June 2027 planning target, with four to eight weeks of contingency. A date cannot close an unfinished gate. This PRD states the larger product promise. **P0 means essential to its corresponding product release, not automatically due in Foundation-0.** The fifteen-item Foundation Release below is a later, broader product milestone; Foundation-0 is the narrower, single-node technical and owner-visible proof. ADR 0000 records the scope decision. No later-stage capability is silently treated as delivered at Foundation-0.
+
+| Foundation-0 result | What is due in this slice | Preserved later product promise |
+| --- | --- | --- |
+| Imports and ideas | ChatGPT plus Markdown/Obsidian import; text Idea capture, provenance, FTS retrieval and project attach | Claude and read-only Git importers early Stage 1; voice capture, semantic retrieval and rich topic distillation after Foundation-0 |
+| Model and privacy | One tested cloud access path; one Pi-backed local runtime; task handoff at Stage 04; Local Only policy refusal at Stage 02 and proven Ubuntu no-network envelope at Stage 03 | Additional providers/access modes and rich automatic routing require their own contract and security evidence |
+| Knowledge | A minimal Knowledge Context Compiler returns current supported facts or explicit abstention across ten required conflict/supersession outcomes | Broader classification, entity resolution, multilingual knowledge and ranking grow from this verified contract |
+| Recovery and security | Managed pre-forget and post-forget backups cannot silently restore forgotten content; old backup without current revocation state refuses or quarantines; untrusted project inspection and descendants remain bounded | Multi-device synchronization, external-copy erasure and native macOS enforcement are separate later claims |
+| Platform and interface | Ubuntu is the only full execution/security assurance target; platform-neutral macOS core builds and tests continuously; one-window English Home plus pseudo-locale/CJK checks | Seven-language product localization, voice Home, rich workspace, native macOS parity and cross-lingual search remain later milestones |
+
+Each stage produces a short owner-runnable demonstration and a plain-language Pass/Fail/Not yet proven receipt linked to deterministic tests. The owner judges usefulness and scope; technical and security claims require test evidence and independent challenge. Changed promises update this PRD, architecture, tests, and ADR together.
+
+# Contents
+
+1\. Executive Summary
+
+2\. Product Vision and User Promise
+
+3\. Problem Statement
+
+4\. Goals and Non-Goals
+
+5\. Product Principles
+
+6\. Target Users and Core Use Cases
+
+7\. Core User Experience and Design Language
+
+8\. System Capability Model
+
+9\. Functional Requirements
+
+10\. Security and Trust Requirements
+
+11\. Knowledge & Idea Fabric, Projects, and Search
+
+12\. Model, Runtime, and Harness Strategy
+
+13\. Local Model Intelligence
+
+14\. Machine Intelligence and Execution
+
+15\. Model Economics and Usage Transparency
+
+16\. Personal Mesh, Sync, and Backup
+
+17\. Portability and Deployment
+
+18\. Observability, Health, and Recovery
+
+19\. Data and State Model
+
+20\. Domain Workspace Strategy
+
+21\. Business and Multi-User Readiness
+
+22\. Success Metrics
+
+23\. Staged Roadmap
+
+24\. Risks and Mitigations
+
+25\. Open Technical Decisions
+
+26\. Definition of Foundation Release
+
+Appendix A. Priority Requirement Matrix
+
+Appendix B. Example User Journeys
+
+Appendix C. Key Terms
+
+# 1. Executive Summary
+
+Rikuri Pi is a portable, model-agnostic Personal Intelligence platform that sits above operating systems, AI vendors, applications, storage locations, and individual devices. A user expresses an intent in ordinary language; Rikuri determines the appropriate context, model, native runtime or generic harness, tools, machine, security envelope, and execution path, then returns a sensible answer or verified result.
+
+The platform is designed around continuity rather than chat sessions. User knowledge, project state, decisions, skills, conversations, machine context, and execution history belong to Rikuri, not to any one model vendor. Frontier models, local models, specialized runtimes, tools, and computers are replaceable resources that Rikuri selects according to capability, cost, privacy, reliability, and task requirements.
+
+Rikuri is also intended to be useful immediately as a personal and executive assistant. After the user connects the services they actually use, ordinary requests such as “check my email,” “find what matters,” “draft a reply,” “schedule a meeting,” “take notes on this lecture,” or “plan this trip” should work without requiring the user to create agents, configure MCP servers, edit prompts, understand model parameters, or build automation workflows.
+
+Rikuri’s interface is designed around **a simple entrance and an expandable spatial workspace**. The default Home surface is a universal conversation/voice box with a small horizontal row of capability shortcuts such as Agent, Code, Research, Browser, Projects, and More. When work becomes complex, Rikuri can unfold into a workstation of freely movable, resizable, tileable, linkable, detachable windows containing agents, live documents, code, browser sessions, project graphs, diffs, tests, research, dashboards, and other work surfaces. The user may arrange these manually or tell Rikuri how to arrange them.
+
+Rikuri also treats knowledge and ideas as a durable user-owned fabric. Text, voice notes, photos, videos, chats, documents, handwritten captures, research, code, decisions, and fragments of inspiration may enter through a low-friction Idea Inbox and later be linked into a searchable Knowledge Web and Idea Web. The user does not need to organize every thought at capture time; Rikuri preserves the original, adds provenance, connects it to relevant projects and concepts, and can resurface it when useful.
+
+Rikuri is internationalized by design. The user interface, conversation layer, search, knowledge retrieval, model routing, and later voice surfaces must support multilingual use without fragmenting the user’s Personal Intelligence into language-specific silos. The initial localization set is English, Spanish, Simplified Chinese, Traditional Chinese (Taiwan), Japanese, French, and German, with additional languages addable through externalized locale resources rather than application rewrites.
+
+For difficult work, Rikuri acts as a management institution rather than a single all-knowing agent. A coordinator can assemble specialist workers, a diverse strategy council can develop competing approaches, an independent evaluator can audit results and coordinator performance, and the human remains the principal who sets goals, values, constraints, and consequential decisions.
+
+> **North-star experience**
+>
+> The user should not need to choose a model, manage an agent, understand Bash, remember where a project lives, organize every chat, or manually synchronize knowledge. Rikuri should understand the request, find the right information and resources, execute competently within its authority, verify the outcome, remember what mattered, and stay quiet when everything is healthy.
+
+# 2. Product Vision and User Promise
+
+Rikuri Pi should feel like a durable second intelligence belonging to the user rather than a collection of AI applications. Its purpose is to preserve continuity across time, models, devices, operating systems, and projects while making powerful AI execution simple enough that the infrastructure largely disappears from view.
+
+- One Personal Intelligence, many interchangeable AI brains.
+
+- One coherent memory and project space across the owner’s chosen devices.
+
+- One simple interface for questions, ideas, research, execution, review, and ongoing responsibilities.
+
+- A user can replace a computer or AI provider without reconstructing their history or explaining prior work again.
+
+- A blank installation contains the Rikuri foundation but none of another user’s personal state; a new user can build an independent Personal Intelligence from zero.
+
+# 3. Problem Statement
+
+| **Problem**                  | **Why it matters**                                                                                                                                                                        |
+|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Fragmented intelligence      | Useful knowledge is scattered across ChatGPT, Claude, local-model chats, Obsidian, code repositories, local disks, cloud storage, email, documents, and other applications.               |
+| Chat as a poor archive       | Long conversations are stream-of-consciousness. Topics drift, useful ideas are buried, and users cannot remember which thread contains a decision or insight.                             |
+| Vendor-bound state           | A model provider may remember a conversation inside its product, but that context does not naturally transfer to another provider, local model, machine, or runtime.                      |
+| Model capability mismatch    | Different frontier models and their native harnesses excel at different tasks. A lowest-common-denominator API can discard valuable native capabilities.                                  |
+| Local-model harness burden   | Local inference engines serve tokens but do not automatically supply robust orchestration, retrieval policy, validation, security, or task-specific behavior.                             |
+| Opaque AI spending           | Users rarely know which model consumed what tokens, what a task cost, whether subscription quota was used efficiently, or whether a cheaper sibling could have produced the same outcome. |
+| Unsafe or unusable execution | Raw shell access can be powerful but approval prompts are not meaningful when the user cannot evaluate the command. High-risk systems require bounded, deterministic authority.           |
+| Broken sync mental model     | Traditional file-sync products can create conflicts, stale files, duplication, and dependence on a single cloud folder. Knowledge and state need local-first synchronization semantics.   |
+| Device amnesia               | Frontier models troubleshooting a machine often must rediscover OS, hardware, services, containers, recent upgrades, and prior successful fixes.                                          |
+| Agent-platform complexity    | Current agent systems often require users to understand connectors, MCP, skills, browser profiles, cron, prompts, permissions, and model plumbing before they receive basic assistant value.          |
+| Attention overload            | Autonomous agents can create notification fatigue, unnecessary interruptions, or surprise actions unless attention and proactive authority are explicitly governed.                                  |
+| Single-manager blind spots    | A single coordinator model may choose the wrong strategy, tools, or specialists for an unfamiliar or novel domain and then efficiently execute a flawed plan.                                       |
+| Privacy/exfiltration risk     | Email, documents, photos, video, credentials, financial data, and security-sensitive files can leak through models, browsers, plugins, shell/network paths, or compromised tools without end-to-end controls. |
+| Model discovery burden        | Open-model users must interpret model cards, quantizations, hardware fit, runtime settings, safety, and benchmarks themselves even when they only want a capability such as audio or video generation. |
+| Agent-workspace rigidity      | Chat sidebars, IDE panels, terminals, and fixed split panes make parallel AI work hard to observe, compare, rearrange, and supervise; users need a spatial workbench rather than a stack of agent threads. |
+| Idea loss and capture friction | Valuable ideas often arrive as fragments in voice notes, photos, chats, notebooks, sticky notes, or unrelated work and are lost when capture requires immediate organization. |
+| Language fragmentation        | Users may think, write, search, speak, and collaborate in different languages; a Personal Intelligence must preserve meaning and continuity across languages without duplicating or corrupting canonical data. |
+| Competing sources of truth    | Files, Markdown, SQL records, embeddings, graph indexes, chats, and application state can drift unless Rikuri explicitly declares which representation is authoritative for each object. |
+
+# 4. Goals and Non-Goals
+
+## 4.1 Product goals
+
+- Model-agnostic continuity across frontier, open, and local models.
+
+- Preserve and exploit each model/runtime’s native strengths rather than flattening them into one generic API.
+
+- Convert chats and activity into durable, searchable knowledge while preserving original source history.
+
+- Provide reliable access to projects, code, files, notes, and machine resources without manual zipping or repeated uploads.
+
+- Enable safe execution through tools, code, browser, computer control, and OS commands with least authority and post-action verification.
+
+- Continuously optimize quality, latency, privacy, quota, and spend using measured task outcomes.
+
+- Work locally on macOS, Linux, and Windows with optional home-hub/server deployment and multi-device knowledge sharing.
+
+- Make security, audit, health, backup, and recovery foundational rather than optional add-ons.
+
+- Keep the visible interface simple, calm, and task-oriented.
+
+
+- Provide a ready-to-use personal/executive assistant experience for email, calendar, contacts, notes, files, web tasks, learning, travel planning, and routine coordination after just-in-time account connection.
+
+- Enable natural text and voice interaction in which the user manages outcomes while Rikuri manages the necessary agents, tools, models, and machines.
+
+- Protect the user’s attention through explicit proactive-authority and interruption policies; autonomous work should be quiet by default.
+
+- Support human-directed multi-agent work with coordinator, strategy-council, evaluator, and governance roles without requiring the user to manually supervise individual workers.
+
+- Continuously evaluate models, tools, coordination strategies, and workflows from real task outcomes and use that evidence to improve routing and recommendations.
+
+- Discover and safely acquire compatible open models for missing capabilities, subject to user approval, provenance/security screening, hardware fit, licensing, and task-specific evaluation.
+
+- Enforce privacy classifications and outbound-data policy across models, browsers, tools, networks, and workers rather than relying on model obedience alone.
+
+- Provide a universal spatial AI workspace in which agents, live artifacts, code, documents, browsers, project graphs, research, tests, and dashboards can be opened as independent windows, linked by context, rearranged freely, and controlled by text or voice.
+
+- Make complex multi-agent work visually understandable through a live project/execution graph that can expand from objectives to tasks, agents, artifacts, dependencies, evaluations, and decisions.
+
+- Preserve low-friction ideas and observations from text, voice, photos, video, chats, files, and handwritten captures, then make them searchable, linkable, reusable, and quietly resurfaced when relevant.
+
+- Establish explicit data authority from day one: each object has a stable identity and an authoritative canonical representation even when multiple human-readable and machine-optimized projections exist.
+
+- Support rich domain workspaces—beginning with coding, research, writing, and study—without creating separate silos of memory, projects, or user data.
+
+- Internationalize Rikuri from the foundation so interface strings, locale formatting, multilingual search, model routing, and content handling can support English, Spanish, Simplified Chinese, Traditional Chinese (Taiwan), Japanese, French, and German initially, with additional languages added without architectural changes.
+
+## 4.2 Non-goals for v0.x
+
+- Build a new foundation model or inference engine.
+
+- Replace Git, object storage, relational databases, or operating-system security primitives when proven components are adequate.
+
+- Force all data into one physical storage system or require GitHub/cloud storage.
+
+- Expose agent graphs, vector databases, MCP servers, token plumbing, or model settings to ordinary users by default.
+
+- Automate financial transactions, credential export, seed/key access, or other high-consequence actions without explicit specialized policy and strong isolation.
+
+- Guarantee that every vendor subscription exposes programmatic quota telemetry; Rikuri must label unavailable or estimated data honestly.
+
+
+- Require ordinary users to edit the Rikuri Constitution, agent charters, prompts, routing policies, model parameters, or source code.
+
+- Allow Rikuri to silently rewrite protected core components such as the Constitution, AISecurity, governance authority, secret boundaries, or production core code.
+
+- Use agent count as a success metric; swarms are an execution technique only when task structure and measured economics justify them.
+
+- Rebuild mature office, source-control, browser, or media engines solely to own the UI; Rikuri may integrate proven open/native tools behind a consistent workspace abstraction.
+
+- Force every user into a complex workstation. The advanced spatial workspace must remain optional; ordinary users can accomplish supported work through the universal conversation/voice surface.
+
+- Treat a vector database, graph database, Obsidian vault, or any one storage technology as the entire “brain.” Rikuri owns a coherent knowledge fabric with declared canonical sources and rebuildable derived views.
+
+# 5. Product Principles
+
+| **ID** | **Principle**                                            | **Meaning**                                                                                                                           |
+|--------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| P1     | Models are replaceable; state is durable.                | Memory, projects, decisions, skills, event history, and canonical user data belong to Rikuri.                                         |
+| P2     | Preserve native superpowers.                             | Choose model + runtime + tools, not merely model name. Use native harnesses when they materially improve capability.                  |
+| P3     | Users express intent, not infrastructure.                | Rikuri chooses routing, context, tools, machines, retries, and escalation unless the user overrides.                                  |
+| P4     | Quiet competence.                                        | Routine healthy operation should not interrupt the user; degradation, uncertainty, or consequential decisions should surface clearly. |
+| P5     | Least expensive intelligence that reliably succeeds.     | Optimize cost per successful outcome, not token price alone.                                                                          |
+| P6     | Prefer structured capability over raw control.           | Normalized tools/API/MCP/browser actions should precede GUI or raw shell where practical.                                             |
+| P7     | AI chooses what; deterministic systems constrain how.    | High-risk execution should use validated tools/runbooks and hard policy boundaries.                                                   |
+| P8     | Verify outcomes, not command completion.                 | A successful tool call is not proof the user’s goal was achieved.                                                                     |
+| P9     | Canonical data is portable; derived data is rebuildable. | Indexes, embeddings, caches, and summaries must be disposable.                                                                        |
+| P10    | Knowledge retains provenance and time.                   | Ideas, hypotheses, decisions, and superseded thinking must remain distinguishable and traceable to source.                            |
+| P11    | Local-first, mesh-capable.                               | Devices remain useful offline; selected shared state converges when devices reconnect.                                                |
+| P12    | Security is in the execution path.                       | No model, runtime, tool, or worker bypasses the same foundational security boundary merely because the vendor changes.                |
+| P13    | User alignment over vendor alignment.                    | Rikuri represents the user’s goals, privacy, preferences, resources, and constraints rather than favoring a model, OS, cloud, advertiser, or app ecosystem. |
+| P14    | Provider neutrality.                                   | Models, runtimes, hardware, clouds, and applications are interchangeable resources selected by measured user benefit.                  |
+| P15    | Complexity is optional; competence is not.              | A simple one-frontier-plus-one-local setup should work well, while advanced users may expose richer multi-model and multi-agent capacity. |
+| P16    | No surprise autonomy.                                  | Rikuri may pursue delegated goals but does not invent responsibilities, recurring jobs, spending authority, communications, or interruptions. |
+| P17    | Attention is protected.                                | Agents request user attention through Rikuri policy; subagents do not independently interrupt, notify, call, or message the user.     |
+| P18    | Evidence outranks agreement.                            | Multiple agents agreeing is not proof; reproducible evidence, verification, provenance, and independent evaluation outweigh majority voting. |
+| P19    | Learn continuously; change core deliberately.            | Rikuri may adapt learned state and bounded profiles automatically, but protected core authority changes require controlled review and deployment. |
+| P20    | Start with intent; reveal structure only when useful.         | The default experience is conversation/voice and a small capability launcher; graphs, agents, logs, terminals, and advanced controls appear only when they help. |
+| P21    | Work, not agents, is the center of the interface.             | Users should see goals, artifacts, progress, decisions, and outcomes; agents are workers that may be exposed or hidden according to need. |
+| P22    | Simple entrance; expandable workspace.                         | A beginner and an expert enter through the same Home surface; the workspace can grow from one conversation to a multi-monitor workstation without changing the underlying project. |
+| P23    | Capture first; structure later; never lose the thought.        | Ideas and observations should be preserved with provenance even when they arrive incomplete or unclassified; organization may occur later. |
+| P24    | One conceptual truth, appropriate physical stores.            | “Single source of truth” means each object has declared authority, not that every kind of data must live in one database. |
+| P25    | Borrow proven patterns across disciplines.                    | When AI creates a difficult workflow problem, look beyond AI products for fields that already solved analogous problems; adapt principles rather than copying surface form. |
+| P26    | Language is a presentation layer, not a data silo.             | Rikuri preserves original content and canonical identity across languages while allowing interface, conversation, search, translation, and voice to adapt to the user’s preferred locale. |
+| P27    | Users choose privacy intent; Rikuri translates it into policy. | Auto/Private/Local Only are understandable choices; provider retention, network isolation, sanitization, and execution placement are technical consequences handled underneath. |
+| P28    | The persistent agent belongs close to the user’s data. | Agents, credentials, files, memory, and durable workspaces should remain on user-controlled nodes when practical; cloud models are reasoning resources, not mandatory homes for the whole agent environment. |
+| P29    | Read is not execute. | Opening, indexing, or discussing a project never implicitly authorizes project-controlled code, hooks, build scripts, or descendant processes to execute. |
+| P30    | Reuse mature capability; own the user experience and trust boundary. | Rikuri integrates proven open tools behind stable contracts rather than cloning entire IDEs, operating systems, transfer stacks, or extension ecosystems. |
+| P31    | Evolution for existing solutions; revolution for core strength. | Begin with working implementations and established patterns for scheduling, leases, retries, adapters, budgets, approvals, and audit. Invest original design in verified personal knowledge, adaptive harnessing, security, state integrity, and intent-led coordination. Record an evidence-based reason before replacing commodity machinery. |
+
+# 6. Target Users and Core Use Cases
+
+## 6.1 Primary personal user
+
+An individual who uses several AI systems, devices, documents, code projects, and applications and wants a persistent assistant that remembers context, executes work, learns procedures, and keeps knowledge organized without requiring AI infrastructure expertise.
+
+## 6.2 Advanced/technical personal user
+
+A user who operates local models, development environments, servers, GPU machines, Docker, home infrastructure, or specialist projects and wants Rikuri to bridge frontier intelligence with local execution and machine-specific context.
+
+## 6.3 Business/team extension
+
+A later deployment in which organizational knowledge, roles, approval boundaries, auditability, and shared projects use the same core architecture but with stronger identity, tenancy, and policy controls.
+
+## 6.4 Personal/executive-assistant user
+
+A user who wants an AI assistant immediately useful for communication, scheduling, meeting/lecture notes, travel, shopping, research, reminders, and coordination without becoming an administrator of agents or integrations. The user may know very little about AI infrastructure and should not need to understand it.
+
+## 6.5 Creative and knowledge worker
+
+A writer, researcher, marketer, product developer, student, analyst, creator, or other knowledge worker who generates ideas in many forms and needs them preserved, connected, searched, compared, edited, and developed into finished work without maintaining separate AI silos.
+
+## 6.6 Representative use cases
+
+- Brainstorm with any AI; later search by topic and recover relevant ideas, decisions, and source chats.
+
+- Ask “What do I have related to KV cache?” and receive related notes, chats, projects, code references, experiments, papers, and open tasks across machines.
+
+- Ask Rikuri to troubleshoot Linux or Docker; it supplies machine context, investigates live state, executes within policy, and verifies recovery.
+
+- Use a local model for routine/private work; automatically escalate to a frontier model when confidence, capability, or verification requires it.
+
+- Route research to a model/runtime with superior browsing or current-source capability, coding to the best coding harness, design work to a runtime with native creative-app integration, and combine outputs under one project state.
+
+- Continuously see model tokens, cost, quota, equivalent API value, local inference cost, and recommendations for better price/performance.
+
+- Share selected knowledge across three home computers while keeping machine-specific state, secrets, large models, and selected projects local.
+
+- Replace a computer, reinstall Rikuri, attach the user’s Personal Mesh, and recover knowledge/project continuity without rebuilding the “brain.”
+
+
+- Ask “Check my email and tell me what I need to deal with today”; Rikuri triages connected inboxes, surfaces important threads, drafts responses, and sends only within the user’s granted authority.
+
+- Ask “Find a meeting time with Susan and schedule it”; Rikuri checks calendar/contacts, proposes or creates the event according to authority, and records the commitment.
+
+- Ask “Take notes while I watch this lecture”; Rikuri uses captions/transcript or permitted local audio capture, creates structured course notes, explanations, questions, and future study material.
+
+- Ask “Plan ten days in Barcelona”; Rikuri researches current options, uses known preferences, returns 2–3 scenarios when useful, and can continue into booking while escalating payment/2FA/commitment steps appropriately.
+
+- Delegate a difficult project; Rikuri decides whether one agent, a specialist team, or a larger swarm is justified, coordinates workers, evaluates results, and only escalates material decisions to the human.
+
+- Ask for a capability not currently installed, such as local video generation; Rikuri finds compatible open models, screens them, recommends candidates, downloads only after approval, tests them, and learns how well they perform over time.
+
+- Open three independent model windows from one prompt, compare Claude/GPT/local-model answers side by side, and have Rikuri synthesize agreements, disagreements, evidence, and a recommendation.
+
+- Watch a coding agent work through linked Agent, Live Code, Diff, Test, and Browser windows; resize or tile the workspace freely; detach a window to another monitor or macOS Space; interrupt or take control when useful.
+
+- Capture a voice idea on a phone, a photo of a location, a handwritten note, or a fragment from a chat without filing it; later ask Rikuri to recover related ideas and connect them to a writing, research, marketing, or product project.
+
+- Use a Writing Workspace with a live manuscript, editor agent, research, character/story canon, continuity checks, global semantic edits, and parallel section drafting while keeping the manuscript and source material user-owned and portable.
+
+- Use Rikuri in Spanish, Japanese, German, French, Simplified Chinese, or Traditional Chinese (Taiwan); search English source material in another supported language, preserve the originals, and receive localized explanations or translations without creating a separate knowledge silo.
+
+# 7. Core User Experience and Design Language
+
+> **Primary interaction**
+>
+> The default interaction is a universal conversational/task surface: **“What would you like me to do?”** Rikuri should answer directly when a reply is sufficient and transparently execute when action is required. Infrastructure choices are hidden unless the user asks to inspect or override them. The same surface accepts text and voice and can create, manipulate, and navigate richer workspaces when the task warrants them.
+
+## 7.1 Default navigation
+
+| **Surface / area** | **Purpose** |
+|---|---|
+| Quick Assist | Optional compact popover/voice surface available without opening a full project workspace. |
+| Home | Calm default entry: universal prompt/voice box, a small horizontal capability launcher, recent work, and only meaningful exceptions. |
+| Projects | Persistent goals, state, code/files, related knowledge, tasks, decisions, activity, and responsible workers. |
+| Knowledge & Ideas | Searchable notes, concepts, source chats, ideas, decisions, questions, references, visual inspiration, and relational graphs. |
+| Tasks & Routines | Active, scheduled, triggered, waiting, and completed work. |
+| Workspace | Expandable spatial workbench containing independently movable/resizable/linkable windows for live work. |
+| Dashboards | Specialized glanceable views for ongoing systems/projects such as Bitcoin, machines, model usage, or agent swarms. |
+| Resources | Optional advanced view of machines, models, connected services, storage locations, and project locations. |
+| Settings | Sharing, privacy, security, model/provider accounts, budget policy, backups, and advanced controls. |
+
+## 7.2 Calm-status widgets
+
+- Security: Protected / Degraded / Critical, with last health check and exceptions only when meaningful.
+
+- AI Usage: current model/runtime, task cost, today/month totals, subscription quota where available, and optimization advice.
+
+- Personal Mesh: devices online/offline, common-knowledge sync state, and conflict count.
+
+- Active work: current projects/jobs, status, waiting reason, and user decisions required.
+
+## 7.3 Approval experience
+
+Approval should be based on user-understandable intent and consequence, not raw implementation syntax. Advanced details may reveal exact commands and diffs, but the primary decision should describe what will change, risk level, affected scope, reversibility, and expected verification.
+
+## 7.4 Out-of-the-box Personal & Executive Assistant
+
+Rikuri shall ship with a built-in Assistant Capability Pack. Ordinary users must not need to create agents, configure MCP servers, write prompts, define cron schedules, or install workflow frameworks to receive baseline assistant value. Capabilities should activate through just-in-time account/service connection when first needed.
+
+Baseline assistant domains include email triage and correspondence, calendar and scheduling, contacts, meeting preparation/follow-up, notes, files/documents, web research, travel planning, shopping assistance, reminders/routines, project coordination, and computer assistance. Meeting/lecture capture and transactional booking may mature in later phases but must use the same assistant surface and governance model.
+
+## 7.5 Natural conversation and voice
+
+The same Rikuri identity should support ordinary conversation, brainstorming, delegated work, follow-up questions, and voice interaction without forcing the user to switch “modes.” Voice may be exposed through desktop/mobile applications, headphones, messaging voice notes, or optional telephony. Rikuri-initiated phone calls are disabled by default and require explicit trigger authorization.
+
+## 7.6 Just-in-time onboarding
+
+Setup should ask only for capabilities relevant to the user. Rather than presenting a long integration marketplace, Rikuri asks in context—for example, “I need access to Gmail to do this. Connect Gmail?” Users who do not use Slack, Asana, Microsoft 365, or another service should not be required to understand or configure them.
+
+## 7.7 Attention Firewall and proactive behavior
+
+Rikuri is reactive by default. It may continue jobs already assigned and quietly maintain knowledge, indexes, sync, health checks, and other authorized responsibilities. New recurring responsibilities, outbound communications, spending, and user-initiated interruption channels require explicit authority. All workers route requests for user attention through a central Attention Firewall that considers urgency, relevance, duplication, quiet hours, current activity, assigned responsibility, and user preference.
+
+Most proactive work should collapse into a digest or morning brief. A subagent should not directly notify, call, or message the user unless explicitly authorized through Rikuri governance.
+
+## 7.8 Home and capability launcher
+
+The default Home screen should remain intentionally sparse: a centered or prominent text/voice conversation box plus a small horizontal row of named capability icons. The initial row should favor a small number of obvious entry points such as **Agent, Code, Research, Browser, Projects, and More**. Additional shortcuts may be pinned later based on user choice or repeated use. The icons are shortcuts into Rikuri capabilities and workspace templates, not separate silos of state.
+
+A user should be able to ignore the icons entirely and accomplish the same supported work through natural language. Conversely, common actions that can be done by clicking should also be expressible through text or voice where practical.
+
+## 7.9 Rikuri Workspace: spatial workbench
+
+When work benefits from multiple simultaneous views, Rikuri should expand into a spatial workspace inspired by mature workstation software rather than fixed chat/IDE sidebars. A **Window** is a first-class work surface and may contain an agent, conversation, document, code editor, diff, browser, terminal, project graph, research view, test output, dashboard, preview, evaluator, media, or future domain surface.
+
+Windows may be freely created, moved, resized, minimized/collapsed, maximized, closed, tiled, detached into native operating-system windows, or placed on another monitor/desktop space where the platform permits it. Window controls may be hidden to maximize content area. A layout control should support fast equal grids such as 2×2, 3×2, 3×3, 4×4, plus asymmetric presets such as Focus + 3 or Compare + Result. Tiling is a convenience, not a permanent constraint; any tiled window can immediately be resized independently.
+
+## 7.10 Links: context, agent, and prompt
+
+Rikuri should generalize the linked-window concept used by professional trading workstations:
+
+- **Context Link:** multiple windows follow the same underlying object, project, task, file, person, chapter, research question, stock, trip, or other entity. Changing the selected object in one linked window can update the others unless a window is locked.
+- **Agent Link:** several windows are different views of one worker—for example Agent Chat, Live Code, Diff, Tests, and Browser all following the same coding agent.
+- **Prompt Link:** one instruction is broadcast to several independent agents/models so their responses can be compared.
+
+Links and physical layout are independent. A user can resize, move, or detach a window without changing its logical links.
+
+## 7.11 Per-window model selection and Compare Mode
+
+An Agent or compatible work window should expose a compact model selector, hidden when not needed. **Auto** remains the default; advanced users may pin GPT-, Claude-, Grok-, Gemini-, local-, or future model/runtime profiles that are compatible with the task and privacy policy. Switching the model assigned to a worker should preserve Rikuri-owned task/project state rather than restarting the work from scratch.
+
+A **Compare Mode** should allow one prompt to be sent to two or more independent model/agent windows. Initial reasoning should remain isolated so one answer does not contaminate another; a separate comparison/evaluator surface may then summarize agreements, disagreements, evidence, weaknesses, and a recommendation. “Duplicate with another model” should be a fast path from any compatible window.
+
+## 7.12 Project Graph and live execution map
+
+The Project Graph is the visual big-picture control surface for complex work. It should be capable of showing objectives, subprojects, tasks, agents, artifacts, dependencies, evaluations, decisions, blocked states, and human-review points. Nodes may collapse into summaries such as “Research · 8 agents” and expand progressively to individual workers, evidence, or artifacts.
+
+Clicking a node should focus an existing window, open an appropriate new window, or reveal details. Multi-select may open several nodes side by side. The graph and workspace are two synchronized representations of the same project: **graph for understanding, windows for working, links for coordinated context**.
+
+## 7.13 Live Follow and observability depth
+
+For active work, users should be able to choose among at least three observation levels:
+
+- **Quiet:** work proceeds autonomously; surface only meaningful status and decisions.
+- **Follow:** automatically show the file, document, browser page, test, or artifact currently receiving meaningful changes.
+- **Deep:** expose detailed diffs, logs, tool calls, terminals, branches/worktrees, and low-level diagnostics for advanced users.
+
+The interface should show meaningful changes as they occur when technically possible, but should not simulate distracting token-by-token typing merely for spectacle.
+
+## 7.14 Saved workspaces, multi-monitor, and conversational layout control
+
+Users may save named workspace layouts such as Coding, Research, Compare, Writing, Study, Review, or custom project-specific arrangements. Layout includes window type, size, position, link groups, and view state. Machine-specific geometry such as monitor placement or macOS Space should remain device-specific while the conceptual workspace can synchronize.
+
+The workspace itself should be controllable conversationally: “Put Claude, GPT, and Qwen across the top and the comparison underneath,” “make the code window bigger,” “show only things that need me,” or “move research to my second monitor” should map to the same operations available through direct manipulation.
+
+## 7.15 Interface freedom and native ecosystems
+
+Users may choose to work primarily in Rikuri or continue using preferred native ecosystems such as ChatGPT/Codex, Claude/Cowork/Claude Code, vendor browsers, office suites, IDEs, or other applications. Rikuri should preserve the durable project/knowledge/state layer around that work when integrations permit it. The user owns canonical data and should not lose Personal Intelligence continuity merely because a preferred model or native UI changes.
+
+## 7.16 Design language
+
+Rikuri should feel calm, modern, and native rather than like an enterprise agent console. The design language should favor minimal chrome, clean spacing, compact pill/chip controls where appropriate, readable labels, context-sensitive icons, progressive disclosure, and the ability to hide controls for maximum working area. The exact visual system remains a design-specification decision, but the following product phrases are normative:
+
+> **Simple entrance. Expandable workspace.**
+>
+> **Start with intent. Reveal structure only when structure helps.**
+>
+> **Work, not agents, is the center of the interface.**
+
+## 7.17 Internationalization and language experience
+
+Rikuri shall be internationalized (i18n) from the foundation and localized (l10n) initially for **English, Spanish, Simplified Chinese, Traditional Chinese (Taiwan), Japanese, French, and German**. User-facing strings must be externalized from application logic so additional languages can be added without redesigning the product.
+
+The user’s **interface language**, **preferred assistant response language**, and **source-content language** are separate concepts. A user may run the interface in English, converse with an agent in Spanish, and work on Japanese or Chinese source material without altering the canonical originals. Per-user defaults should be available, with optional per-conversation or per-window overrides where useful.
+
+Localization must include locale-aware dates, times, time zones, numbers, currencies, pluralization, sorting/collation, input methods, Unicode filenames/text, CJK line wrapping/font fallback, and enough layout flexibility for translated strings that expand or contract. The visual system should remain ready for future right-to-left language support even though RTL languages are outside the initial set.
+
+Rikuri should support multilingual and cross-lingual knowledge retrieval. A query in one supported language may find relevant material written in another language when semantic confidence is sufficient. Machine-generated translations, summaries, or normalized multilingual representations are derived artifacts linked to the original source and must never silently overwrite canonical content.
+
+# 8. System Capability Model
+
+USER INTENT / CONVERSATION / VOICE  
+\|  
+v  
+RIKURI PI — persistent user-owned intelligence  
+\|-- Constitution / User Alignment  
+\|-- Governance & Decision Rights  
+\|-- Attention Firewall  
+\|-- Context & Memory / Project State  
+\|-- Localization & Language Service  
+\|-- Capability Planner  
+\|-- Coordinator / COO Role (dynamically selected)  
+\|-- Strategy Council (when warranted)  
+\|-- Independent Evaluation / Audit  
+\|-- Model + Runtime Router  
+\|-- Model Economics / Resource Optimizer  
+\|-- Rikuri Security / Privacy Boundary  
+\|  
++--\> Native Frontier Runtimes  
++--\> Generic Rikuri Harness --\> Local/Open Models  
++--\> Specialist Agents / Swarms  
++--\> Browser / Connector / MCP / API Tools  
++--\> Computer/GUI Worker  
++--\> Machine Tools / Shell (bounded)  
+\|  
+v  
+VERIFY OUTCOME --\> EVALUATE WORK + COORDINATOR --\> UPDATE STATE / KNOWLEDGE / PROFILES / LEDGER --\> SYNC SELECTED STATE
+
+> **Routing unit**
+>
+> Rikuri routes an execution profile, not just a model: model + reasoning level + runtime/harness + tools + machine + provider/payment path + security/privacy envelope + governance role + budget + verification.
+
+## 8.1 Human–Rikuri management model
+
+The human is the principal: responsible for goals, values, priorities, risk tolerance, and consequential judgment. Rikuri is the management institution. A coordinator model temporarily occupies the operational “COO” role and manages execution; it is replaceable and independently evaluated.
+
+| **Layer** | **Primary responsibility** |
+|---|---|
+| Human Principal | Goals, values, priorities, risk tolerance, taste, consequential final decisions |
+| Rikuri Governance | Decision rights, budgets, privacy/security, attention, escalation, authority |
+| Coordinator / COO | Plans, staffing, model/tool/machine selection, execution management, recovery |
+| Strategy Council | Competing approaches for hard, novel, unfamiliar, or high-impact problems |
+| Specialist workforce | Research, coding, analysis, domain work, browsing, local execution |
+| Independent Evaluator | Outcome quality, evidence, cost, missed alternatives, coordinator performance |
+
+## 8.2 Strategy Council and scenario analysis
+
+Rikuri should not rely on one coordinator’s know-how when a problem is novel, unfamiliar, high-uncertainty, high-impact, or materially contested. It may solicit diverse independent proposals from different models/skills, gather evidence, criticize alternatives, and adjudicate. Majority vote is not sufficient; evidence and verification outrank agreement.
+
+When human judgment is useful, Rikuri should preferentially return 2–3 decision-ready scenarios with tradeoffs and a recommendation—for example Fastest/Lowest Cost, Strongest Expected Result, and Best Balance—rather than forcing a non-expert user to make a low-level technical choice.
+
+## 8.3 Constitution, governance, charters, and task contracts
+
+Rikuri should separate durable principles from transient work instructions:
+
+- **Rikuri Constitution:** small, durable, model-independent principles such as user alignment, privacy, evidence, user control, and provider neutrality.
+- **Governance Policy:** authority, spending, privacy/security, attention, escalation, and human decision rights.
+- **Agent Charter:** role, mission, responsibilities, capabilities, and boundaries for coordinator, researcher, coder, reviewer, etc.
+- **Task Contract:** objective, deliverables, constraints, budget, deadline, tools, success tests, and escalation conditions for the current assignment.
+- **AISecurity/Rikuri Security:** hard enforcement of what an actor can actually access or do.
+
+Constitutional guidance is not a substitute for deterministic enforcement.
+
+## 8.4 Evaluation and continuous improvement
+
+The coordinator must not be its own sole judge. Rikuri combines objective telemetry, deterministic verification, independent AI evaluation where appropriate, and human usefulness feedback. Coordinator performance should be measured over time by goal success, cost, latency, unnecessary/missed escalations, recovery quality, tool/model choice, and user satisfaction.
+
+Rikuri may automatically adapt low-risk learned state such as routing preferences, model profiles, tool preferences, successful remedies, and bounded harness settings. It may propose new tools, skills, methods, or architecture changes. Protected core components—Constitution, AISecurity, governance authority, secret boundaries, update authority, and production core code—require controlled developer review, tests, versioning, and deployment.
+
+# 9. Functional Requirements
+
+## 9.1 Rikuri Core / Control Plane
+
+| **ID**   | **Pri** | **Requirement**             | **Description**                                                                                                                       | **Acceptance**                                                                                      |
+|----------|---------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| CORE-001 | P0      | Persistent project state    | Maintain explicit current state, goals, open tasks, decisions, artifacts, responsible workers, and recent activity for every project. | A new model/runtime can continue a project without the user restating information already recorded. |
+| CORE-002 | P0      | Append-only event ledger    | Record meaningful actions, decisions, state changes, model/runtime used, artifacts, verification outcome, and cost metadata.          | State can be reconstructed/audited after restart, migration, or worker failure.                     |
+| CORE-003 | P0      | Capability planner          | Classify task needs across reasoning, tools, modality, privacy, latency, cost, context, machine, and consequence.                     | Planner generates a structured execution profile before non-trivial delegated work.                 |
+| CORE-004 | P0      | Durable jobs                | Long-running work survives UI closure and recoverable process/device failures when supported by deployment mode.                      | Interrupted work resumes from a checkpoint rather than silently restarting or disappearing.         |
+| CORE-005 | P1      | Persistent responsibilities | Support named responsibilities/routines (e.g., Systems, Research, Bitcoin) that retain context independent of individual chats.       | User can ask status of a responsibility without finding a prior thread.                             |
+| CORE-006 | P0 | Transactional State Evolution | For every authoritative migration or transformation: preserve/read old state, validate inputs, transform candidate, validate full candidate, durably write, read back and verify, atomically promote, then retire/archive old state. | Injected failure at any pre-commit step leaves the last known-good state intact and retryable. |
+| CORE-007 | P0 | No silent loss or false-green status | Cross-component handoffs use IDs and acknowledgements; missing, stale, or truncated state yields a typed error and visible health signal. Completion follows end-to-end verification of the durable outcome. | Missing ACK, dead caller, stale tail, or unconnected scaffold cannot appear as a successful feature. |
+
+## 9.2 Context and Memory Engine
+
+| **ID**  | **Pri** | **Requirement**    | **Description**                                                                                                                        | **Acceptance**                                                                            |
+|---------|---------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| MEM-001 | P0      | Context compiler   | Build task-specific context packages from user/project/machine state, relevant history, knowledge, permissions, and tool availability. | Models receive relevant context without loading entire chat history or vault.             |
+| MEM-002 | P0      | Memory classes     | Distinguish working, project, episodic, semantic, preference, procedural, organizational, and decision memory.                         | Different memory classes can have independent retention, sharing, and retrieval policies. |
+| MEM-003 | P0      | Provenance         | Every distilled knowledge item must retain source references to original chats/files/events where available.                           | Rikuri can answer “where did this come from?” and navigate to source.                     |
+| MEM-004 | P0      | Temporal state     | Represent current, superseded, tentative, and historical conclusions without overwriting the past.                                     | Later decisions can supersede earlier ones while preserving the thought trail.            |
+| MEM-005 | P1      | Learned procedures | Convert repeated successful workflows into draft reusable skills subject to policy/testing.                                            | A proven fix can become a reusable procedure rather than requiring rediscovery.           |
+| MEM-006 | P0 | Knowledge Context Compiler | Treat retrieved memory, summaries, embeddings, documents, and agent output as evidence candidates; check source authority, observed/valid time, supersession, freshness, relevance, conflicts, confidence, and privacy before use, with risk-based revalidation or abstention. | A stale contradicted memory cannot be silently presented as current fact or control an authorized action. |
+
+## 9.3 Conversation and Knowledge Distillation
+
+| **ID**   | **Pri** | **Requirement**              | **Description**                                                                                                          | **Acceptance**                                                                                                        |
+|----------|---------|------------------------------|--------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| KNOW-001 | P0      | Conversation archive         | Preserve raw imported/native conversations as immutable or versioned source records.                                     | Distillation never destroys the original conversation.                                                                |
+| KNOW-002 | P0      | Topic segmentation           | Split stream-of-consciousness conversations into coherent topics independent of thread boundaries.                       | One chat may generate/update multiple topic notes; a topic may span multiple chats.                                   |
+| KNOW-003 | P0      | Statement classification     | Classify extracted content as fact, idea, hypothesis, question, decision, preference, task, result, or reference.        | Brainstorming is not silently promoted to an accepted decision.                                                       |
+| KNOW-004 | P0      | Entity resolution and dedupe | Resolve topics/entities against existing knowledge before creating new notes.                                            | Duplicate notes such as “FlashAttention”, “FA ideas”, and “Flash Attention notes” are avoided or merged deliberately. |
+| KNOW-005 | P0      | Obsidian projection          | Materialize human-readable Markdown with properties and links suitable for an Obsidian vault.                            | User can browse/edit knowledge in ordinary Markdown and see relational links.                                         |
+| KNOW-006 | P1      | Semantic knowledge graph     | Maintain typed relationships such as USES, DEPENDS_ON, RELATED_TO, SUPERSEDES, DERIVED_FROM, DECIDED_IN, and APPLIES_TO. | Rikuri can answer relationship questions beyond plain text similarity.                                                |
+| KNOW-007 | P1      | Thought trail                | Show how an idea/project evolved over time across chats, experiments, and decisions.                                     | Topic view can present chronological evolution with source links.                                                     |
+
+## 9.4 Projects, Resources, and Universal Search
+
+| **ID**   | **Pri** | **Requirement**        | **Description**                                                                                                        | **Acceptance**                                                                                                      |
+|----------|---------|------------------------|------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| PROJ-001 | P0      | Project registry       | Track projects and all known locations: local machines, Git remotes, NAS, cloud/object storage, and related knowledge. | Search finds a project even when its source is not present on the current machine.                                  |
+| PROJ-002 | P0      | Live resource resolver | Resolve indexed references to current authoritative files/repositories before execution.                               | Agents do not modify stale index copies when the live resource is available.                                        |
+| PROJ-003 | P0      | Universal search       | Combine semantic, lexical, metadata, symbol/code, Git-history, graph, and recency signals.                             | A query such as “KV cache” returns categorized knowledge, projects, chats, code, experiments, decisions, and tasks. |
+| PROJ-004 | P1      | Code-aware indexing    | Index repositories by files, symbols, definitions/references, branches/commits, and relevant history.                  | User can ask where a concept was implemented or changed and receive code-level results.                             |
+| PROJ-005 | P1      | Resource catalog       | Provide a human-readable inventory of projects/resources and where they physically live.                               | User can ask “What AI projects do I have?” without remembering machine/path.                                        |
+
+## 9.5 Model and Runtime Routing
+
+| **ID**    | **Pri** | **Requirement**                    | **Description** | **Acceptance** |
+|-----------|---------|------------------------------------|-----------------|----------------|
+| ROUTE-001 | P0 | Model-independent state | No model provider’s private conversation state may be required for Rikuri continuity. | Changing model/runtime preserves task/project continuity. |
+| ROUTE-002 | P0 | Pi-primary governed harness | Pi is the default harness substrate for local/open models and provider-neutral governed execution; Rikuri owns policy, context, skills, verification, profiles, evidence, and UI around it. | A supported local model can perform a coding/tool task through Pi without a Qwen/DeepSeek-specific full harness dependency. |
+| ROUTE-003 | P0 | Native-harness exception path | Native/open/vendor harnesses may be routed as replaceable adapters only when capability or measured evaluation materially justifies them. | Switching to a native harness does not transfer canonical state/security authority to that harness. |
+| ROUTE-004 | P0 | Access-path routing | Support local inference, direct API, broker API, officially supported native/subscription runtime, and remote-node execution where permitted. | User can use the best permitted path rather than API-only access. |
+| ROUTE-005 | P1 | Automatic escalation/de-escalation | Start at appropriate capability and escalate/downshift based on verification, failure, privacy, cost, hardware, and evidence. | Routine work avoids unnecessary cost; difficult work can escalate. |
+| ROUTE-006 | P0 | Simple privacy/execution modes | Expose Auto, Private, and Local Only/Vault as persistent project/workspace intent; advanced users may inspect/override exact model/runtime/provider. | A nontechnical user can obtain enforceable privacy behavior without knowing ZDR, inference runtimes, or network policy. |
+| ROUTE-007 | P0 | Harness compatibility registry | Track model-family/profile compatibility separately from runtime support, including tool-call, context, planning, editing, reasoning, and subagent behavior. | New models normally reuse a family profile or a small override; harness core changes are exceptional. |
+
+## 9.6 Local Model Lab and Dynamic Harness
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| LOCAL-001 | P0 | Model/runtime discovery | Detect models available through supported runtimes and inspect metadata/templates/capabilities. | Known-family models onboard without Kernel changes. |
+| LOCAL-002 | P0 | Composable Harness Profile | Maintain family/model-size/task/runtime/security profile components rather than one monolithic bespoke harness per model. | A Qwen/DeepSeek-family update can be represented primarily as profile data/skills/extensions. |
+| LOCAL-003 | P0 | Pi-based coding behavior | Provide repository exploration, planning, context management, edit/diff strategy, compile/test/debug loop, Git awareness, verification, and bounded subagent behavior through Pi/Rikuri. | Local coding model completes a representative edit-test-verify task through Pi. |
+| LOCAL-004 | P1 | Harness-source analysis | Inspect open native harnesses (e.g. Qwen Code/DeepSeek Harness) for model-specific prompts, tool schemas, context/compaction strategies, and useful agent techniques. | Useful upstream behavior can be tested and adopted without making the upstream harness a dependency. |
+| LOCAL-005 | P1 | Evaluation suite | Benchmark model + runtime + harness-profile combinations on task-specific suites and real work. | Native harness exceptions and profile changes are justified by recorded evidence. |
+| LOCAL-006 | P1 | Adaptive profiles | Update bounded recommendations from verified success, retries, latency, resource use, and user feedback. | Profile evolution is versioned, reversible, and does not self-expand security authority. |
+| LOCAL-007 | P1 | Constrained output | Use grammar/schema-constrained generation when supported for tools and structured data. | Structural failure rate is measured and minimized. |
+
+## 9.7 Machine Intelligence and Execution
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| MACH-001 | P0 | Machine profile | Maintain hardware, OS/kernel, drivers, installed software, services, containers, AI runtimes, network, resources, and permitted locations for each device. | Agents do not repeatedly ask for discoverable machine facts. |
+| MACH-002 | P0 | Live state retrieval | Provide structured tools to query services, processes, logs, packages, hardware, Docker, network, storage, and health. | Agent investigates current state before change. |
+| MACH-003 | P0 | Observe-diagnose-act-verify loop | Execution tasks define intended outcome and independently verify actual state. | Exit code 0 alone is never proof. |
+| MACH-004 | P0 | OS Capability API | Expose normalized capabilities such as package/service/process/network/power/filesystem/sandbox/window operations through OS adapters. | The same Rikuri intent maps to Ubuntu, macOS, or Windows-specific implementation without model prompt forks. |
+| MACH-005 | P0 | Ubuntu reference adapter | Ubuntu is the first full Linux implementation and security reference; macOS is continuously tested and Windows follows after abstraction stability. | Foundation security/exec acceptance is proven on Ubuntu and core tests stay green on macOS. |
+| MACH-006 | P1 | Incident/remedy memory | Record symptoms, diagnosis, attempted actions, successful/failed remedies, environment, and verification. | Recurrent machine problems can reuse proven remedies. |
+| MACH-007 | P1 | Multi-machine routing | Choose an available node based on hardware/software/resources/project location/policy. | Tasks can route to the best permitted owner-controlled machine. |
+
+## 9.8 Tools, Skills, and Automation
+
+| **ID**   | **Pri** | **Requirement**          | **Description**                                                                                                                               | **Acceptance**                                                                            |
+|----------|---------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| TOOL-001 | P0      | Tool hierarchy           | Prefer native connector/API/MCP or structured Rikuri tool, then browser, then GUI/computer control, then raw shell when needed.               | Planner records why a less structured execution method was required.                      |
+| TOOL-002 | P0      | Skill packages           | Separate reusable domain procedure from model/harness; skills may define tools, retrieval rules, verification, output style, and risk policy. | Bitcoin, Linux, research, coding, etc. can share generic harness infrastructure.          |
+| TOOL-003 | P1      | Teach by demonstration   | Allow user-demonstrated workflows to be captured as draft skills/routines with review/testing.                                                | Repeated manual workflows can become reusable automation.                                 |
+| TOOL-004 | P1      | Scheduled/event routines | Support time/event-triggered responsibilities with persistent state.                                                                          | Rikuri can execute ongoing duties without requiring a chat to remain open.                |
+| TOOL-005 | P1      | Worker coordination      | Allow specialist workers to collaborate under a coordinator without requiring the user to manually orchestrate agents.                        | Multi-agent behavior is hidden behind project/task status unless inspection is requested. |
+
+## 9.9 Personal & Executive Assistant
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| ASST-001 | P0 | Ready assistant | Provide useful assistant behavior after connecting services the user actually uses; no agent/workflow engineering required. | User can ask a common assistant request without creating agents, prompts, cron jobs, or MCP configuration. |
+| ASST-002 | P0 | Email triage and drafting | Read/classify authorized inboxes, identify important messages, summarize threads, and prepare replies. Sending obeys explicit authority. | “Check my email and tell me what matters” yields prioritized results and draftable follow-up actions. |
+| ASST-003 | P0 | Calendar/contacts coordination | Read calendars/contacts, check availability, create or propose meetings, and retain commitments. | “Find a meeting time with X” can be completed through natural language within permission policy. |
+| ASST-004 | P1 | Meeting and lecture intelligence | Capture permitted transcript/audio, segment topics, extract notes/decisions/questions, summarize, explain, and create study material. | User can turn a supported meeting/course session into useful notes and follow-up learning artifacts. |
+| ASST-005 | P1 | Travel and shopping assistance | Research, compare, plan, and prepare bookings/purchases; consequential commitment/payment/2FA follows governance. | Rikuri can carry a task from intent through decision-ready options and to the permitted transaction boundary. |
+| ASST-006 | P1 | Natural voice surface | Support real-time conversational voice and voice instructions over supported devices/interfaces. | User can move between conversation and delegated work without a separate agent mode. |
+
+## 9.10 Attention and Proactive Authority
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| ATTN-001 | P0 | Attention Firewall | Route all worker requests to interrupt/notify the user through a centralized attention policy. | Subagents cannot independently call, notify, or message the user outside granted policy. |
+| ATTN-002 | P0 | Reactive by default | Fresh installs may respond, continue assigned work, and perform quiet maintenance but may not invent new responsibilities. | No surprise recurring job, outbound communication, spending, or phone call occurs without delegated authority. |
+| ATTN-003 | P0 | Digest aggregation | Collapse routine proactive findings into concise digests unless urgency/policy warrants interruption. | Multiple worker completions do not become multiple user notifications. |
+| ATTN-004 | P1 | Learned attention preference | Adapt interruption/digest recommendations from user behavior without silently expanding authority. | Rikuri can reduce nuisance alerts while preserving explicitly critical triggers. |
+
+## 9.11 Governance, Multi-Agent Teams, and Strategy Council
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| GOV-001 | P0 | Decision-rights policy | Define what the human, coordinator, specialists, evaluator, and deterministic systems may decide or execute. | A task can state budget/authority/escalation without embedding vendor-specific prompts. |
+| GOV-002 | P0 | Replaceable coordinator | Coordinator/COO is a role filled by a routed model/runtime, not permanent Rikuri identity. | Rikuri can switch coordinator while preserving project state and governance. |
+| GOV-003 | P1 | Automatic team sizing | Use one agent by default and scale to specialist teams/swarms only when task structure, quality, latency, or economics justify it. | Agent count is chosen by measured need rather than a fixed workflow. |
+| GOV-004 | P1 | Strategy Council | For hard/novel/high-impact work, solicit diverse independent strategies and critique/evidence before committing execution. | Council output records alternatives, supporting evidence, risks, and recommendation. |
+| GOV-005 | P1 | Scenario decision packet | When human judgment is needed, present 2–3 understandable options with tradeoffs, recommendation, confidence, reversibility, and required decision. | Non-expert user can make an executive-level choice without choosing low-level technology. |
+| GOV-006 | P1 | Single user communication path | Specialist workers report to coordinator/governance rather than directly to the user by default. | User sees consolidated status/decisions rather than agent chatter. |
+| GOV-007 | P1 | Independent coordinator evaluation | Evaluate management quality separately from execution. | Coordinator scorecard includes task success, cost, escalation quality, recovery, and user usefulness. |
+| GOV-008 | P1 | Durable multi-agent control plane | Maintain stable worker and task identities, goal ancestry, atomic ownership/lease, event-driven wakeups, checkpoints, run records, approval and budget gates, and explicit pause/resume/cancel. Keep these behind Rikuri-owned contracts and authoritative ProjectState. | Two workers competing for one task cannot both commit; restart, retry, handoff, and cancellation do not silently lose or duplicate work. |
+| GOV-009 | P1 | Intent-led team assembly | Propose the smallest useful team from the task and project lifecycle, showing roles, access, estimated spend, duration, review points, and material risks before activation. A single worker is a valid team. Hide runtime/adapter settings under advanced controls. | A user can ask for research, implementation, and independent review without manually hiring agents or configuring an org chart. |
+| GOV-010 | P1 | Lifecycle-specific coordination | Use Frame, Shape, Plan, Execute, Verify, Deliver, Learn as the common Project Lifecycle Kernel over one Project ID and authoritative ProjectState; domain profiles specialize artifacts and gates. | Coding, research, and writing teams share state and transitions without being forced into a company hierarchy. |
+| GOV-011 | P1 | Reference implementation evaluation | Study Paperclip's heartbeat, atomic checkout, adapter, session, team template, budget, approval, and run history mechanisms in a pinned test installation. Adopt a mechanism only after license/security review and Rikuri-specific failure, recovery, and usability tests. | A pattern decision records source version, observed behavior, integration cost, failure modes, acceptance evidence, and reason to reuse, adapt, or decline. |
+
+## 9.12 Constitution and Continuous Improvement
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| IMP-001 | P0 | Layered governance artifacts | Maintain Constitution, Governance Policy, Agent Charters, and Task Contracts as distinct versioned concepts. | Durable principles do not need to be duplicated into every task prompt. |
+| IMP-002 | P1 | Operational learning | Learn model/tool/workflow preferences from measured success, verification, cost, retries, and user feedback. | Future routing changes can cite observed performance evidence. |
+| IMP-003 | P1 | Improvement proposals | Detect recurring weaknesses and propose new tools, skills, models, workflow changes, or developer work. | Rikuri can explain the observed weakness, options, expected benefit, and risk. |
+| IMP-004 | P0 | Protected-core boundary | Constitution, AISecurity, governance authority, secret boundaries, update authority, and production core code cannot silently self-modify. | Core changes require versioned developer-controlled review/test/deploy workflow. |
+| IMP-005 | P2 | Bounded extension self-update | Future low-risk skills/profiles may self-update only inside a tested, versioned, rollback-capable modifiable zone. | No extension can expand its own security authority as part of self-update. |
+
+## 9.13 Model Discovery, Acquisition, and Lifecycle Evaluation
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| MDL-001 | P1 | Capability-driven model search | When a capability is missing or materially improvable, search trusted registries/public sources for suitable models by task/modality. | User can ask for “local video generation” without naming a model. |
+| MDL-002 | P1 | Hardware-fit screening | Compare candidate RAM/VRAM/unified memory, runtime, storage, bandwidth, context, acceleration, and machine compatibility before recommendation. | Incompatible or impractical artifacts are filtered or clearly labeled. |
+| MDL-003 | P1 | Evidence-ranked recommendation | Consider model cards, license, provenance, independent benchmarks, community evidence, adoption signals, and Rikuri’s own prior experience. | 2–3 candidates can be recommended with evidence and uncertainty rather than popularity alone. |
+| MDL-004 | P1 | Approved acquisition | Obtain user approval before substantial downloads or new runtime/dependency installation. | Approval shows estimated download size, storage, hardware target, license, and security implications. |
+| MDL-005 | P1 | Supply-chain screening | Pin exact revision/hash, prefer safe weight formats, quarantine/scan, review custom code/dependencies, and preserve evaluated artifact identity. | Rikuri knows exactly which artifact/runtime/configuration was tested and trusted. |
+| MDL-006 | P1 | Task-specific baseline evaluation | Run modality/task-appropriate initial tests before normal service. | LLM, speech, image, audio, and video models are evaluated with relevant metrics rather than one generic score. |
+| MDL-007 | P1 | Background probation and ongoing eval | Continuously update model performance from real jobs while respecting idle/thermal/battery/resource policies. | Rikuri learns where the model succeeds/fails over time without degrading interactive use. |
+| MDL-008 | P1 | Task-specific parameter profiles | Tune supported generation/load parameters per model+task only when evidence shows repeatable benefit; retain defaults and rollback. | Users need not understand temperature/top-p/context/GPU-offload to obtain sensible settings. |
+| MDL-009 | P1 | Evaluated execution identity | Profile exact model revision + quantization + runtime/version + settings + hardware rather than model name alone. | Changes that can affect behavior trigger selective revalidation. |
+
+## 9.14 Workspace and Human-Agent Interaction
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| UI-001 | P0 | Universal intent surface | Provide one text/voice interaction surface that can answer, delegate, open capabilities, and manipulate workspaces. | A user can perform a supported action without learning navigation hierarchy or agent terminology. |
+| UI-002 | P0 | Minimal Home launcher | Provide a small horizontal set of named capability icons with user-pinnable expansion through More. | Home remains understandable to a first-time user while frequent capabilities can be added later. |
+| UI-003 | P0 | Progressive disclosure | Hide infrastructure and advanced controls until relevant or requested. | Ordinary assistant tasks expose no MCP/runtime/worktree/model-parameter setup. |
+| UI-004 | P1 | First-class work windows | Represent agents, chats, documents, code, diffs, browser, terminals, graphs, research, tests, dashboards, previews, and evaluators as independent workspace windows. | Supported window types can coexist in one workspace and retain project/context identity. |
+| UI-005 | P1 | Freeform + tiled layout | Allow move, resize, maximize, collapse, close, tile, equal-grid, asymmetric preset, and re-resize after tiling. | User can create a 3×2 grid and then enlarge one window without rebuilding the layout. |
+| UI-006 | P1 | Native detach and multi-monitor | Allow compatible windows to detach into OS-level windows and move across monitors/desktops/spaces. | A detached window remains linked to the same Rikuri workspace and project. |
+| UI-007 | P1 | Context Link Groups | Link multiple windows to the same entity/context with optional per-window lock. | Changing the active entity updates linked views but leaves locked/unlinked views unchanged. |
+| UI-008 | P1 | Agent Link | Let multiple windows follow different surfaces of one worker. | One coding worker can simultaneously drive linked Chat, Code, Diff, Tests, and Browser views. |
+| UI-009 | P1 | Prompt Link / broadcast | Send one prompt to selected independent agents/models. | User can select 2–3 agents, prompt once, and receive separate responses without manual copy/paste. |
+| UI-010 | P1 | Per-window model selector | Allow Auto or an explicitly compatible model/runtime profile to be assigned to a worker/window. | Model choices are filtered by capability/privacy; state survives a model handoff. |
+| UI-011 | P1 | Compare Mode | Arrange independent model responses plus a synthesis/evaluator view. | “Ask Claude, GPT, and my local model” produces isolated answers and a comparison without cross-contaminating initial reasoning. |
+| UI-012 | P1 | Project Graph | Visualize objectives, tasks, agents, dependencies, artifacts, decisions, evaluations, and status with expandable nodes. | Clicking a node can focus/open the corresponding work surface and reveal progressively deeper detail. |
+| UI-013 | P1 | Live Follow | Show meaningful live artifact/file/browser/test changes for a selected worker. | User can observe what an agent is currently changing without waiting for a final posted file. |
+| UI-014 | P1 | Saved workspace layouts | Save/restore window types, sizing, positions, links, and project-specific workspace presets. | “Open my KV Cache workspace” restores the conceptual work arrangement. |
+| UI-015 | P1 | Conversational workspace control | Expose layout/link/window operations through natural language/voice in addition to direct manipulation. | Spoken/text commands can create, rearrange, link, focus, or close supported windows. |
+| UI-016 | P0 | Native ecosystem freedom | Permit users to continue working in preferred external AI/office/developer ecosystems without surrendering Rikuri-owned canonical state. | Provider/UI choice does not become the sole repository of project memory or user knowledge. |
+
+## 9.15 Knowledge & Idea Fabric
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| IDEA-001 | P0 | Frictionless Idea Inbox | Capture short or incomplete ideas from text, voice, photo, video, file, chat, clipboard/share sheet, or supported handwritten-note image with minimal required metadata. | User can save an idea without choosing a folder, project, tags, or final category. |
+| IDEA-002 | P0 | Preserve original capture | Retain original audio/image/text/document plus timestamp/source/provenance; derived transcript/summary never replaces the source. | User can inspect the original item from any derived note or idea record. |
+| IDEA-003 | P0 | Stable idea identity and state | Give each idea a durable ID and lifecycle such as Captured, Exploring, Promising, Attached, Adopted, Implemented, Rejected, or Superseded. | An idea can evolve across projects and devices without being confused with a canonical decision/fact. |
+| IDEA-004 | P0 | Automatic linking without forced filing | Suggest or create confidence-scored links to projects, topics, people, scenes, research questions, artifacts, and related ideas. | Capture does not require organization, but related context is recoverable later. |
+| IDEA-005 | P0 | Semantic and exact recovery | Search ideas by meaning, words, source, time, project, people, media, and relationships. | User can recover a forgotten idea without remembering where or how it was captured. |
+| IDEA-006 | P1 | Quiet resurfacing | Surface potentially useful prior ideas in the current project without interrupting normal work. | Related Ideas appears as a passive cue/digest unless user policy elevates it. |
+| IDEA-007 | P1 | Knowledge Web + Idea Web | Represent typed relationships among knowledge, ideas, decisions, artifacts, projects, people, experiments, and source material. | Rikuri can explain how a current concept connects to earlier ideas and their outcomes. |
+| IDEA-008 | P1 | Cross-domain reuse | Allow the same underlying idea fabric to serve writing, research, marketing, product development, business, media, study, and coding. | Domain workspaces project specialized views without copying ideas into separate silos. |
+
+## 9.16 Domain Workspaces and Writing
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| DOM-001 | P1 | Common workspace substrate | Build specialized domains on the same Window, Link, Project, Knowledge, Idea, Task, and Event primitives. | Coding, writing, research, and study do not create incompatible state systems. |
+| DOM-002 | P1 | Coding workspace | Provide code-centric arrangements for live source, agent, diff, tests, terminal/browser, project graph, and review. | User can observe and manage parallel coding work without relying solely on separate IDE chat threads. |
+| DOM-003 | P1 | Writing editor integration | Support a Word-like/rich-text editing surface through an embeddable/open editor or automation of compatible external editors while preserving portable document formats. | Rikuri can proofread, suggest edits, comment, track revisions, and export common formats without owning a proprietary document silo. |
+| DOM-004 | P1 | Writing assistance tools | Provide grammar, spelling, dictionary, synonym/antonym, alternative verbs/phrasing, rewrite, clarity, tone, repetition, style, and evidence/citation assistance as appropriate. | User can invoke writing help on selected text, sections, or whole documents with reviewable changes. |
+| DOM-005 | P2 | Story/long-form canon | Represent characters, locations, timeline, world rules, plot/argument structure, sources, and established facts separately from speculative ideas. | Continuity checks distinguish Canon from Idea/Hypothesis. |
+| DOM-006 | P2 | Semantic/narrative refactoring | Propagate conceptual changes across affected passages and linked knowledge rather than blind find/replace. | A changed character trait or report assumption yields a reviewable impact set and coherent proposed revisions. |
+| DOM-007 | P2 | Parallel section work | Allow independent agents to draft/review different sections while an editorial coordinator checks voice, contradictions, repetition, dependencies, and integration. | Multi-agent writing can proceed in parallel without silently producing incompatible sections. |
+| DOM-008 | P1 | Visual idea/sticky-note board | Offer a spatial sticky-note/index-card view backed by the canonical Idea objects. | Notes can be arranged visually while remaining searchable and linked outside the board. |
+| DOM-009 | P1 | Study workspace | Combine media/lecture, transcript, notes, tutor conversation, concepts, questions, and quizzes on the common workspace substrate. | A lecture can become structured, searchable learning material tied to source context. |
+
+## 9.17 Internationalization, Localization, and Multilingual Intelligence
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| I18N-001 | P0 | Externalized locale resources | Keep user-facing strings, labels, prompts presented as UI copy, date/number formats, and locale metadata outside application logic with stable localization keys and fallback behavior. | A new language pack can be added without changing core business logic or database schemas. |
+| I18N-002 | P0 | Initial locale set | Localize core Home, Quick Assist, Workspace navigation, approvals, security/privacy notices, Settings, Projects, Knowledge & Ideas, and common assistant flows for English, Spanish, Simplified Chinese, Traditional Chinese (Taiwan), Japanese, French, and German. | A user can select any initial language during onboarding or later and complete core workflows without falling back to English except for explicitly untranslated advanced/developer content. |
+| I18N-003 | P0 | Independent language preferences | Separate interface locale, assistant-response language, content/source language, and optional per-conversation/per-window overrides. | Changing UI language does not translate or rewrite source documents, stored conversations, project names, or canonical knowledge automatically. |
+| I18N-004 | P0 | Locale-aware formatting and Unicode | Support locale-aware dates, time zones, calendars where applicable, numbers, currencies, pluralization, sorting/collation, Unicode text/filenames, CJK input and line wrapping, and resilient layouts for text expansion. | The same data renders correctly under each initial locale and no supported-language text is corrupted or clipped in core UI tests. |
+| I18N-005 | P0 | Multilingual knowledge and search | Preserve original-language sources while enabling exact-language search plus cross-lingual semantic retrieval across supported languages. | A supported-language query can retrieve relevant knowledge written in another supported language while retaining links to the original source. |
+| I18N-006 | P1 | Translation as derived data | Store machine-generated translations, transliterations, summaries, and language-normalized representations as derived/versioned artifacts with provenance rather than replacing originals. | Users can inspect the source language and translation origin and regenerate translations with another model later. |
+| I18N-007 | P1 | Language-aware model routing and evaluation | Include language/modality competence in Model Lab profiles and route tasks to models that perform well in the requested language; evaluate important local models across relevant configured languages. | Rikuri does not assume a model that performs well in English performs equally well in Japanese, Chinese, Spanish, French, or German. |
+| I18N-008 | P1 | Multilingual voice | Support language-aware speech recognition and speech synthesis where runtimes permit, including explicit language selection and safe auto-detection. | Voice conversations and captured notes can use supported languages without forcing translation to English first. |
+| I18N-009 | P0 | Localization quality gates | Add missing-key checks, pseudo-localization/text-expansion tests, CJK rendering tests, locale-format tests, and regression coverage for core user journeys. | A release cannot report an initial locale as supported when critical core surfaces have missing strings or broken layout. |
+
+## 9.18 Rikuri Link and Remote Owner-Node Access
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| LINK-001 | P1 | Phone-home access | A phone/tablet/laptop can securely reach the user's own Rikuri Node for chat, task continuation, status, approvals, and file/photo handoff. | Remote use does not require a cloud-hosted persistent agent. |
+| LINK-002 | P1 | Tailscale initial connector | Use Tailscale as the first secure private-network transport without public port forwarding. | Authorized device connects through simple Rikuri UI; user need not configure VPN/IP/SSH concepts. |
+| LINK-003 | P1 | Durable reconnect | Remote disconnect/reconnect does not duplicate or lose committed task state. | Active task resumes from Rikuri-owned checkpoint. |
+| LINK-004 | P2 | Native Rikuri transport | Add direct connectivity plus rendezvous/discovery and E2E encrypted relay when direct connection fails. | Relay cannot read plaintext task traffic; Tailscale remains fallback. |
+| LINK-005 | P2 | Multi-node placement | Expose owner nodes and later route work according to capability/project locality/privacy. | `Run on: Auto` chooses an eligible node and records why. |
+
+## 9.19 Native Developer Platform and Plugins
+
+| **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
+|---|---|---|---|---|
+| DEV-001 | P1 | Monaco editor | Monaco is Rikuri's embedded code editor Window; the application is not built on the VS Code workbench. | Code/diff/selection/diagnostic workflows operate inside Rikuri state. |
+| DEV-002 | P1 | Standard developer services | Integrate LSP, DAP where useful, Git, terminal, tests/tasks, formatters/linters, search, and container/dev tools behind Rikuri contracts. | Core developer capability does not depend on arbitrary VS Code extensions. |
+| DEV-003 | P1 | Native plugin/window API | Plugins may add editor/agent/tool/service/window capabilities under explicit AISecurity permissions. | Plugin cannot silently acquire unrestricted filesystem/network/secrets/canonical writes. |
+| DEV-004 | P1 | Verified plugin lifecycle | Provenance/pin/quarantine/activate/health/update/rollback/remove lifecycle. | Broken or unsafe update can be disabled/rolled back with evidence. |
+| DEV-005 | P2 | Selective VS Code compatibility | Use `monaco-vscode-api`-class compatibility only where direct/native integration is not preferable. | Rikuri retains its own workspace UX and security boundary. |
+
+# 10. Security and Trust Requirements
+
+AISecurity is an existing Rust/Swift foundation to evolve into the Rikuri security layer. Security must be mandatory in the execution path, model-independent, and capable of remaining unobtrusive during normal operation while proving its own health.
+
+| **ID**  | **Pri** | **Requirement**                  | **Description**                                                                                                                                        | **Acceptance**                                                                                   |
+|---------|---------|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| SEC-001 | P0      | Common security boundary         | All workers—frontier, local, native harness, generic harness, browser, GUI, and shell—must pass through Rikuri security/policy controls.               | Changing model/runtime does not expand authority automatically.                                  |
+| SEC-002 | P0      | Capability envelopes             | Grant task/worker-specific access to files, tools, network destinations, machines, credentials, and operations.                                        | Worker can operate freely inside granted scope but cannot silently escape it.                    |
+| SEC-003 | P0      | Risk-class execution             | Classify observe/read-only, known repair, novel modification, destructive/high-consequence, and financial/credential operations.                       | Approval/enforcement policy follows consequence rather than generic “tool call” status.          |
+| SEC-004 | P0      | Validated runbooks for high risk | Support deterministic Rust/other trusted operations for sensitive systems such as a Bitcoin node.                                                      | AI can diagnose and choose an operation without inventing arbitrary high-risk shell commands.    |
+| SEC-005 | P0      | Financial safety boundary        | Isolate wallet seeds, private keys, signing, fund movement, sensitive LND/Bitcoin credentials, and transaction authority from general AI shell access. | General machine administration cannot imply financial authority.                                 |
+| SEC-006 | P0      | Security health supervisor       | Each protection module must expose heartbeat, last success, event count, errors, enforcement state, and capability coverage.                           | “Protected” means required modules are healthy, not merely that a daemon HTTP endpoint responds. |
+| SEC-007 | P0      | Quiet degradation alerts         | Healthy security stays quiet; degraded or critical protection is surfaced immediately and can restrict dependent capabilities.                         | Silent subsystem death cannot remain indistinguishable from healthy silence.                     |
+| SEC-008 | P0      | Audit ledger                     | Record allowed, constrained, blocked, and approved actions with actor, intent, scope, policy, and outcome.                                             | Security decisions are reviewable without flooding the user during normal use.                   |
+| SEC-009 | P1      | Intent consistency               | Compare proposed actions with task/user intent as a soft security signal while deterministic policy remains final authority.                           | Unrelated sensitive actions are detected even if syntactically valid.                            |
+| SEC-010 | P1      | Transactional changes and undo   | Checkpoint reversible project/file changes where practical.                                                                                            | User can inspect or undo autonomous changes without understanding Git internals.                 |
+
+> **Approval principle**
+>
+> Do not ask the user to approve syntax they cannot evaluate. Present the intended change, consequence, affected scope, risk, rollback, and verification plan. Raw command details belong behind an Advanced view.
+
+## 10.1 Privacy classification and data minimization
+
+Rikuri should classify information at least as **Normal**, **Private**, **Local Only**, or **Secret**, with user override and domain-specific policy. Classification must affect context assembly before model invocation. Local Only raw content cannot be sent to an external model/service. Secret material such as seed phrases, private signing keys, OAuth refresh tokens, SSH private keys, and comparable credentials should not be exposed to AI models at all.
+
+Where feasible, Rikuri should process sensitive source data locally and send only the minimum sanitized/derived result to a frontier model when policy permits. Multimodal privacy classification must eventually cover text, documents, images, audio, video, transcripts, metadata, and extracted text.
+
+## 10.2 Universal egress enforcement
+
+The privacy router cannot be merely optional middleware. Rikuri Security must become an unavoidable capability and egress authority across supported AI calls, APIs/connectors, browsers, file uploads, clipboard, email attachments, GUI workers, shell/network access, and custom code. A path that bypasses policy is a security defect.
+
+## 10.3 Secrets and financial authority
+
+AI may request operations that require credentials without receiving the credentials themselves. A secret/credential broker should authenticate on behalf of authorized tools and return only necessary results. Financial and cryptographic signing authority must remain segregated from general AI execution, with dedicated policy, human authorization where required, and hardware/isolated signers when appropriate.
+
+## 10.4 Secure working material and browser isolation
+
+Highly sensitive material should minimize persistent plaintext exposure; secure views/ephemeral workspaces are preferred to broadly decrypting files for long periods. Rikuri browser/computer workers should use isolated profiles and controlled upload/download/network capabilities rather than automatically inheriting the user’s unrestricted everyday browser session.
+
+## 10.6 Project/repository execution trust
+
+A newly opened, cloned, downloaded, shared, or imported project is **untrusted data by default**. Rikuri distinguishes `read/index` authority from `execute/project-code` authority. Reading files, running semantic search, or asking a model questions about a project must not implicitly authorize Git-config helpers, hooks, package lifecycle scripts, build systems, Dockerfiles, MCP/workspace configuration, or other project-controlled executables.
+
+Project trust elevation is explicit, scoped, reversible, and recorded. Child processes inherit the execution envelope; approving a parent command such as `git status` does not authorize an arbitrary descendant helper configured by the project. Untrusted projects initially execute, if at all, inside a restricted environment with constrained filesystem, network, secrets, and privilege.
+
+## 10.5 Personal Mesh cryptographic privacy
+
+Shared Rikuri state should be end-to-end encrypted between authorized owner devices where practical; an optional home hub should be able to relay encrypted state without requiring plaintext knowledge. Device identity, revocation, key rotation, and recovery must be part of mesh design.
+
+# 11. Knowledge & Idea Fabric, Projects, and Search
+
+Rikuri must treat conversations, ideas, Obsidian notes, source code, documents, photos, audio/video, experiments, project state, machine resources, and external references as one searchable conceptual space while preserving their distinct authoritative storage locations. The user experiences one **Knowledge & Idea Fabric** even though different representations are optimized for durability, human readability, transactions, semantic retrieval, graph relationships, or live execution.
+
+| **Layer** | **Role** | **Examples** |
+|---|---|---|
+| Original source archive | Durable evidence and original capture | Raw chats, photos, audio, video, PDFs, documents, handwritten-note images |
+| Canonical structured state | Authoritative identity/state/relationships for Rikuri-managed objects | Projects, ideas, tasks, decisions, people, entities, provenance, sharing, lifecycle states |
+| Human-readable projection | Portable human browsing/editing | Obsidian/Markdown, exported reports, notes |
+| Authoritative external resources | Source of truth owned by an external mature tool | Git repository for code, office document file, original media file, live service/device state |
+| Project/resource registry | What exists and where | Lean_llama.cpp on Ryzen + Git remote; AISecurity on Mac; dataset on NAS |
+| Derived retrieval fabric | Fast exact/semantic/relational retrieval | Vector embeddings, full-text index, code/symbol index, graph projections, rerankers |
+| Live resolver | Current authority for execution | Current repo HEAD, current file, current document version, current service state |
+
+## 11.1 Capture first, structure later
+
+Rikuri should make preservation cheaper than organization. A user may capture a fragment such as “What if we quantize K differently?”, dictate a longer thought, photograph a location, save a screenshot, import a notebook image, or preserve a chat insight without knowing where it belongs. The system preserves the source immediately, then classifies and links it later with confidence and provenance.
+
+Ideas must not be silently promoted into facts, decisions, or canon. A later adopted decision can reference the earlier idea while preserving the evolution trail. Rejected or superseded ideas may remain searchable because they can become useful again.
+
+## 11.2 Knowledge Web and Idea Web
+
+The Knowledge Web captures concepts, established facts, decisions, procedures, evidence, and relationships. The Idea Web captures tentative possibilities, inspirations, hypotheses, creative fragments, proposals, and unrealized opportunities. The two webs are linked: ideas may become experiments, decisions, artifacts, canon, or rejected alternatives; knowledge may inspire new ideas.
+
+Rikuri should be able to answer not only “What do I know about this?” but also “What ideas have I had about this?”, “Which ideas were never tested?”, “What did this idea become?”, and “What old idea is newly feasible because my tools/models changed?”
+
+> **Search example**
+>
+> Query: “KV cache”. Desired response categories: Knowledge, Projects, Conversations, Code references, Experiments, Research papers, Decisions, Open tasks. Rikuri should know that a project such as Lean_llama.cpp exists on another owner device even when its full source is not cloned locally.
+
+# 12. Model, Runtime, and Harness Strategy
+
+## 12.1 Execution layers
+
+Rikuri separates **model**, **inference runtime**, **agent harness**, **Rikuri Harness Profile**, **skills**, and **security envelope**. These are replaceable independently.
+
+| Layer | Primary responsibility | Examples |
+|---|---|---|
+| Model | Intelligence/checkpoint | Qwen-, DeepSeek-, Gemma-, Llama-class local models; frontier models |
+| Inference runtime | Load/serve model, tokenizer/chat template, sampling, structured output | llama.cpp, vLLM, Ollama, LM Studio/llmster |
+| Agent harness | Persistent agent loop, tools, session state, task execution | **Pi by default for governed local/open work** |
+| Rikuri Harness Profile | Model-family/tool/context/planning/edit/subagent tuning | Qwen-family, DeepSeek-family, small-model, coding profile |
+| Skill/domain pack | Task-specific procedures and verification | coding, Linux, research, Bitcoin, writing |
+| Security/execution envelope | Capabilities, privacy, project trust, network, filesystem, budget | AISecurity/Rikuri Security |
+
+**Default rule:** Pi + Rikuri profiles is the primary governed harness platform. Qwen Code, DeepSeek Harness, Hermes, and future open harnesses are inspected as research/reference implementations and benchmarked as optional adapters. Rikuri may route to one only when measured benefit justifies the extra integration surface.
+
+## 12.2 Two compatibility questions
+
+A newly released local model is accepted only after answering separately:
+
+1. **Runtime compatibility:** can the selected inference runtime execute the architecture correctly and efficiently?
+2. **Agent compatibility:** can Pi/Rikuri use the model reliably for tool calling, context management, planning, editing, verification, and task autonomy?
+
+The compatibility registry records both. The ordinary user sees a simple status such as `Optimized`, `Compatible`, `Experimental`, or `Unavailable`; expert detail remains inspectable.
+
+## 12.3 Execution profile
+
+```text
+model + model revision/quantization
++ inference runtime/version/settings
++ harness (Pi default) + Harness Profile
++ skills/tools
++ machine/node
++ access path/provider
++ privacy/project-trust/security envelope
++ budget/time/retry limits
++ verification plan
+```
+
+The router selects the entire profile rather than a model name alone.
+
+## 12.4 Privacy-preserving hybrid execution
+
+A frontier model may be used without receiving the entire sensitive workspace. Local processing can inspect the real project, reduce the problem to a sanitized/minimal reproduction, send only policy-permitted context to the frontier model, and apply the reasoning locally. “No training” and “zero retention” remain provider properties; Local Only means raw protected content never leaves the owner-controlled execution boundary.
+
+# 13. Local Model Intelligence
+
+Inference systems such as Ollama, LM Studio/llmster, llama.cpp, vLLM, MLX, or future engines provide execution. Pi provides the default agent loop. Rikuri provides the model-aware behavior, security, evaluation, and product integration around both.
+
+| Layer | Responsibility |
+|---|---|
+| Runtime adapter | Architecture support, tokenizer/chat template, model serving, structured-output/tool-call transport |
+| Pi harness adapter | Session/agent loop, tool dispatch, persistent agent execution |
+| Rikuri Harness Profile | Model-family behavior, context policy, planning/edit strategy, allowed tool complexity, subagent policy, known failure modes |
+| Coding/domain profile | Repository workflow, language/build/test procedure, verification |
+| Model Lab | Compare exact model+runtime+harness-profile+hardware identities and learn bounded recommendations |
+
+## 13.1 Model-family profile composition
+
+Profiles should compose rather than duplicate:
+
+```text
+Base Coding
++ model family (Qwen/DeepSeek/...)
++ size/capability override
++ runtime profile
++ hardware profile
++ privacy/project-trust profile
++ language/project profile
+```
+
+A new related checkpoint should first reuse the existing family profile. Only measured incompatibility creates an override. Core Pi/Rikuri harness code changes are the last resort.
+
+## 13.2 Open-harness learning loop
+
+When a model developer updates an open harness, Rikuri development tooling may diff the prompts/tool schemas/agent-loop/context strategy, identify model-specific changes, and evaluate those techniques against current profiles. Borrow techniques; do not inherit an upstream harness as an unconditional dependency.
+
+## 13.3 Automatic parameter and runtime tuning
+
+Runtime/model settings remain at safe developer defaults until evidence shows repeatable task-specific benefit. Exact model revision + quantization + runtime + settings + Harness Profile + hardware form the evaluated execution identity.
+
+## 13.4 Background evaluator daemon
+
+Evaluation runs under resource policy, prefers idle capacity, pauses for heat/battery/interactive load, and treats real verified jobs as evidence. Model/runtime/harness-profile changes trigger selective revalidation.
+
+# 14. Machine Intelligence and Execution
+
+Rikuri must maintain a machine-specific knowledge layer so AI workers can act with relevant local facts rather than repeatedly interrogating the user. Machine context is dynamic and should be retrieved on demand rather than injected wholesale into every prompt.
+
+User: “Bluetooth stopped working again.”  
+-\> Identify target machine  
+-\> Retrieve OS/kernel + Bluetooth hardware + recent upgrades  
+-\> Query service/rfkill/driver/log state  
+-\> Diagnose  
+-\> Prefer known validated remedy if matching prior incident  
+-\> Execute under security envelope  
+-\> Verify controller/service state  
+-\> Record incident/remedy if useful
+
+Known successful novel repairs may graduate into tested Rikuri skills/runbooks. For high-consequence systems, the AI should remain a diagnostician/planner while trusted deterministic code retains execution authority.
+
+# 15. Model Economics and Usage Transparency
+
+AI usage economics must be visible and continuously optimized. Rikuri should maintain a model/provider price catalog, a per-task usage ledger, subscription/quota awareness, local inference estimates, and empirical quality/success metrics.
+
+| **Metric**          | **Requirement**                                                                                                  |
+|---------------------|------------------------------------------------------------------------------------------------------------------|
+| Current execution   | Show model, runtime, access path, and why it was selected when expanded.                                         |
+| Tokens              | Input, output, cached, reasoning, and other provider-exposed token classes.                                      |
+| Actual API cost     | Record provider/broker reported cost when available; do not replace with estimates.                              |
+| Subscription usage  | Track quota/allowance when programmatically exposed; otherwise label status as unavailable.                      |
+| Equivalent API cost | Optional estimate of what subscription-backed work would have cost via API; clearly labeled as not actual spend. |
+| Local cost          | Show \$0 API cost plus optional estimated electricity/runtime/hardware accounting.                               |
+| Task economics      | Measure cost per successful verified task, retries, latency, and quality—not token price alone.                  |
+| Advisor             | Recommend better model sibling/reasoning level/access path based on recent task performance and prices.          |
+| Budget control      | Allow per-task/project/day/month budgets and Economy/Auto/Best/Private routing modes.                            |
+| Team economics      | Estimate and measure the marginal value of one agent vs specialist team vs swarm, including retries, evaluator cost, latency, and verified success. |
+
+> **Router separation**
+>
+> Rikuri should distinguish model selection from provider/backend selection. A broker such as OpenRouter may be useful for API provider routing, pricing, fallback, and accounting, but Rikuri remains the higher-level router across native subscriptions, APIs, brokers, local models, tools, and machines.
+
+# 16. Personal Mesh, Sync, and Backup
+
+Rikuri distinguishes **remote control** from **state replication**. A user should be able to securely reach a home Rikuri Node before the more complex Personal Mesh replication system exists.
+
+## 16.1 Rikuri Link — the last mile
+
+A phone, tablet, laptop, or another computer acts as a thin client to the user's own Rikuri Node. The node retains persistent agents, files, credentials, memory, tools, project state, and local models whenever practical. Remote clients emphasize chat/voice, task status, approvals, file/photo handoff, notifications, and—on larger devices—the full Workspace.
+
+Initial transport is **Tailscale/WireGuard-based private connectivity**, requiring no public port forwarding. Later Rikuri gains its own device identity plus direct/rendezvous/end-to-end encrypted relay path; Tailscale remains an available fallback connector.
+
+Remote access does not mean cloud ownership: a frontier model may still be called for reasoning, but the persistent working environment remains on the user's node and only policy-permitted context is sent outward.
+
+## 16.2 Personal Mesh replication
+
+Selected canonical state may later replicate among owner devices with an optional hub. Devices remain usable offline. Stable identities, event/version semantics, encryption, device revocation, key rotation, conflict handling, and backup remain distinct from the remote-control channel.
+
+## 16.3 Data-specific sync policy
+
+- knowledge/decisions/project metadata: structured/event sync;
+- conversation archive: append-only/versioned sync;
+- source code: Git/existing source control;
+- documents/assets: policy-scoped object/file sync;
+- large models/datasets: location-aware catalog, not automatic sync;
+- indexes/caches: rebuild locally;
+- machine state: device-specific;
+- secrets: never copied merely because knowledge is shared.
+
+## 16.4 Backup is separate from sync
+
+Synchronization propagates current state; backup preserves recoverable history. Deletion sync must not silently destroy the user's recovery history, while managed restore must respect cryptographic forgetting semantics.
+
+# 17. Portability and Deployment
+
+Rikuri is cross-platform at the product level while using a deliberate implementation order.
+
+| Priority | Platform | Role |
+|---|---|---|
+| Tier 1 reference | Ubuntu LTS | Primary development/reference platform for agent execution, sandboxing, local models, Docker/CUDA, headless services, and Rikuri Link |
+| Tier 1 continuous | macOS | Continuous core validation and native adapter target; reuse appropriate AISecurity Rust/Swift work |
+| Tier 1 later implementation | Windows 11 | Full adapter after Linux/macOS prove the OS Capability API |
+| Optional enhanced | Omarchy/other Linux | Rich adapter when installed; never a required base |
+
+The core exposes an **OS Capability API** rather than teaching every model three operating systems. Normalized calls such as `service.status`, `package.install`, `process.inspect`, `sandbox.create`, or `window.move` map to the appropriate platform adapter and capability policy.
+
+Deployment modes remain standalone local, owner multi-node/Link, Personal Mesh/hub, and later business/server. Canonical data formats and identities remain portable across operating systems.
+
+# 18. Observability, Health, and Recovery
+
+| **Area**         | **Required health evidence**                                                       |
+|------------------|------------------------------------------------------------------------------------|
+| Core services    | Process/service health, last heartbeat, queue/checkpoint status, errors            |
+| Security modules | Per-module heartbeat, last success, enforcement state, event count, coverage       |
+| Sync/mesh        | Per-device last sync, pending operations, conflict state, hub reachability         |
+| Model providers  | Availability, auth state, quota/cost telemetry availability, recent errors/latency |
+| Local inference  | Loaded runtime availability, model health, memory/resource pressure                |
+| Automations      | Last run, next run, result, retries, waiting/blocked reason                        |
+| Projects/jobs    | Current state, last verified outcome, checkpoint, responsible worker               |
+
+The normal UI should summarize these as simple Healthy / Degraded / Critical states. Detailed diagnostics must be available without being constantly visible.
+
+# 19. Data and State Model
+
+## 19.1 “Single source of truth” means declared authority
+
+Rikuri must not require all data to live physically in one database. Instead, every durable object/resource type must have a declared authoritative representation and stable identity. Examples: Git is authoritative for source code; the original photo/audio/video file is authoritative for media; the raw conversation archive is authoritative for historical chat; Rikuri structured state is authoritative for project status, idea lifecycle, governance, relationships, and event history. Human-readable Markdown may be authoritative for selected user notes or may be a synchronized projection according to the object’s policy.
+
+If a derived index disagrees with the authoritative live resource, the authoritative resource wins. High-impact actions must resolve indexed references to the current authoritative object before execution.
+
+## 19.2 Stable IDs and strong-core/flexible-extension schema
+
+Every durable Rikuri-managed entity—user, device, project, idea, knowledge item, conversation, task, decision, artifact, model profile, agent session, event, etc.—must receive a stable identifier independent of file path, title, provider, or device. Renaming or moving a resource must not break its conceptual history.
+
+The canonical schema should keep a strong stable core for identity, ownership, timestamps, provenance, version, authority, permissions, lifecycle state, relationships, and events while permitting flexible domain metadata and future extension without redesigning the entire store.
+
+## 19.3 Canonical vs derived
+
+| **Canonical / durable**                | **Derived / rebuildable**         |
+|----------------------------------------|-----------------------------------|
+| User/workspace identity and policies   | Vector embeddings                 |
+| Projects and explicit current state    | Semantic/lexical indexes          |
+| Event ledger and decisions             | Knowledge-graph projection caches |
+| Raw conversation/source archive        | Context summaries                 |
+| Normalized knowledge and relationships | Model recommendation caches       |
+| Skills and runbooks                    | Search caches                     |
+| Original documents/code locations      | UI thumbnails/previews            |
+| Sharing scopes and resource registry   | Transient worker scratch data     |
+
+## 19.4 Core entities
+
+- User / Workspace
+
+- Locale / Language Profile
+
+- Device / Machine
+
+- Project
+
+- Task / Job
+
+- Responsibility / Routine
+
+- Conversation / Source
+
+- Knowledge Item / Entity
+
+- Idea / Hypothesis / Inspiration
+
+- Decision
+
+- Skill / Runbook
+
+- Artifact / Resource
+
+- Workspace / Window / Layout / Link Group
+
+- Model
+
+- Runtime / Harness
+
+- Tool / Capability
+
+- Execution Event
+
+- Security Decision
+
+- Usage / Cost Record
+
+- Sync Operation / Version
+
+# 20. Domain Workspace Strategy
+
+Rikuri should not build separate “mini-products” with independent memory for every profession. Coding, writing, research, study, marketing, product development, media creation, business planning, trading, and future specialties should reuse the same canonical primitives and add domain-specific windows, skills, evaluators, and knowledge projections.
+
+## 20.1 Coding as one workspace specialization
+
+Coding uses source files, Git branches/worktrees, diffs, tests, terminals, browsers, previews, code indexes, and coding-specialist agents. The user may observe parallel work through linked windows while Rikuri manages isolation, integration, and review under the common project/event/security model.
+
+## 20.2 Writing as another workspace specialization
+
+Writing uses manuscripts/reports/scripts, comments/revisions, research sources, idea cards, style guidance, structured outlines, and optional domain canon. Rikuri should initially integrate mature open or automatable editors rather than recreate a full office suite solely for ownership. A later Rikuri-native editor may provide deeper semantic structure while preserving import/export to common user-owned formats.
+
+For novels and other long-form work, optional structures may include characters, locations, timeline, scenes/chapters, plot relationships, world rules, voice/style guidance, and **Canon** distinct from speculative ideas. Continuity agents may detect contradictions, while semantic/narrative refactoring proposes coherent changes across affected passages rather than performing blind global replacement.
+
+## 20.3 Research, study, marketing, product, and creator work
+
+The same workspace and Knowledge/Idea Fabric should support parallel research, hypothesis comparison, lecture/media notes, campaign concepts, product ideas, business opportunities, YouTube/TikTok scripts, design inspiration, and other creative or analytical work. Domain templates may change the default windows and evaluators but must not create isolated knowledge silos.
+
+# 21. Business and Multi-User Readiness
+
+The personal product should not be burdened by enterprise UI, but its core boundaries should avoid blocking later business use.
+
+- Separate user, device, worker, project, and organization identities.
+
+- Role- and capability-based access rather than assuming one omnipotent agent.
+
+- Project/organizational memory distinct from private personal memory.
+
+- Auditability for actions, data access, model/provider use, and approvals.
+
+- Policy-driven data residency/provider/privacy constraints.
+
+- Secret management independent of model prompts and conversation memory.
+
+- Administrative cost/budget controls and model allow/deny policies.
+
+- Export and deletion boundaries compatible with organizational governance.
+
+- Per-user and organization-default locale/language policy so multilingual teams can share canonical knowledge without forcing one interface or working language.
+
+
+Business/team deployments must preserve the same user-alignment principles while introducing organization policy, role-based authority, separation of personal and organization knowledge, audit, approval delegation, and administrator controls. Enterprise connectors such as Slack, Teams, Asana, or project systems should be discoverable when relevant but invisible to users who do not use them.
+
+# 22. Success Metrics
+
+| **Metric**            | **Target / intent**                                                                                                                             |
+|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| Continuity            | A different model/runtime can continue an active project with no user restatement of recorded state in ≥95% of tested handoffs.                 |
+| Knowledge retrieval   | Top-level search finds the correct project/chat/note/resource for representative known-item queries in ≥95% of benchmark cases.                 |
+| Distillation quality  | Human review finds ≥90% of important decisions/ideas/questions correctly classified, with low false promotion of brainstorming to decisions.    |
+| Execution reliability | For supported repair/task benchmarks, ≥90% of completed executions satisfy independent post-action verification without manual command editing. |
+| Cost efficiency       | Automatic routing reduces spend versus “always strongest model” baseline while maintaining target verified success rate.                        |
+| Security health       | Required security modules report measurable heartbeat/coverage; no “Protected” status while mandatory protection is known degraded.             |
+| Portability           | Restore/migrate a test workspace to another supported OS/device and recover canonical knowledge/projects without manual reconstruction.         |
+| Mesh reliability      | Selected shared state converges after offline concurrent edits with no silent data loss in test scenarios.                                      |
+| UX simplicity         | Common user flows—ask, find project, review cost, see health, share knowledge—require no infrastructure terminology.                            |
+| Assistant usefulness  | A newly configured user can triage email and coordinate a calendar request without creating agents/workflows or understanding integration plumbing. |
+| Attention quality     | No unauthorized proactive calls/messages/recurring jobs; routine multi-agent activity is aggregated with low nuisance-interruption rate.          |
+| Governance quality    | Coordinator/evaluator tests detect strategy drift, unsupported conclusions, or missed escalation in defined benchmark scenarios.                 |
+| Model Lab usefulness  | Newly added compatible models receive a baseline profile and their routing recommendations improve measurably from real-task outcomes.             |
+| Privacy enforcement   | Local Only/Secret test data cannot leave through supported model, browser, connector, upload, shell/network, or GUI egress paths.                  |
+| Internationalization  | Core workflows pass localization/format/layout tests in all seven initial language targets; cross-lingual search retrieves representative known items without altering canonical originals. |
+
+# 23. Staged Roadmap
+
+The build order is dependency-driven: each stage must be wired into the running system and pass its Stage Gate before dependent feature work becomes active. Interface skeletons may appear early when they prevent architectural rework; rich behavior waits for its stage.
+
+| Stage | Scope | Exit intent |
+|---|---|---|
+| **0 — Trusted Core / Foundation-0** | Six gate-closed stages: engineering/kernel; ChatGPT and Markdown import, provenance, lexical search, managed backup/forget; minimal knowledge/policy/budget; Ubuntu envelope and project trust; Pi local coding and cloud/local handoff; one-window English Home. Continuous macOS core tests, native macOS assurance experimental. | One coherent, recoverable, bounded single-node proof with owner-runnable demonstrations and linked evidence. |
+| **1 — Pi Coding Dogfood + Native Developer Platform** | Add Claude and read-only Git/project manifest importers after F2/F9; dogfood Pi on one real Rikuri change; then Monaco, terminal/diff/tests, LSP/DAP/Git, richer coding profiles. | Rikuri can safely help build Rikuri on Ubuntu through its own coding surface. |
+| **2 — Sterling Workspace Substrate** | First-class windows; freeform/tiled layouts; Context/Agent/Prompt links; saved layouts; detach/multi-monitor; status model Working/Blocked/Done/Idle; plugin/window API. | Multiple chats/agents/code/terminal/test windows coexist without IDE/workbench lock-in. |
+| **3 — Rikuri Link / Remote Control** | Tailscale initial connector; phone/tablet/laptop thin client; node identity/presence; approvals/status/chat/voice/file handoff; later native direct/rendezvous/E2E relay with Tailscale fallback. | User can securely “phone home” to the owner-controlled Rikuri Node. |
+| **4 — Model Lab + Intelligent Routing** | Dynamic discovery; compatibility registry; open-harness diff/eval; hardware fit; Auto routing; price/quota/local-cost advisor; controlled native-harness exceptions. | Routing is evidence-based across model+runtime+harness+machine, not model-name folklore. |
+| **5 — Browser, Connectors & Personal Assistant** | Browser/computer worker, email/calendar/contacts, research/travel/shopping, Attention Firewall maturity, just-in-time connections. | Daily assistant workflows operate through the same trust/state model. |
+| **6 — Multi-Agent Governance & Project Graph** | Evaluate Paperclip-like control-plane mechanisms; adopt or adapt event wakeups, task leases, worker adapters, durable runs, approvals, budget stops, and team templates behind Rikuri-owned contracts. Add coordinator/evaluator, durable DAG, Project Lifecycle Kernel, and Project Graph after single-worker gates. | An intent-led team can perform and verify work with bounded authority and durable ProjectState; complexity is shown only when useful. |
+| **7 — Personal Mesh & Persistent Responsibilities** | Encrypted replication, optional hub, cross-device resource catalog, durable routines, quiet digests, learned skills. | One Personal Intelligence spans owner devices without sync becoming canonical authority. |
+| **8 — Rich Domain/Companion Workspaces** | Writing/study/research/media/meeting/live companion and specialized domain packs. | Domain power reuses common windows, state, ideas, security, and execution. |
+| **9 — Business/Organization Readiness** | Tenancy, organizational memory, role policy, audit/admin, shared projects, enterprise deployment. | Institutional use without weakening personal/user-alignment foundations. |
+
+> **Stage rule:** no downstream stage is declared active merely because its calendar date arrived. The prior dependency gate must be green, or the checklist records an explicit DEFERRED/RESEQUENCED decision with reason, impact, new position, owner, and acceptance conditions.
+
+# 24. Risks and Mitigations
+
+| **Risk**                                     | **Mitigation**                                                                                                               |
+|----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| Over-engineering before usefulness           | Ship a coherent single-device core first; preserve interfaces for later mesh/business complexity.                            |
+| Dependency lock-in                           | Wrap external harnesses, routers, runtimes, and indexes behind Rikuri-owned interfaces; canonical state remains independent. |
+| Memory pollution / false facts               | Classify provenance/confidence/status; preserve source; require user/verification pathways for important decisions.          |
+| Local-model regressions                      | Version model profiles and evals; do not assume a new model/fine-tune is better because it is newer.                         |
+| Agent security bypass                        | Make security boundary mandatory below runtime selection; capability enforcement must not depend solely on model compliance. |
+| Approval fatigue                             | Use risk classes and bounded authority; surface intent/consequence rather than routine low-risk command prompts.             |
+| Sync corruption/conflicts                    | Local-first event/operation model, immutable/versioned history, semantic conflict review, backup separate from sync.         |
+| Cost optimization harms quality              | Optimize cost per verified success with quality floors and automatic escalation; user can select Best mode.                  |
+| Provider changes / subscription restrictions | Maintain multiple access paths and explicit capability/entitlement metadata; avoid undocumented scraping as a foundation.    |
+| Index becomes mistaken source of truth       | Always resolve to authoritative current file/repo/system state before modifying or making high-stakes claims.                |
+| Coordinator monoculture / blind spot           | Use replaceable coordinators, diverse Strategy Council when warranted, independent evaluation, evidence-first adjudication, and human decision packets. |
+| Agent swarm waste / complexity                | Start with one capable agent; scale only when parallelism/specialization/economics justify it; measure cost per verified success.                       |
+| Surprise autonomy / attention overload        | Reactive default, explicit responsibility grants, central Attention Firewall, digest aggregation, calls off by default.                               |
+| Sensitive-data exfiltration                   | Privacy classification before context assembly, universal egress enforcement, secret broker, browser isolation, local-only processing, audit.        |
+| Malicious/tampered open models                | Exact revision/hash identity, provenance/signature when available, safe formats, quarantine, dependency/custom-code review, sandboxed evaluation.     |
+| Self-improvement destabilizes core            | Separate adaptive learned state from protected core; require developer-controlled testing/versioning/deployment for core changes.                      |
+| Localization drift / language silos           | Externalize locale resources, preserve original-language canonical data, version translations, test cross-language retrieval, and include locale competence in model profiles. |
+| Workspace becomes intimidating                 | Keep Home/Quick Assist minimal; make workspace optional; provide templates, natural-language layout control, and progressive disclosure.               |
+| Window/agent visual clutter                     | Work-centric status, collapsible controls, attention indicators, saved layouts, and graph summaries rather than exposing every worker by default.       |
+| Ideas become unmanageable                       | Capture freely but classify/link/dedupe in background; distinguish Idea from Decision/Canon; surface organization views only when useful.               |
+| Multiple stores drift                           | Declare authority per object, use stable IDs/events, treat indexes/embeddings/graph projections as derived, and resolve live resources before action.    |
+| Domain workspaces fork the product              | Reuse common project/window/link/knowledge/event/security primitives; domain features are projections and skills, not new state silos.                  |
+| Untrusted repository executes code during inspection | Project starts read-only/untrusted; inspect executable metadata; sandbox descendants; explicit scoped trust promotion; regression fixtures include malicious Git config/hooks/build scripts. |
+| Cloud-agent convenience expands trust boundary | Keep persistent agent/workspace on owner-controlled nodes when practical; send minimal/sanitized context to frontier models; expose privacy mode simply. |
+
+# 25. Open Technical Decisions
+
+- Compare Paperclip at a pinned revision as a reference implementation, including license and dependency implications. Decide per mechanism whether to reuse code, adapt a pattern, or build a Rikuri-specific implementation; documentation is evidence of design, not proof of production reliability. Paperclip cannot become authority over AISecurity, the Knowledge Context Compiler, or canonical ProjectState.
+
+The following are intentionally not frozen by this PRD. They should be evaluated against the requirements rather than selected because they are fashionable.
+
+- Desktop shell/UI framework (e.g., Tauri-class vs alternatives).
+
+- Personal-store implementation and SQLite/PostgreSQL boundary.
+
+- Canonical knowledge schema and event-log/CRDT strategy.
+
+- Universal search implementation: lexical, vector, code/symbol, graph, reranking.
+
+- Exact Pi integration/API boundary, extension/package strategy, and the criteria for permitting a native-harness exception. Pi is the default harness substrate; Qwen/DeepSeek/Hermes-class harnesses are references/benchmarks unless evidence justifies an adapter.
+
+- Native frontier runtime integration strategy and entitlement/auth handling.
+
+- Linux and Windows sandbox/enforcement primitives; macOS entitlement-dependent enhancements.
+
+- Rikuri Link native direct/rendezvous/relay protocol and device identity design after the initial Tailscale connector; Personal Mesh replication remains a separate protocol problem.
+
+- Obsidian bidirectional editing semantics and conflict handling.
+
+- Durable workflow/checkpoint engine choice for long-running responsibilities.
+
+- Model-provider price catalog ingestion and subscription quota telemetry strategy.
+
+- Hardware-cost estimation policy for local inference.
+
+- Business multi-tenancy and organization boundary implementation.
+
+
+- Constitution representation, amendment/versioning workflow, and relationship to policy-as-code.
+
+- Coordinator/evaluator routing strategy and management scorecard metrics.
+
+- Strategy Council trigger policy, diversity criteria, adjudication method, and scenario-packet schema.
+
+- Attention Firewall implementation and cross-device notification/voice/telephony policy.
+
+- Email/calendar/contact connector architecture and just-in-time connection UX across Google/Microsoft/Apple ecosystems.
+
+- Audio/video/lecture capture architecture and local-first transcription/diarization/privacy controls.
+
+- Universal egress enforcement strategy across browser, shell, GUI/computer use, plugins/connectors, custom code, and network layers.
+
+- Secret broker / credential proxy architecture and financial/crypto signing boundary.
+
+- Trusted model-registry sources, provenance/signature policy, artifact hashing/quarantine, and model-license policy.
+
+- Per-modality Model Lab evaluation suites and background resource scheduler.
+
+- Localization framework/resource format, translation workflow, fallback rules, terminology/glossary management, and community/developer contribution process for future language packs.
+
+- Multilingual embedding/reranking strategy, cross-lingual search quality thresholds, language detection, and per-language Model Lab evaluation suites.
+
+- Multilingual speech-recognition/synthesis providers and local-vs-cloud privacy policy for voice in each language.
+
+- Sterling-style Workspace implementation: internal/freeform window manager, native detach, multi-monitor/macOS Spaces behavior, persistence, accessibility, GPU/rendering cost, and status aggregation.
+
+- Project Graph representation, layout algorithm, incremental event updates, collapse/expand semantics, and mapping between graph nodes and work windows.
+
+- Context/Agent/Prompt Link protocol, lock/follow semantics, broadcast isolation, and state handoff when a window switches models.
+
+- Rikuri Plugin API capability model, sandbox/permission lifecycle, provenance/pinning/update/rollback, and selective VS Code API compatibility boundary.
+
+- OS Capability API implementation details for Ubuntu/macOS/Windows, including privilege brokerage and window-control boundaries.
+
+- Rich-text/writing editor strategy: integrate an open embeddable editor, automate LibreOffice/ONLYOFFICE-class tools, build a Rikuri-native structured editor later, or combine approaches.
+
+- Idea capture/share-sheet/mobile architecture, multimodal transcription/classification, handwriting extraction, and privacy-preserving local preprocessing.
+
+- Canonical structured-store schema and authority registry: which entity types are authoritative in SQL/event state, Markdown, Git, original files, or external live systems.
+
+# 26. Definition of Foundation Release
+
+The Foundation Release is a **later product milestone**, distinct from the narrower Foundation-0 technical release defined by the Stage Plan. It remains intentionally smaller than the complete vision. The items below retain the broader product promise, including voice, meaning-based retrieval, fuller knowledge distillation, attention policy, and seven-language support; they are not all June 2027 gates. Foundation-0 closes only on W1 and F1–F10 as narrowed in ADR 0000 and the live Stage Plan.
+
+1. A user installs a blank Rikuri instance and receives the simple Home experience: one text/voice intent surface plus a small capability launcher, without configuring agent frameworks or editing prompts.
+
+2. Core durable entities use stable IDs and declared authority; canonical state can be backed up/exported and restored to a fresh installation without reconstructing knowledge manually.
+
+3. The user can capture a text or voice idea without filing it, later retrieve it by meaning, inspect its original/provenance, and link it to a project while keeping Idea distinct from Decision/Fact/Canon.
+
+4. Rikuri imports or captures conversations and distills them into searchable topic knowledge with source provenance and human-readable Markdown/Obsidian output.
+
+5. Rikuri discovers/registers at least one live project/resource and can find it by concept, then resolve the current authoritative source before read/review or supported modification.
+
+6. The user connects at least one frontier model/access path and one local-model runtime; Rikuri can hand a project/task between execution profiles without asking the user to restate recorded context, while privacy mode remains enforceable.
+
+7. A local model executes through Pi using a Rikuri Harness Profile; runtime compatibility and agent compatibility are recorded separately, and a family-profile override can be changed without modifying the core harness.
+
+8. One coding/project-assistance vertical slice opens an untrusted project read-only, explicitly promotes execution trust, uses Pi to inspect/edit/test within the Ubuntu envelope, and verifies the resulting diff/tests.
+
+9. Attention policy prevents unauthorized proactive calls/messages/recurring responsibilities and consolidates routine status rather than exposing agent chatter.
+
+10. At least one low-risk machine/tool task passes through the common security boundary and is independently verified against the intended outcome.
+
+11. Local Only and Secret test data demonstrate enforced privacy behavior in the supported Foundation paths: Local Only raw content cannot be sent externally, and Secret test credentials are never placed in model context.
+
+12. AISecurity-derived health reporting proves required protection modules are healthy or shows Degraded rather than silently claiming protection.
+
+13. Rikuri records per-task model/runtime/cost metadata sufficient to explain which execution profile was used and to support later cost-per-success optimization.
+
+14. The event ledger can reconstruct recent project activity and support continuation after restart or worker failure.
+
+15. The core interface can be switched among English, Spanish, Simplified Chinese, Traditional Chinese (Taiwan), Japanese, French, and German; representative Home, Workspace, approval, and search flows render correctly, and a cross-lingual query can retrieve relevant supported-language source material without rewriting the canonical original.
+
+> **Not required for the Foundation Release**
+>
+> The full floating/tiled Workspace, Project Graph, multi-monitor detachment, complete Compare Mode, production Rikuri Link mobile client/native relay, production multi-device mesh, hundreds-of-agent swarms, mature writing/story-canon environment, complete travel/purchase automation, all telephony surfaces, advanced multilingual voice/media coverage, bounded autonomous extension updates, business tenancy, or complete macOS/Linux/Windows enforcement parity may ship in later stages. The foundation must make them additive rather than requiring a replacement of canonical data, identity, language architecture, governance, security, routing, or event semantics.
+
+# Appendix A. Priority Requirement Matrix
+
+P0 = foundational/required for the corresponding product release; P1 = important next capability; P2 = later enhancement. Priority is not a Foundation-0 delivery date: the live Stage Plan and ADR 0000 define the smaller Foundation-0 acceptance subset. The detailed requirements above remain the broader product baseline; this matrix is a compact index.
+
+| **ID**    | **Pri** | **Requirement**                    |
+|-----------|---------|------------------------------------|
+| CORE-001  | P0      | Persistent project state           |
+| CORE-002  | P0      | Append-only event ledger           |
+| CORE-003  | P0      | Capability planner                 |
+| CORE-004  | P0      | Durable jobs                       |
+| CORE-005  | P1      | Persistent responsibilities        |
+| CORE-006  | P0      | Transactional State Evolution      |
+| CORE-007  | P0      | No silent loss or false-green status |
+| MEM-001   | P0      | Context compiler                   |
+| MEM-002   | P0      | Memory classes                     |
+| MEM-003   | P0      | Provenance                         |
+| MEM-004   | P0      | Temporal state                     |
+| MEM-005   | P1      | Learned procedures                 |
+| MEM-006   | P0      | Knowledge Context Compiler        |
+| KNOW-001  | P0      | Conversation archive               |
+| KNOW-002  | P0      | Topic segmentation                 |
+| KNOW-003  | P0      | Statement classification           |
+| KNOW-004  | P0      | Entity resolution and dedupe       |
+| KNOW-005  | P0      | Obsidian projection                |
+| KNOW-006  | P1      | Semantic knowledge graph           |
+| KNOW-007  | P1      | Thought trail                      |
+| PROJ-001  | P0      | Project registry                   |
+| PROJ-002  | P0      | Live resource resolver             |
+| PROJ-003  | P0      | Universal search                   |
+| PROJ-004  | P1      | Code-aware indexing                |
+| PROJ-005  | P1      | Resource catalog                   |
+| ROUTE-001 | P0      | Model-independent state            |
+| ROUTE-002 | P0      | Native-runtime preservation        |
+| ROUTE-003 | P0      | Native-harness exception path      |
+| ROUTE-004 | P0      | Access-path routing                |
+| ROUTE-005 | P1      | Automatic escalation/de-escalation |
+| ROUTE-006 | P0      | Simple privacy/execution modes     |
+| ROUTE-007 | P0      | Harness compatibility registry     |
+| LOCAL-001 | P0      | Model discovery                    |
+| LOCAL-002 | P0      | Model profile                      |
+| LOCAL-003 | P0      | Pi-based coding behavior           |
+| LOCAL-004 | P1      | Open-harness learning loop         |
+| LOCAL-005 | P1      | Evaluation suite                   |
+| LOCAL-006 | P1      | Adaptive profiles                  |
+| LOCAL-007 | P1      | Constrained output                 |
+| MACH-001  | P0      | Machine profile                    |
+| MACH-002  | P0      | Live state retrieval               |
+| MACH-003  | P0      | Observe-diagnose-act-verify loop   |
+| MACH-004  | P0      | OS Capability API                  |
+| MACH-005  | P0      | Ubuntu reference adapter           |
+| MACH-006  | P1      | Incident/remedy memory             |
+| MACH-007  | P1      | Multi-machine routing              |
+| TOOL-001  | P0      | Tool hierarchy                     |
+| TOOL-002  | P0      | Skill packages                     |
+| TOOL-003  | P1      | Teach by demonstration             |
+| TOOL-004  | P1      | Scheduled/event routines           |
+| TOOL-005  | P1      | Worker coordination                |
+| SEC-001   | P0      | Common security boundary           |
+| SEC-002   | P0      | Capability envelopes               |
+| SEC-003   | P0      | Risk-class execution               |
+| SEC-004   | P0      | Validated runbooks for high risk   |
+| SEC-005   | P0      | Financial safety boundary          |
+| SEC-006   | P0      | Security health supervisor         |
+| SEC-007   | P0      | Quiet degradation alerts           |
+| SEC-008   | P0      | Audit ledger                       |
+| SEC-009   | P1      | Intent consistency                 |
+| SEC-010   | P1      | Transactional changes and undo     |
+| SEC-011   | P0      | Project read-vs-execute trust          |
+| SEC-012   | P0      | Descendant-process containment          |
+| LINK-001  | P1      | Phone-home remote access                |
+| LINK-002  | P1      | Tailscale initial connector             |
+| LINK-003  | P1      | Durable remote reconnect                |
+| LINK-004  | P2      | Native Rikuri E2E transport             |
+| LINK-005  | P2      | Multi-node execution placement          |
+| DEV-001   | P1      | Monaco editor Window                    |
+| DEV-002   | P1      | Native developer services               |
+| DEV-003   | P1      | Rikuri Plugin/Window API                |
+| DEV-004   | P1      | Verified plugin lifecycle               |
+| DEV-005   | P2      | Selective VS Code API compatibility     |
+| ASST-001  | P0      | Ready assistant                      |
+| ASST-002  | P0      | Email triage and drafting             |
+| ASST-003  | P0      | Calendar/contacts coordination        |
+| ASST-004  | P1      | Meeting and lecture intelligence      |
+| ASST-005  | P1      | Travel and shopping assistance        |
+| ASST-006  | P1      | Natural voice surface                 |
+| ATTN-001  | P0      | Attention Firewall                    |
+| ATTN-002  | P0      | Reactive by default                   |
+| ATTN-003  | P0      | Digest aggregation                    |
+| ATTN-004  | P1      | Learned attention preference          |
+| GOV-001   | P0      | Decision-rights policy                |
+| GOV-002   | P0      | Replaceable coordinator               |
+| GOV-003   | P1      | Automatic team sizing                 |
+| GOV-004   | P1      | Strategy Council                      |
+| GOV-005   | P1      | Scenario decision packet              |
+| GOV-006   | P1      | Single user communication path        |
+| GOV-007   | P1      | Independent coordinator evaluation    |
+| GOV-008   | P1      | Durable multi-agent control plane     |
+| GOV-009   | P1      | Intent-led team assembly              |
+| GOV-010   | P1      | Lifecycle-specific coordination       |
+| GOV-011   | P1      | Reference implementation evaluation   |
+| IMP-001   | P0      | Layered governance artifacts          |
+| IMP-002   | P1      | Operational learning                  |
+| IMP-003   | P1      | Improvement proposals                 |
+| IMP-004   | P0      | Protected-core boundary               |
+| IMP-005   | P2      | Bounded extension self-update         |
+| MDL-001   | P1      | Capability-driven model search        |
+| MDL-002   | P1      | Hardware-fit screening                |
+| MDL-003   | P1      | Evidence-ranked recommendation        |
+| MDL-004   | P1      | Approved acquisition                  |
+| MDL-005   | P1      | Supply-chain screening                |
+| MDL-006   | P1      | Task-specific baseline evaluation     |
+| MDL-007   | P1      | Background probation and ongoing eval |
+| MDL-008   | P1      | Task-specific parameter profiles      |
+| MDL-009   | P1      | Evaluated execution identity          |
+| UI-001    | P0      | Universal intent surface               |
+| UI-002    | P0      | Minimal Home launcher                  |
+| UI-003    | P0      | Progressive disclosure                 |
+| UI-004    | P1      | First-class work windows               |
+| UI-005    | P1      | Freeform + tiled layout                |
+| UI-006    | P1      | Native detach and multi-monitor        |
+| UI-007    | P1      | Context Link Groups                    |
+| UI-008    | P1      | Agent Link                             |
+| UI-009    | P1      | Prompt Link / broadcast                |
+| UI-010    | P1      | Per-window model selector              |
+| UI-011    | P1      | Compare Mode                           |
+| UI-012    | P1      | Project Graph                          |
+| UI-013    | P1      | Live Follow                            |
+| UI-014    | P1      | Saved workspace layouts                |
+| UI-015    | P1      | Conversational workspace control       |
+| UI-016    | P0      | Native ecosystem freedom               |
+| IDEA-001  | P0      | Frictionless Idea Inbox                |
+| IDEA-002  | P0      | Preserve original capture              |
+| IDEA-003  | P0      | Stable idea identity and state         |
+| IDEA-004  | P0      | Automatic linking without forced filing|
+| IDEA-005  | P0      | Semantic and exact recovery            |
+| IDEA-006  | P1      | Quiet resurfacing                      |
+| IDEA-007  | P1      | Knowledge Web + Idea Web               |
+| IDEA-008  | P1      | Cross-domain reuse                     |
+| DOM-001   | P1      | Common workspace substrate             |
+| DOM-002   | P1      | Coding workspace                       |
+| DOM-003   | P1      | Writing editor integration             |
+| DOM-004   | P1      | Writing assistance tools               |
+| DOM-005   | P2      | Story/long-form canon                  |
+| DOM-006   | P2      | Semantic/narrative refactoring         |
+| DOM-007   | P2      | Parallel section work                  |
+| DOM-008   | P1      | Visual idea/sticky-note board          |
+| DOM-009   | P1      | Study workspace                        |
+
+# Appendix B. Example User Journeys
+
+## B.1 Search and continue a forgotten research thread
+
+- User asks: “What have I done related to KV cache?”
+
+- Rikuri searches topic knowledge, original conversations, projects, code index, decisions, experiments, and resources across the owner’s catalog.
+
+- Rikuri returns a categorized result including a project such as Lean_llama.cpp on the Ryzen machine and relevant prior conversations/notes.
+
+- User says: “Continue the 2-bit divergence experiment.”
+
+- Rikuri loads current project state, resolves the live repository, selects a suitable coding/runtime profile, executes within policy, verifies tests/results, and updates project state.
+
+## B.2 Troubleshoot a Linux Bluetooth regression
+
+- User says: “Bluetooth stopped working again.”
+
+- Rikuri identifies the intended machine, retrieves OS/kernel, Bluetooth hardware, recent upgrade history, prior incidents, and live service/driver state.
+
+- If a validated prior remedy matches, Rikuri may use it under the appropriate risk policy; otherwise a frontier/local specialist investigates.
+
+- Rikuri executes only the necessary bounded changes and verifies service/controller functionality afterward.
+
+- If the repair is novel and repeatedly successful, Rikuri can propose converting it into a tested reusable skill/runbook.
+
+## B.3 Cross-model project delegation
+
+- User asks for competitor research, Python analysis, a frontend prototype, and creative assets.
+
+- Capability Planner decomposes the goal and chooses execution profiles based on current model/runtime/tool strengths and budget.
+
+- Research may use a superior browsing runtime; code may use a native coding harness; analysis may use Python; design may use a creative connector/computer worker.
+
+- Every worker reads/writes the same Rikuri project state and event ledger rather than isolated vendor chat memory.
+
+- Rikuri verifies outputs, assembles the result, records cost, and retains decisions/knowledge for later continuation.
+
+## B.4 Three-computer Personal Mesh
+
+- User marks Rikuri architecture knowledge as “My devices,” keeps Bitcoin machine state device-only, and keeps a large model on Ryzen only.
+
+- Mac and Ryzen both maintain local copies of shared canonical knowledge; optional hub relays changes when the devices are not online simultaneously.
+
+- Windows later reconnects and receives the shared knowledge but not device-scoped secrets or large model files.
+
+- Project registry remains aware of code/data located on other machines and offers Browse/Open/Clone or remote execution according to permissions.
+
+- Backup retains prior versions independently of synchronization so accidental deletion can be recovered.
+
+## B.5 Out-of-box executive assistant
+
+- User installs Rikuri and says, “Check my email and tell me what I need to deal with today.”
+- Rikuri asks to connect only the user’s actual email provider, explains read/draft/send authority in human terms, and completes triage.
+- User says, “Reply to the important appointment email and set up the meeting.” Rikuri drafts/sends or requests the appropriate approval, checks the calendar, and creates the event.
+- The completed interaction updates contacts/commitments/project knowledge as appropriate; no agent or workflow setup is exposed.
+
+## B.6 Lecture companion
+
+- User says, “I’m starting this online lecture. Take notes.”
+- Rikuri uses available captions/transcript or permitted local audio capture, respecting privacy classification and site policy.
+- It creates structured notes, concepts, examples, questions, and source provenance.
+- Afterward the user says, “I didn’t understand backpropagation—teach it differently, then quiz me.” Rikuri teaches from the actual lesson context and records useful study state.
+
+## B.7 Multi-agent research with human scenario decision
+
+- User defines an objective but lacks deep domain expertise.
+- Coordinator recognizes novelty/high uncertainty and invokes a Strategy Council with diverse models/skills.
+- Council gathers evidence and produces three viable approaches; an independent evaluator challenges unsupported claims and compares expected cost/risk.
+- Rikuri presents 2–3 human-readable scenarios and recommends one. The user makes the consequential choice; Rikuri then staffs and executes the project.
+
+## B.8 New local model acquisition
+
+- User asks for local video generation but no suitable model is installed.
+- Rikuri searches trusted model sources, filters candidates by hardware/runtime/license/security/evidence, and recommends two or three.
+- After approval, Rikuri downloads an exact pinned artifact, verifies/hash-records it, quarantines/screens dependencies/custom code, and runs task-specific baseline tests.
+- The model enters probation; subsequent real jobs update its capability/profile and routing rank automatically.
+
+## B.9 Privacy-preserving financial analysis
+
+- User asks Rikuri to analyze sensitive bank statements marked Local Only.
+- Context Compiler and Security prevent raw statements from reaching external models; local tools/models perform extraction and analysis.
+- If deeper frontier reasoning is useful, Rikuri may request permission to send a sanitized aggregate that excludes account numbers and raw transactions.
+- Credentials and payment/signing authority remain in the secret/financial boundary and are never exposed to model context.
+
+## B.10 Spatial multi-model comparison
+
+- User asks, “Have Claude, GPT, and my local model review this architecture independently.”
+- Rikuri opens or reuses three Prompt-Linked agent windows sharing the same permitted project context but isolates their initial responses.
+- The user can tile the three windows equally, enlarge one, or detach one without changing logical links.
+- A fourth comparison/evaluator window summarizes agreements, disagreements, evidence, weaknesses, and a recommendation.
+- The user may say, “Make GPT large and close the others,” or manipulate the layout directly.
+
+## B.11 Live multi-agent coding workspace
+
+- User opens a Coding workspace for a project and asks Rikuri to split work between two coding agents.
+- Each worker receives isolated execution state (for example, branch/worktree/process space) while the user sees project-centric windows rather than low-level isolation machinery.
+- Agent A is followed through linked Chat, Live Code, Diff, and Tests windows; Agent B works quietly in the background.
+- The Project Graph shows dependencies, status, blocked work, and one human decision.
+- The user can interrupt, take control, compare changes, or allow Rikuri’s integration/review flow to continue.
+
+## B.12 Capture and rediscover an idea
+
+- While away from the desktop, the user dictates, “Idea: use the train station encounter near the ending,” and attaches a photo.
+- Rikuri immediately preserves audio/photo/original timestamp and creates an Idea record without requiring a folder or tags.
+- Later, the Knowledge Distiller links it to the relevant writing project, characters, and location as a tentative idea rather than canon.
+- Months later, while editing the relevant chapter, Rikuri quietly shows “Related ideas · 1.” The writer can inspect the original capture and adopt, revise, or reject it.
+
+## B.13 Writing workspace and semantic global change
+
+- A writer opens a saved Writing workspace containing Manuscript, Rikuri Editor, Story Map, Character/Canon, Research, Continuity, and Idea Board windows.
+- The writer says, “Change Elena from an architect from Madrid to a photographer from Valencia; show me what this affects before editing.”
+- Rikuri identifies passages, timeline facts, relationships, scene dependencies, research references, and canon entries that would be impacted.
+- It proposes a coherent reviewable change set rather than blind string replacement; the writer accepts/rejects individual or grouped changes.
+- Original versions and rationale remain recoverable.
+
+## B.14 Native-ecosystem continuity
+
+- User prefers a task inside Claude/Cowork or ChatGPT/Codex rather than Rikuri’s own window.
+- Rikuri hands off only permitted context/resources through the supported integration path and records resulting artifacts/decisions/events when observable.
+- The user later returns to Rikuri or switches model/provider; project continuity comes from Rikuri-owned state rather than requiring the original vendor conversation.
+
+## B.15 Multilingual Personal Intelligence
+
+- User runs Rikuri’s interface in Traditional Chinese (Taiwan), asks a question in Chinese about a project whose source notes and papers are mostly English, and receives a Chinese answer with links to the original English evidence.
+- Rikuri preserves the original notes, filenames, and citations; any translation is stored as derived, provenance-linked material rather than replacing the source.
+- The user opens a second Agent window and switches only that conversation to English for a technical coding discussion while the rest of the UI remains in Traditional Chinese.
+- Later the same project is opened on another device using Japanese UI; project identity, history, and canonical state remain unchanged.
+
+# Appendix C. Key Terms
+
+| **Term**                     | **Definition**                                                                                                                       |
+|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Personal Intelligence        | The durable user-owned knowledge, state, skills, relationships, projects, and continuity managed by Rikuri.                          |
+| Model                        | The underlying AI intelligence (frontier or local).                                                                                  |
+| Runtime / Harness            | The environment that turns a model into an effective worker: context, tool loop, execution behavior, session handling, etc.          |
+| Execution profile            | The routed combination of model, reasoning level, runtime, tools, machine, access path, security envelope, budget, and verification. |
+| Context compiler             | Builds the smallest relevant task-specific context package from Rikuri state and sources.                                            |
+| Knowledge Distiller          | Transforms raw conversations/activity into topic knowledge, typed statements, links, and provenance.                                 |
+| Project Registry             | Catalog of projects and their locations/resources/relationships.                                                                     |
+| Resource Resolver            | Finds and opens the current authoritative instance of an indexed project/file/resource.                                              |
+| Model Lab                    | Discovers, evaluates, profiles, and continuously learns how to use local models and their harnesses.                                 |
+| Machine Intelligence         | Per-device hardware/software/live-state knowledge and incident/remedy history.                                                       |
+| Personal Mesh                | Local-first synchronization of selected owner knowledge/state across devices with optional hub.                                      |
+| AISecurity / Rikuri Security | Trusted security layer enforcing capability boundaries, privacy, audit, health, and high-risk execution policy.                      |
+| Attention Firewall           | Central policy controlling when autonomous work may interrupt, notify, message, or call the user.                                      |
+| Rikuri Constitution         | Small model-independent set of durable user-alignment and behavioral principles governing all Rikuri roles.                           |
+| Governance Policy           | Decision rights, budgets, privacy/security rules, attention policy, escalation, and authority boundaries.                              |
+| Agent Charter               | Persistent role definition for coordinator, specialist, evaluator, or other worker.                                                     |
+| Task Contract               | Per-assignment objective, deliverables, constraints, budget, success tests, and escalation conditions.                                  |
+| Coordinator / COO role      | Replaceable routed model/runtime that operationally manages planning, staffing, execution, and recovery under Rikuri governance.        |
+| Strategy Council            | Temporary diverse set of independent advisers used for hard, novel, uncertain, or high-impact decisions.                                |
+| Independent Evaluator       | Separate evaluation function that measures outcome and coordinator performance using evidence, telemetry, and appropriate model review. |
+| Evaluated execution identity| Exact model revision, quantization, runtime/version, settings, and hardware combination whose behavior Rikuri has measured.             |
+| Model acquisition lifecycle | Discovery, compatibility/security/license screening, approval, pin/hash/quarantine, baseline eval, probation, and ongoing revalidation. |
+| Quick Assist                 | Compact text/voice surface for asking Rikuri to act without opening a full workspace. |
+| Rikuri Workspace             | Spatial workbench containing independently movable/resizable/tileable/linkable windows tied to shared Rikuri state. |
+| Window                       | First-class visual work surface such as Agent, Document, Code, Browser, Diff, Project Graph, Research, Tests, or Dashboard. |
+| Context Link                 | Logical group causing multiple windows to follow the same underlying project/entity/object, independent of their physical layout. |
+| Agent Link                   | Logical relationship in which multiple windows expose different live views of one worker. |
+| Prompt Link                  | Broadcast relationship for sending one instruction to multiple independent agents/models for separate responses. |
+| Project Graph                | Expandable live graph of objectives, tasks, agents, artifacts, dependencies, evaluations, status, and decisions. |
+| Idea Inbox                   | Low-friction capture point for incomplete text/voice/photo/video/file/chat ideas before manual organization. |
+| Knowledge Web                | Linked representation of established concepts, evidence, decisions, procedures, and relationships. |
+| Idea Web                     | Linked representation of tentative ideas, hypotheses, inspirations, proposals, and unrealized opportunities. |
+| Canon                        | Domain-specific set of established facts/rules to be enforced for consistency, especially in long-form writing; distinct from tentative ideas. |
+| Semantic / narrative refactoring | Reviewable propagation of a conceptual change across dependent content and knowledge rather than blind text replacement. |
+| Authoritative representation | Declared source of truth for a given object/resource type, which may be Rikuri state, Git, an original file, Markdown, or a live external system. |
+| Internationalization (i18n) | Architectural separation of language/locale concerns from core application logic so Rikuri can support additional languages without redesign. |
+| Localization (l10n) | Language- and locale-specific presentation of interface text, formats, terminology, voice, and related user experience. |
+| Locale / Language Profile | User/workspace preferences for interface locale, assistant response language, formatting, and optional per-window/conversation overrides. |
+| Cross-lingual retrieval | Ability to find semantically relevant content written in another supported language while preserving the original source and provenance. |
+| Canonical data               | Durable source/state that must survive migration and from which derived indexes can be rebuilt.                                      |
+| Derived data                 | Embeddings, indexes, caches, summaries, or projections that can be regenerated.                                                      |
+
+**End of Rikuri Pi Product Requirements Document v1.1**

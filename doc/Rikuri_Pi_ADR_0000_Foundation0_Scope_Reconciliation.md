@@ -1,0 +1,43 @@
+# ADR 0000 — Foundation-0 scope and acceptance reconciliation
+
+**Date:** September 24, 2026  
+**Status:** Adopted planning baseline; implementation claims remain unproven until their gates pass  
+**Applies to:** PRD v1.1, Architecture v1.6, Engineering Standard v1.1, Foundation-0 Re-baselined Stage Plan v2.0  
+**Owner:** Rikuri Pi product owner
+
+## Context
+
+The PRD describes the full product and a broader Foundation Release. The architecture and earlier 90-Day Build Plan used F1–F10 for a 13-week slice. The owner has chosen a six-stage Foundation-0 plan with time to test and observe real results. Treating every product-level P0 or the broader Foundation Release checklist as a June 2027 promise would make the plan inconsistent and push technical risks late into the build.
+
+## Decision
+
+The **Foundation-0 Re-baselined Stage Plan v2.0** is the live gate schedule. Six stages run sequentially from October 2026 toward a June 2027 planning target; reserve four to eight weeks of contingency into July–August. Dates are estimates. A required gate stays red until its repeatable demonstration and linked technical evidence pass. The PRD retains the larger product vision and product-level P0 priority; the broader Foundation Release is later than Foundation-0.
+
+| Claim or dependency | Foundation-0 commitment | Later product commitment / boundary |
+| --- | --- | --- |
+| W1 continuity | Kernel crash points at Stage 00; full eight real cross-component crash points at final release | Further platform and multi-node fault modes get their own gates |
+| F2 import | Real ChatGPT and Markdown/Obsidian import with provenance and idempotency in Stage 01 | Claude and read-only Git/project manifest importers early Stage 1 |
+| F3 idea | Text capture, lexical retrieval, provenance, project attach in Stage 05 | Voice capture and meaning-based/semantic retrieval later |
+| F4 privacy and handoff | Stage 02 policy refusal before HTTP construction; Stage 03 Ubuntu no-network envelope; full cloud-to-local continuity closes with the Stage 04 local runtime | More providers, native macOS containment and remote paths require separate evidence |
+| F5/F7 money and authority | Hard budget preflight and prompt-injection authority containment in Stage 02 | Richer routing and access paths remain gated by adapter-specific contracts |
+| F6 forgetting | Stage 01 managed backup B and *pre-forget* backup A restoration use current durable revocation state; A without trustworthy current state safely refuses/quarantines | Unmanaged exports and external copies cannot be erased or revoked by Rikuri |
+| F8 engineering | One brief Build Record per coherent change, expanded for high-risk work; real caller, Module Contract, health and tests for each protected crate; linked Stage Gate evidence | The full Project Quality Manager product arrives later |
+| F9/F10 execution | Stage 03 untrusted project/descendant containment; Stage 04 Pi local coding slice and profile swap | Rich Monaco/LSP/DAP dogfood and multi-agent orchestration later |
+| Knowledge Context Compiler | Minimal Stage 02 authority/time/conflict/privacy compiler meets ten expected answer-or-abstain outcomes; neither unsafe acceptance nor blanket abstention passes | Richer distillation, ranking, entity resolution, multilingual search and risk models later |
+| Platforms and UI | Ubuntu is full security/execution reference. macOS platform-neutral core CI remains continuous; native envelope experimental. Stage 05 one-window English Home, externalized strings, pseudo-locale/CJK smoke | Native macOS protection and desktop parity, voice Home, seven-language localization and rich windows later |
+
+Each stage ends with an owner-runnable demonstration and a plain-language **Pass / Fail / Not yet proven** receipt. Tests, failure drills, and appropriately independent adversarial review back claims the owner cannot verify by reading code. An agent’s completion claim is insufficient. The public-exposure release gate in the Engineering Standard remains separate and includes its human external security audit.
+
+## Early risk decisions
+
+1. Stage 00 probes bubblewrap namespace creation on the pinned Ubuntu image under its default AppArmor settings. If unavailable, choose and test a safe alternative through an ADR; do not disable system-wide restrictions to make a test pass.
+2. E1–E6 are time-boxed experiments. E3 cannot turn a weaker forget/restore promise into a green F6. E4 cannot green-light an always-abstain knowledge compiler. E5 cannot report network denial from configuration alone.
+3. Only one tested OpenAI-compatible cloud access path is in the first slice, using synthetic non-sensitive fixtures at Stage 02. Provider gateways need capability-specific testing; a shared wire format alone does not certify production behavior.
+4. Speculative additions go to the parking lot. A real change to a promise or security boundary requires an ADR, revised PRD and architecture text, current acceptance tests, and updated runbooks in the same change. This record does not freeze documentation against corrections.
+
+## Consequences and open implementation questions
+
+- The earlier 90-Day Build Plan v1.6 is historical, not a parallel gate board. The Master Build Sequence now points to the live plan; future stages are re-estimated from evidence at each gate.
+- The exact durable revocation storage and recovery-key protocol, viable Ubuntu envelope backend, and cloud/local handoff state schema are implementation decisions to prove through E3, E5, and Stage 04. Until then their guarantees are requirements, not implemented facts.
+- If an experiment fails, keep the dependent gate red and record an ADR-backed redesign or explicit owner decision on any weaker product promise. Do not silently reduce an acceptance test to match elapsed time.
+- No actual build or security gate has passed merely because these planning documents agree.
