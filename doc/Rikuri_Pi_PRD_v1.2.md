@@ -2,7 +2,7 @@
 
 **Personal Intelligence Platform**  
 **Product Requirements Document**  
-Version 1.1 | September 16, 2026 | Updated Product Baseline
+Version 1.2 | September 25, 2026 | Collaborative Intelligence North Star
 
 > *“Models are replaceable. Your Personal Intelligence is not.”*
 
@@ -11,12 +11,24 @@ A user may lose or replace a device without losing the accumulated knowledge, co
 | **Product**  | Rikuri Pi                                                            |
 |--------------|----------------------------------------------------------------------|
 | **Meaning**  | Pi = Personal Intelligence                                           |
-| **Document** | Product Requirements Document v1.1                                   |
-| **Status**   | Updated product baseline incorporating Pi-first local harnessing, native Rikuri developer platform, project-execution trust, Rikuri Link remote access, and Ubuntu-first implementation sequencing |
+| **Document** | Product Requirements Document v1.2                                   |
+| **Status**   | Updated product baseline adding the Collaborative Intelligence North Star while preserving the Foundation-0 implementation boundary |
 
-## Revision 1.1 focus
+## Revision 1.2 focus
 
 This revision keeps the original product vision while incorporating implementation decisions made after v1.0:
+
+This revision keeps the original product vision while incorporating implementation decisions made after v1.0 and adds the long-term Collaborative Intelligence objective agreed September 25, 2026. The new objective does **not** expand Foundation-0 scope. It defines what the foundation must preserve so later Experience Intelligence, Inquiry & Discovery, and adaptive collaboration can be built without re-architecting the trusted core.
+
+New long-term commitments in v1.2:
+
+- **Personal Intelligence is more than memory.** Rikuri should eventually help the human–AI collaboration learn from experience, frame better questions, notice useful patterns, generate and test hypotheses, surface non-obvious connections, and improve working methods over time.
+- **Instrument early; infer late.** Foundation stages capture stable execution identity, meaningful events, provenance, outcomes, verification, cost, human intervention, and feedback. They do not autonomously infer user traits or rewrite policy.
+- **Economical Collaborative Intelligence.** Use the minimum sufficient compute and complexity for a verified outcome: frame before solving, attend before deep reasoning, use deterministic analysis where sufficient, and escalate selectively.
+- **Optionality by design.** Learned methods are scoped, revisable evidence-backed defaults, not permanent truths. Rikuri preserves challenger methods and a bounded curiosity/exploration budget.
+- **Quiet guidance.** Future collaboration should surface timely questions, patterns, connections, and alternatives without covert manipulation or constant interruption. Guidance must be explainable, reversible, and subordinate to user intent.
+- **Models are operated, not merely ranked.** Future Model Lab learning considers model revision + runtime + harness + prompt/frame/context profile + sampling/reasoning settings + tools + verification + task context.
+- **Discovery outputs are candidates.** Questions, Lightbulbs, hypotheses, correlations, abstractions, and conjectures retain provenance, uncertainty, counterevidence, scope, and lifecycle state before they can influence durable behavior or canonical knowledge.
 
 - **Pi is the primary/default harness substrate for local/open models.** Rikuri builds model-family profiles, skills, security, verification, and project behavior around Pi. Qwen Code, DeepSeek Harness, and future open harnesses are reference implementations and benchmark comparators; a native harness is used only when measured evidence shows a material advantage.
 - **Runtime compatibility and agent compatibility are separate.** llama.cpp/vLLM/Ollama/LM Studio answer “can this model run?” while Rikuri Harness Profiles answer “can Rikuri use it well?”
@@ -119,6 +131,10 @@ For difficult work, Rikuri acts as a management institution rather than a single
 > **North-star experience**
 >
 > The user should not need to choose a model, manage an agent, understand Bash, remember where a project lives, organize every chat, or manually synchronize knowledge. Rikuri should understand the request, find the right information and resources, execute competently within its authority, verify the outcome, remember what mattered, and stay quiet when everything is healthy.
+
+> **Ultimate Personal Intelligence goal**
+>
+> Rikuri should increase the effective intelligence of the human–AI collaboration over time. It should preserve meaningful experience, help the user recognize strengths and recurring weaknesses, learn which interventions and working methods actually help, cultivate useful habits and discipline, keep knowledge current and evidence-grounded, and use accumulated Personal Intelligence to produce better questions, decisions, products, creative work, experiments, solutions, and discoveries. The measure of success is not how often Rikuri speaks or how much compute it spends, but whether the person can do better work and reach useful possibilities they were less likely to reach alone.
 
 # 2. Product Vision and User Promise
 
@@ -765,6 +781,21 @@ Rikuri may automatically adapt low-risk learned state such as routing preference
 | DEV-004 | P1 | Verified plugin lifecycle | Provenance/pin/quarantine/activate/health/update/rollback/remove lifecycle. | Broken or unsafe update can be disabled/rolled back with evidence. |
 | DEV-005 | P2 | Selective VS Code compatibility | Use `monaco-vscode-api`-class compatibility only where direct/native integration is not preferable. | Rikuri retains its own workspace UX and security boundary. |
 
+## 9.20 Collaborative Intelligence Foundation Hooks
+
+These requirements exist **now** so later Collaborative Intelligence can be scaffolded safely. Foundation-0 implements evidence capture and contracts only; autonomous reflection, user-pattern inference, Lightbulb generation, and adaptive policy learning remain post-Foundation capabilities.
+
+1. Meaningful executions MUST receive stable task/run IDs and an exact execution profile where available: model and revision, provider/access path, runtime, harness/profile revision, prompt/profile revision, context policy, reasoning/sampling settings exposed by the runtime, tool/MCP identities, machine, privacy envelope, and verification strategy.
+2. Rikuri MUST emit structured lifecycle/outcome events rather than relying on transcript reconstruction. Event capture SHOULD focus on meaningful state transitions, failures, retries, interventions, verification, cost, and outcomes rather than keystroke/screen surveillance.
+3. Performance evidence and future experience-learning evidence MUST share stable references to the same underlying runs and outcomes so routing, workflow, and collaboration learning do not create contradictory private ledgers.
+4. User feedback MUST distinguish immediate preference from verified task outcome. The architecture MUST allow delayed usefulness signals so an idea or question ignored today can later be credited if it proves useful.
+5. Derived patterns, hypotheses, heuristics, model preferences, and future Lightbulbs MUST be non-canonical candidate intelligence with explicit provenance, support/counterexample references, scope, confidence, timestamps, version/environment scope, and supersession/retirement state.
+6. The Knowledge Service remains the sole governed mutation path into canonical Personal Intelligence. Agents may propose candidate knowledge; they do not independently reorganize or rewrite the user's authoritative knowledge store.
+7. The schema MUST leave room for versioned cognitive recipes: task purpose, frame/prompt/context profiles, model/runtime/harness, tools, reasoning/sampling policy, optionality budget, verification profile, and observed outcomes. Exact seed values, when supported, are experiment/reproducibility metadata rather than permanent model-quality labels.
+8. Foundation telemetry MUST be privacy-classified, user-controlled, minimizable, exportable/deletable under policy, and excluded from sensitive spaces when observation is not authorized.
+9. No later learning mechanism may directly self-modify protected core policy, security boundaries, canonical truth, or irreversible user state. Learned suggestions/promotions require explicit gates appropriate to consequence.
+10. The user MUST be able to inspect why a future suggestion, learned heuristic, or intervention was surfaced and which observations support it.
+
 # 10. Security and Trust Requirements
 
 AISecurity is an existing Rust/Swift foundation to evolve into the Rikuri security layer. Security must be mandatory in the execution path, model-independent, and capable of remaining unobtrusive during normal operation while proving its own health.
@@ -1158,6 +1189,9 @@ Business/team deployments must preserve the same user-alignment principles while
 | Model Lab usefulness  | Newly added compatible models receive a baseline profile and their routing recommendations improve measurably from real-task outcomes.             |
 | Privacy enforcement   | Local Only/Secret test data cannot leave through supported model, browser, connector, upload, shell/network, or GUI egress paths.                  |
 | Internationalization  | Core workflows pass localization/format/layout tests in all seven initial language targets; cross-lingual search retrieves representative known items without altering canonical originals. |
+| Collaborative uplift (post-Foundation) | On selected tasks, evidence shows that Rikuri-assisted framing, method selection, reflection, or learned workflow support improves verified outcomes or reduces repeated rework versus the user's/model's prior baseline without unacceptable cost or nuisance. |
+| Learning calibration (post-Foundation) | Learned heuristics retain support/counterexamples and are downgraded, scoped, or retired when conditions change; the system reports insufficient evidence rather than inventing confidence. |
+| Discovery usefulness (research track) | Candidate questions/Lightbulbs are evaluated by later user adoption, experiment value, verified connection, or productive redirection—not raw idea count. |
 
 # 23. Staged Roadmap
 
@@ -1175,6 +1209,7 @@ The build order is dependency-driven: each stage must be wired into the running 
 | **7 — Personal Mesh & Persistent Responsibilities** | Encrypted replication, optional hub, cross-device resource catalog, durable routines, quiet digests, learned skills. | One Personal Intelligence spans owner devices without sync becoming canonical authority. |
 | **8 — Rich Domain/Companion Workspaces** | Writing/study/research/media/meeting/live companion and specialized domain packs. | Domain power reuses common windows, state, ideas, security, and execution. |
 | **9 — Business/Organization Readiness** | Tenancy, organizational memory, role policy, audit/admin, shared projects, enterprise deployment. | Institutional use without weakening personal/user-alignment foundations. |
+| **10 — Collaborative Intelligence / Inquiry & Discovery** | Experience Intelligence; selective reflection and consolidation; pattern abstraction; cognitive recipes; champion/challenger optionality; bounded curiosity; Question/Frame generation; Cognitive Ensembles; Lightbulb lifecycle; incubation sessions; domain-specific discovery labs; cautious adaptive routing/learning. Research prototypes may begin earlier once Stage 4 and Stage 6 evidence/governance prerequisites exist, but this stage is not a Foundation dependency. | Rikuri can demonstrate reproducible, evidence-backed improvement in how the user + models + tools work together and can surface useful non-obvious questions/connections without silently converting speculation into truth or preventing project completion. |
 
 > **Stage rule:** no downstream stage is declared active merely because its calendar date arrived. The prior dependency gate must be green, or the checklist records an explicit DEFERRED/RESEQUENCED decision with reason, impact, new position, owner, and acceptance conditions.
 

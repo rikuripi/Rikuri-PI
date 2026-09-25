@@ -1,6 +1,6 @@
 # Rikuri Pi — Engineering Standard
 
-**Version:** 1.1 Draft  
+**Version:** 1.2 Draft  
 **Applies to:** Rikuri Pi Foundation-0 and all later development  
 **Canonical repo path:** `docs/engineering/ENGINEERING_STANDARD.md`
 
@@ -43,6 +43,8 @@ made loud, and converted into a permanent tripwire.
 ## The Five Laws (apply to every section below)
 
 **Reuse rule:** Evolution for existing solutions; revolution for core strength. Before building routine orchestration or infrastructure, inventory a maintained implementation or established pattern and record license, trust boundary, operational failure modes, lifecycle fit, maintenance cost, and measured acceptance. Document the reason if custom code is chosen. Keep AISecurity, verified context, canonical ProjectState, and transaction integrity under Rikuri authority. An upstream feature list is not evidence that a Rikuri vertical slice works.
+
+**Future-learning evidence rule:** Instrument early; infer late. Every meaningful feature/task path must emit enough structured, privacy-governed evidence to reconstruct what was attempted, with which execution/profile/tool configuration, what actually happened, how it was verified, and where human intervention occurred. Do not add continuous surveillance merely for future learning. Do not let future learning requirements weaken data minimization.
 
 1. **Nothing is silent.** Every component either runs and is gated by a test,
    or it is deleted. A fallback that engages is an ALERT, never just a save.
@@ -150,6 +152,8 @@ a product.
 - [ ] **Health test:** prove success updates last-success/health evidence and failure becomes visible/degraded rather than silently falling back.
 
 ### 5. CLOSE OUT (end of every change/session)
+
+In addition to ordinary build evidence, preserve the minimum structured execution/outcome evidence required by the Collaborative Intelligence scaffold: stable task/run reference, exact execution/profile identity where exposed, verification result, significant failure/retry/fallback, cost/time when available, and material human intervention. This is evidence capture, not behavioral inference.
 - [ ] Run the full gate: build → typecheck → unit tests → ratchet → smoke.
       All green or the session isn't over.
 - [ ] **The Scrap Sweep** (every session, no exceptions — see the taxonomy
@@ -269,6 +273,8 @@ After every drill: findings become fixes become tripwires (Law 5).
 ---
 
 ## Working with AI Assistants (how this document gets enforced)
+
+Rikuri is its own first Collaborative Intelligence research subject. Claims that a prompt profile, harness, model, workflow, framing method, or learned heuristic improves work must be tested prospectively against an appropriate baseline/challenger where practical. Failures and negative results are retained as evidence. No AI-generated explanation of success substitutes for an outcome gate.
 
 - Point every AI session at this file; its checklists are binding.
 - Demand **verification, not claims**: "tests pass" must come with the test

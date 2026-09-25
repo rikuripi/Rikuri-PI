@@ -1,4 +1,4 @@
-# Rikuri Pi — Foundation-0 Re-baselined Stage Plan v2.0
+# Rikuri Pi — Foundation-0 Re-baselined Stage Plan v2.1
 
 Sep 24, 2026 · @Henry C · Revised planning baseline
 
@@ -31,6 +31,10 @@ The owner judges the **visible result**, not the code. Each stage ends with a sh
 | Module Contracts | all 14 crates from Week 1 | only crates that exist and are protected-core |
 | Docs | changed with behavior | Keep operational docs and evidence current; architecture changes require ADR |
 | Pi API spike | none | 2-day throwaway spike in Stage 00 (E2); early Ubuntu sandbox feasibility probe |
+
+### Collaborative Intelligence scaffold rule
+
+Foundation-0 does **not** implement Experience Intelligence, nightly reflection, user-pattern inference, Lightbulbs, cognitive ensembles, or adaptive RL. It **does** preserve the evidence those later systems would need: stable task/run/event IDs; exact execution/profile identity where available; versioned prompt/frame/context profile IDs when Rikuri transforms user intent; model/runtime/harness/tool identity; verification and outcome links; retries/fallback/escalation; cost/latency; human intervention/feedback; provenance; and privacy classification. Missing evidence that would make later learning irrecoverably ambiguous is treated as foundation debt and must be dispositioned before the relevant gate closes.
 
 ## Live gate board
 
@@ -437,6 +441,7 @@ Stages 2, 3 and 4 each depend only on Stage 1, so they can be sequenced by what 
 | 7 Personal Mesh + responsibilities | Replacement / offline / reconnect / concurrent-update converge without silent loss; backup independent of sync | Encrypted event replication; CRDT only where simultaneous text editing is proven necessary | \~3 months | Conflict semantics; hub optionality |
 | 8 Domain packs + Live Companion | Each domain is a projection over common primitives; no independent mini-brain | Whisper-class local transcription; embeddable editors | open | Per-domain, none foundational |
 | 9 Windows parity + business readiness | OS Capability parity after Ubuntu/macOS stable; tenancy without weakening personal foundations | Windows sandbox primitives (AppContainer / job objects) | open | Tenancy boundary |
+| 10 Collaborative Intelligence / Inquiry & Discovery | Evidence-backed Experience Intelligence and cognitive-recipe learning improve selected human+AI workflows; Inquiry/Discovery surfaces useful questions/connections without promoting speculation to truth | Prefer existing observability, statistics, retrieval, bandit/optimization and verification components behind Rikuri contracts | research/experimental | Begin prototypes only after Stage 4 execution evidence and Stage 6 governance are available; productization remains post-Foundation |
 
 Rough total from Foundation-0 exit to Stage 6 gate: about 18 months of stage estimates, with further contingency for discovery and integration. This is a planning range, not an end-of-2028 promise.
 

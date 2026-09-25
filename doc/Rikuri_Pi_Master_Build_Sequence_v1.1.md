@@ -1,7 +1,7 @@
 # Rikuri Pi — Master Build Sequence & Integration Gate Map
 
-**Version:** 1.0 | September 16, 2026  
-**Purpose:** The ordered build path after the six-stage Foundation-0 plan. It is dependency-driven rather than calendar-driven. Every module is built, tested, wired, observed, documented, and stage-gated before dependent capability expands.
+**Version:** 1.1 | September 25, 2026  
+**Purpose:** The ordered build path after the six-stage Foundation-0 plan, including the post-platform Collaborative Intelligence research/productization track. It is dependency-driven rather than calendar-driven. Every module is built, tested, wired, observed, documented, and stage-gated before dependent capability expands.
 
 > **Core rule:** Build the boring trusted substrate first. Add one vertical capability at a time. Never allow a shiny downstream feature to hide a missing upstream guarantee.
 
@@ -153,6 +153,8 @@ Build order:
 
 **Stage 4 gate:** adding a new compatible model normally requires registry/profile data and evaluation, not core code; Auto can explain why it selected model+runtime+harness+machine+privacy path.
 
+**Collaborative Intelligence prerequisite:** Model onboarding/calibration must preserve versioned prompt/frame/context profile identity and exposed reasoning/sampling settings in benchmark evidence so later cognitive recipes can compare “same model, better operation” rather than relying on model-name rankings. Seed values, when supported, are reproducibility/variance metadata rather than durable quality labels.
+
 ---
 
 # Stage 5 — Browser, connectors, assistant capability packs
@@ -192,6 +194,31 @@ Writing, study, research, meeting/lecture, media, trading/other domain packs. Ea
 # Stage 9 — Windows parity + business/team readiness
 
 Implement Windows OS Capability/envelope parity after Ubuntu/macOS contracts are stable, then organization identity, tenancy, role/policy admin, shared memory, centralized audit, enterprise deployment and connectors.
+
+---
+
+# Stage 10 — Collaborative Intelligence / Inquiry & Discovery
+
+This is the long-term differentiating layer. It is deliberately downstream of trustworthy Personal Intelligence, Model Lab evidence, and multi-agent governance. Research prototypes may begin earlier after their prerequisites are green; none may become an authority over canonical state or protected policy simply because a prototype performs well.
+
+Build/research order:
+
+1. ExperienceEpisode projection over existing canonical events/outcomes.
+2. Cheap deterministic/statistical pattern detection and anomaly/change triggers.
+3. Selective reflection service; local/cheap models first, escalation by budget.
+4. Candidate abstraction objects with evidence, counterexamples, rivals, scope and lifecycle.
+5. CognitiveRecipe registry covering frame/prompt/context/model/runtime/harness/tools/reasoning/sampling/verification.
+6. Champion/challenger evaluation and bounded Curiosity/Optionality Budget.
+7. Model onboarding/calibration that learns task-specific operation rather than static ranking.
+8. Lightbulb lifecycle with dormant/resurface/usefulness feedback and delayed credit.
+9. Cognitive Ensembles: independent generation -> cross-critique -> evidence tournament -> synthesis, with methodological diversity preferred over agent count.
+10. Inquiry & Discovery incubation sessions for explicit questions, contradictions, recurring patterns and watched domains.
+11. Domain verifiers/labs: software tests, mathematics/proof, research/source/statistics, writing fresh-eye/closure labs, and others as warranted.
+12. Quiet Guidance layer: evidence-backed suggestions about collaboration/user workflow with inspectability, correction, dismissal, privacy and no covert manipulation.
+13. Only after strong offline evidence: contextual-bandit / RL-style adaptive recipe selection under hard budget, rollback and exploration floors.
+14. Dogfood the system on Rikuri development before broad user-facing autonomy.
+
+**Stage 10 gate:** On predeclared benchmark/user-work sets, Collaborative Intelligence demonstrates repeatable uplift or useful discovery versus simpler baselines while staying within cost/attention/privacy envelopes. Every surfaced heuristic/Lightbulb is traceable to evidence; counterexamples and stale conditions can downgrade it; candidate discovery cannot silently mutate canonical truth or protected policy; and “no useful insight” remains an acceptable outcome.
 
 ---
 
