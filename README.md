@@ -12,10 +12,10 @@ Stage 00 starts with repository/bootstrap work, then the Rust kernel and its cra
 
 The Foundation-0 plan uses Ubuntu as its full execution and security reference. Platform-neutral Rust core checks are also required on macOS. Native macOS execution containment is experimental in this plan.
 
-After this repository is pushed and accessible, clone it on Linux with:
+On Linux, add that machine's SSH public key to the GitHub account with repository access ([GitHub SSH setup](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)). Then clone with:
 
 ```sh
-git clone https://github.com/rikuripi/Rikuri-PI.git
+git clone git@github.com:rikuripi/Rikuri-PI.git
 cd Rikuri-PI
 git status
 ```
