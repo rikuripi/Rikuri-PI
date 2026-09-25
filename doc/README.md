@@ -1,6 +1,6 @@
 # Documentation index
 
-These are copies of the ten source documents supplied for project setup. Their original filenames and version labels are preserved.
+These are copies of the supplied project documents. Their original filenames and version labels are preserved. Superseded versions remain available for historical references.
 
 ## Current Foundation-0 baseline
 
@@ -9,7 +9,15 @@ These are copies of the ten source documents supplied for project setup. Their o
 | [Foundation-0 Re-baselined Stage Plan v2.0](<Rikuri Pi — Foundation-0 Re-baselined Stage Plan v2.0.md>) | **Live** six-stage sequence, item IDs, acceptance tests, experiments, and gate board. Start here. |
 | [ADR 0000 — Scope Reconciliation](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md) | Adopted decision separating the Foundation-0 commitments from the broader product and historical 90-day plan. |
 | [PRD v1.1](Rikuri_Pi_PRD_v1.1.md) | Product vision and requirements, including later releases. A product-level P0 is not automatically due in Foundation-0. |
-| [Architecture Spec v1.6](Rikuri_Pi_Architecture_Spec_v1.6.md) | Architecture baseline; the live stage plan controls Foundation-0 sequence and evidence. |
+| [Architecture Spec v1.7](Rikuri_Pi_Architecture_Spec_v1.7.md) | Architecture baseline; the live stage plan controls Foundation-0 sequence and evidence. |
+
+Architecture v1.7 references PRD v1.2, which has not yet been supplied to this repository; the available PRD remains v1.1. Earlier documents retain their original Architecture v1.6 references.
+
+## Research and future architecture
+
+| Document | Role |
+| --- | --- |
+| [Collaborative Intelligence / Inquiry & Discovery Architecture v0.1](Rikuri_Pi_Collaborative_Intelligence_Architecture_v0.1.md) | Long-term product North Star and post-Foundation research baseline; not a Foundation-0 implementation commitment. |
 
 ## Engineering and acceptance references
 
@@ -25,6 +33,7 @@ These are copies of the ten source documents supplied for project setup. Their o
 | Document | Role |
 | --- | --- |
 | [Master Build Sequence v1.0](Rikuri_Pi_Master_Build_Sequence_v1.0.md) | Dependency order for Foundation-0 and later stages; points to the live plan for Foundation-0 detail. |
+| [Architecture Spec v1.6](Rikuri_Pi_Architecture_Spec_v1.6.md) | **Historical** architecture baseline, superseded by v1.7; retained for references in earlier planning and acceptance documents. |
 | [90-Day Build Plan v1.6](Rikuri_Pi_90_Day_Build_Plan_v1.6.md) | **Historical** 13-week plan. Retained for rationale and traceability; it is not a second live gate board. |
 
 Foundation-0 gates are not complete merely because the documents are present. Record Pass, Fail, or Not yet proven with reproducible evidence as each stage is implemented.
