@@ -2,6 +2,8 @@
 
 Rikuri Pi is a planned Personal Intelligence Platform. This repository currently contains the project planning baseline and Git hygiene only. No Foundation-0 implementation or acceptance gate has passed yet.
 
+For repository work, follow [AGENTS.md](AGENTS.md), which adapts the build procedure to Rikuri Pi’s SDLC and current repository maturity.
+
 ## Start here
 
 Read the [documentation index](doc/README.md). The [Foundation-0 Re-baselined Stage Plan v2.1](doc/Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md) is the live implementation sequence and gate board. [ADR 0000](doc/Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md) explains how it fits the broader PRD, architecture, and earlier plans.
