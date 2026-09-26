@@ -1,6 +1,6 @@
 # Documentation index
 
-These are copies of the supplied project documents. Their original filenames and version labels are preserved. Superseded versions are retained in Git history rather than the current checkout.
+These are maintained revisions of the supplied project documents. Their original filenames and version labels are preserved. Superseded versions are retained in Git history rather than the current checkout.
 
 ## Current Foundation-0 baseline
 
@@ -11,7 +11,9 @@ These are copies of the supplied project documents. Their original filenames and
 | [PRD v1.2](Rikuri_Pi_PRD_v1.2.md) | Product vision and requirements, including later releases. A product-level P0 is not automatically due in Foundation-0. |
 | [Architecture Spec v1.7](Rikuri_Pi_Architecture_Spec_v1.7.md) | Architecture baseline; the live stage plan controls Foundation-0 sequence and evidence. |
 
-The September 25 update set is preserved as supplied. Some current documents still name Stage Plan v2.0; v2.1 is the current plan linked above. ADR 0000 and older acceptance references retain their original version scope and have not been reissued. PRD v1.2 also retains a duplicated introductory sentence under “Revision 1.2 focus.” These are source-document review findings, not evidence that implementation or reconciliation gates have passed.
+The September 25 update set has been reconciled in-repository for version, scope, roadmap, and acceptance consistency. Source version filenames are retained; Git history records the supplied originals and subsequent corrections. ADR 0000 retains its original decision with a dated addendum for the current baseline. See [the reconciliation record](reviews/2026-09-25-documentation-consistency.md) for changes and validation.
+
+Foundation-0 stages use two digits (00–05). Product stages use unpadded numbers (0–10); product Stage 0 contains all six Foundation-0 stages. Product Stage 4 is Model Lab, not Foundation-0 Stage 04 (Pi/local coding). Writer phases are a separate domain roadmap.
 
 ## Research and future architecture
 

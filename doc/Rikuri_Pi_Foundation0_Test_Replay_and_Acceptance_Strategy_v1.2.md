@@ -1,7 +1,9 @@
 # Rikuri Pi — Foundation-0 Test, Replay & Acceptance Strategy
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 **Version:** 1.2 Draft  
-**Applies to:** 90-Day Build Plan v1.6 / Architecture v1.6
+**Applies to:** Foundation-0 Re-baselined Stage Plan v2.1 / Architecture v1.7 / PRD v1.2 / ADR 0000 and its September 25 addendum
 
 ---
 
@@ -13,7 +15,7 @@ Rikuri's protected behavior must be testable without asking a nondeterministic m
 
 ## 2. Test layers
 
-![Foundation-0 test pyramid](figures/test_strategy.png)
+Test layers, from narrow to integrated: unit/failure tests → shared contracts and invariants → deterministic replay → adapter/security/recovery probes → owner-visible vertical slices. The Stage Plan v2.1 assigns each layer to stages 00–05; product stages 1–10 are later work.
 
 
 A core PR must pass without an API key. A green test result is necessary but not sufficient: important changes also require an observed running-system probe, Build Record evidence, documentation update, and the applicable Stage Gate state.
@@ -22,7 +24,7 @@ A core PR must pass without an API key. A green test result is necessary but not
 
 ## 3. `rikuri-testkit`
 
-Provide reusable test components from Week 1:
+Start reusable test components in Stage 00 (S00.08); add billing/network/backup/handoff probes when their owning stages introduce those components:
 
 - `FakeModelAdapter`: scripted turns, tool requests, errors, usage/tokens;
 - `FakeProviderBilling`: maximum-cost estimates and actual reconciliation fixtures;
@@ -87,9 +89,9 @@ During repository bootstrap, intentionally introduce a failing test and confirm 
 
 - minimum and representative ChatGPT export;
 - changed ChatGPT schema fixture;
-- Claude export;
+- Claude export (early product Stage 1, after F2);
 - Markdown/Obsidian links/frontmatter/Unicode;
-- Git manifest with moves/renames;
+- Git manifest with moves/renames (early product Stage 1, after F9);
 - duplicate/re-import fixtures;
 - malformed/truncated source.
 
@@ -161,6 +163,10 @@ Every real dogfood failure that matters becomes a permanent regression case.
 
 ---
 
+### 6.1 Minimal Knowledge Context Compiler
+
+Stage 02 T02.15/E4 uses ten fixtures with predeclared answer-or-abstain outcomes covering supersession, conflict, current authority, and uncertainty. Required supported answers must be returned; consequential or unresolved conflicts abstain with a reason. Zero unsafe acceptance and no blanket-abstention pass. This is distinct from the Stage 01 retrieval corpus floor.
+
 ## 7. Budget tests
 
 Required:
@@ -176,7 +182,7 @@ Required:
 
 ## 8. Egress/envelope tests
 
-Reference Linux tests:
+Reference Ubuntu tests:
 
 - Local Only test file is readable inside allowed mount;
 - worker cannot read path outside envelope;
@@ -220,6 +226,10 @@ create objects
 Assert X cannot be materialized and is absent from projections/indexes/search. Tombstone/audit fact may remain. Add a documented test for what happens if the user explicitly restores an unmanaged old export/backup; Rikuri cannot revoke external copies.
 
 ---
+
+### 9.1 Managed pre-forget restore
+
+In addition to restoring post-forget backup B, restore pre-forget managed backup A using trustworthy durable current revocation state. X must remain unavailable in materialization, projections, indexes, and search. Repeat A restoration without trustworthy current revocation state: restore must refuse or quarantine, never silently resurrect X. This is mandatory T01.10/F6 and reruns at release. Unmanaged exports remain outside this guarantee.
 
 ## 10. i18n tests
 
@@ -267,11 +277,18 @@ A checked verification item should point to a durable receipt such as:
 
 Agent prose such as “tests pass” or “looks fixed” is not itself evidence.
 
+### 12.1 Collaborative Intelligence evidence contracts
+
+T00.12 proves stable identity and event/outcome references across replay. T02.16 proves execution/profile identity, explicit unknowns, verification separate from completion, cost/retry/intervention and delayed feedback links, and privacy-minimized telemetry. T04.18 proves the same chain through Pi, profile swap and cloud/local handoff, without duplicate outcomes or candidate self-promotion. Use deterministic fixtures; removing a required reference or allowing sensitive payloads into ungoverned telemetry must fail. These tests capture evidence; they do not require inference, learned routing, incubation, or Lightbulbs.
+
 ## 13. Release gate
 
 A Foundation-0 build is not releasable/dogfood-ready unless:
 
-- W1 and F1-F8 pass;
+- Bootstrap, W1, F1–F10, and the F4-lite checkpoint pass with linked receipts;
+- the complete eight-point cross-component crash matrix passes at release;
+- platform-neutral macOS core build/unit/contract tests pass; native macOS containment remains experimental;
+- T00.12, T02.16, and T04.18 evidence-contract tests pass;
 - all migrations from supported test versions pass;
 - retrieval baseline does not regress below the frozen threshold;
 - no security fixture can acquire authority;

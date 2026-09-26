@@ -1,5 +1,7 @@
 # RIKURI PI
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 **Personal Intelligence Platform**  
 **Product Requirements Document**  
 Version 1.2 | September 25, 2026 | Collaborative Intelligence North Star
@@ -15,8 +17,6 @@ A user may lose or replace a device without losing the accumulated knowledge, co
 | **Status**   | Updated product baseline adding the Collaborative Intelligence North Star while preserving the Foundation-0 implementation boundary |
 
 ## Revision 1.2 focus
-
-This revision keeps the original product vision while incorporating implementation decisions made after v1.0:
 
 This revision keeps the original product vision while incorporating implementation decisions made after v1.0 and adds the long-term Collaborative Intelligence objective agreed September 25, 2026. The new objective does **not** expand Foundation-0 scope. It defines what the foundation must preserve so later Experience Intelligence, Inquiry & Discovery, and adaptive collaboration can be built without re-architecting the trusted core.
 
@@ -40,7 +40,7 @@ New long-term commitments in v1.2:
 
 ## Foundation-0 planning baseline — September 24, 2026
 
-The **Foundation-0 Re-baselined Stage Plan v2.0** is the live implementation and gate schedule: six dependent stages from October 2026 toward a June 2027 planning target, with four to eight weeks of contingency. A date cannot close an unfinished gate. This PRD states the larger product promise. **P0 means essential to its corresponding product release, not automatically due in Foundation-0.** The fifteen-item Foundation Release below is a later, broader product milestone; Foundation-0 is the narrower, single-node technical and owner-visible proof. ADR 0000 records the scope decision. No later-stage capability is silently treated as delivered at Foundation-0.
+The **Foundation-0 Re-baselined Stage Plan v2.1** is the live implementation and gate schedule: six dependent stages from October 2026 toward a June 2027 planning target, with four to eight weeks of contingency. A date cannot close an unfinished gate. This PRD states the larger product promise. **P0 means essential to its corresponding product release, not automatically due in Foundation-0.** The fifteen-item Foundation Release below is a later, broader product milestone; Foundation-0 is the narrower, single-node technical and owner-visible proof. ADR 0000 records the scope decision. No later-stage capability is silently treated as delivered at Foundation-0.
 
 | Foundation-0 result | What is due in this slice | Preserved later product promise |
 | --- | --- | --- |
@@ -1209,7 +1209,7 @@ The build order is dependency-driven: each stage must be wired into the running 
 | **7 — Personal Mesh & Persistent Responsibilities** | Encrypted replication, optional hub, cross-device resource catalog, durable routines, quiet digests, learned skills. | One Personal Intelligence spans owner devices without sync becoming canonical authority. |
 | **8 — Rich Domain/Companion Workspaces** | Writing/study/research/media/meeting/live companion and specialized domain packs. | Domain power reuses common windows, state, ideas, security, and execution. |
 | **9 — Business/Organization Readiness** | Tenancy, organizational memory, role policy, audit/admin, shared projects, enterprise deployment. | Institutional use without weakening personal/user-alignment foundations. |
-| **10 — Collaborative Intelligence / Inquiry & Discovery** | Experience Intelligence; selective reflection and consolidation; pattern abstraction; cognitive recipes; champion/challenger optionality; bounded curiosity; Question/Frame generation; Cognitive Ensembles; Lightbulb lifecycle; incubation sessions; domain-specific discovery labs; cautious adaptive routing/learning. Research prototypes may begin earlier once Stage 4 and Stage 6 evidence/governance prerequisites exist, but this stage is not a Foundation dependency. | Rikuri can demonstrate reproducible, evidence-backed improvement in how the user + models + tools work together and can surface useful non-obvious questions/connections without silently converting speculation into truth or preventing project completion. |
+| **10 — Collaborative Intelligence / Inquiry & Discovery** | Experience Intelligence; selective reflection and consolidation; pattern abstraction; cognitive recipes; champion/challenger optionality; bounded curiosity; Question/Frame generation; Cognitive Ensembles; Lightbulb lifecycle; incubation sessions; domain-specific discovery labs; cautious adaptive routing/learning. Research prototypes may begin earlier once product Stage 4 (Model Lab) and product Stage 6 (multi-agent governance) evidence/governance prerequisites exist, but this stage is not a Foundation dependency. | Rikuri can demonstrate reproducible, evidence-backed improvement in how the user + models + tools work together and can surface useful non-obvious questions/connections without silently converting speculation into truth or preventing project completion. |
 
 > **Stage rule:** no downstream stage is declared active merely because its calendar date arrived. The prior dependency gate must be green, or the checklist records an explicit DEFERRED/RESEQUENCED decision with reason, impact, new position, owner, and acceptance conditions.
 
@@ -1678,4 +1678,4 @@ P0 = foundational/required for the corresponding product release; P1 = important
 | Canonical data               | Durable source/state that must survive migration and from which derived indexes can be rebuilt.                                      |
 | Derived data                 | Embeddings, indexes, caches, summaries, or projections that can be regenerated.                                                      |
 
-**End of Rikuri Pi Product Requirements Document v1.1**
+**End of Rikuri Pi Product Requirements Document v1.2**

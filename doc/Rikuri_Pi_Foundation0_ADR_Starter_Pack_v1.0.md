@@ -1,5 +1,7 @@
 # Rikuri Pi — Foundation-0 ADR Starter Pack
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 **Version:** 1.0 Draft
 
 ADRs record decisions when they are made. They are not retrospective documentation.
@@ -39,23 +41,25 @@ Related requirements/tests:
 
 ## Initial ADR queue
 
+Targets follow Stage Plan v2.1, not the historical 13-week calendar. ADR numbers identify decisions, not execution order. ADR 0014 must be accepted in Stage 01 before restore acceptance. Additional Stage 03 project-trust and Stage 04 Pi/profile ADR numbers are allocated when proposed.
+
 | ADR | Decision | Target |
 |---|---|---|
-| 0001 | Stable ID format | Week 1 |
-| 0002 | SQLite + current-state repository model | Week 1 |
-| 0003 | Referenced-content append-only ledger + idempotency | Week 1 |
-| 0004 | Foundation threat model / trusted-computing-base assumptions | Week 1 |
-| 0005 | Per-deletion-unit key / crypto-shredding contract | Week 2 |
-| 0006 | Import source identity and re-import idempotency | Week 3–5 |
-| 0007 | FTS5 baseline + VectorIndex boundary | Week 3–5 |
-| 0008 | Two one-way Markdown flows | Week 3–5 |
-| 0009 | Context Package + instruction-authority model | Week 6 |
-| 0010 | Hard-budget reservation and unknown-cost behavior | Week 7 |
-| 0011 | Egress by construction + envelope assurance levels | Week 8 |
-| 0012 | Trusted approval semantics + prompt-injection containment | Week 9 |
-| 0013 | Single-window Foundation UI + i18n resource boundary | Week 10–11 |
-| 0014 | Backup format / restore verification / deletion-aware recovery keys | Week 12 |
-| 0015 | Architecture v1.1 freeze from Foundation evidence | Week 13 |
+| 0001 | Stable ID format | Stage 00 |
+| 0002 | SQLite + current-state repository model | Stage 00 |
+| 0003 | Referenced-content append-only ledger + idempotency | Stage 00 |
+| 0004 | Foundation threat model / trusted-computing-base assumptions | Stage 00 |
+| 0005 | Per-deletion-unit key / crypto-shredding contract | Stage 01 |
+| 0006 | Import source identity and re-import idempotency | Stage 01 |
+| 0007 | FTS5 baseline + VectorIndex boundary | Stage 01 |
+| 0008 | Two one-way Markdown flows | Stage 01 |
+| 0009 | Context Package + instruction-authority model | Stage 02 |
+| 0010 | Hard-budget reservation and unknown-cost behavior | Stage 02 |
+| 0011 | Egress by construction + envelope assurance levels | Stage 02 contract; Stage 03 assurance evidence |
+| 0012 | Trusted approval semantics + prompt-injection containment | Stage 02 |
+| 0013 | Single-window Foundation UI + i18n resource boundary | Stage 05 |
+| 0014 | Backup format / restore verification / deletion-aware recovery keys | Stage 01, before F6 |
+| 0015 | Architecture v1.7 freeze from Foundation evidence | Stage 05 |
 
 ## Supersession rule
 

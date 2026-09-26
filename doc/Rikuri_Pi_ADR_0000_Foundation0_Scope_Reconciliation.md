@@ -41,3 +41,11 @@ Each stage ends with an owner-runnable demonstration and a plain-language **Pass
 - The exact durable revocation storage and recovery-key protocol, viable Ubuntu envelope backend, and cloud/local handoff state schema are implementation decisions to prove through E3, E5, and Stage 04. Until then their guarantees are requirements, not implemented facts.
 - If an experiment fails, keep the dependent gate red and record an ADR-backed redesign or explicit owner decision on any weaker product promise. Do not silently reduce an acceptance test to match elapsed time.
 - No actual build or security gate has passed merely because these planning documents agree.
+
+## September 25, 2026 — documentation reconciliation addendum
+
+The original decision and version scope above are retained as history. The current planning baseline is PRD v1.2, Architecture v1.7, Engineering Standard v1.2, Stage Plan v2.1, and Master Build Sequence v1.1, with Collaborative Intelligence v0.1 and Writer v1.4 as later-stage references. Stage Plan v2.1 supersedes v2.0 as the live gate board. The six-stage scope, gate identities, platform boundaries, and evidence requirements above remain in force.
+
+The Collaborative Intelligence addition makes existing execution evidence explicit: stable IDs, versioned execution/profile identity where exposed, typed events, verification/outcome links, cost, retries, human intervention/feedback, provenance, and privacy. T00.12, T02.16, and T04.18 verify these requirements on existing vertical paths; they do not introduce a seventh stage or claim a gate has passed. No Foundation-0 personality inference, autonomous reflection, learned routing, Lightbulb generation, incubation scheduler, or protected-policy mutation is added. Product Stage 4 evidence and Stage 6 governance precede research prototypes; product Stage 10 owns productization. Writer’s own foundation/MVP remains post-Foundation domain work.
+
+Acceptance alignment includes managed pre-forget restore with current revocation and refusal without it, ten expected answer-or-abstain knowledge cases, the complete eight-point release crash matrix, and the unchanged W1/F1–F10 plus Bootstrap/F4-lite gate board. Implementation remains unproven.

@@ -1,5 +1,7 @@
 # RIKURI PI
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 Personal Intelligence Platform  
 Architecture Specification  
 Version 1.7 \| Updated September 25, 2026
@@ -19,7 +21,7 @@ Version 1.7 \| Updated September 25, 2026
 
 ## Foundation-0 reconciliation — September 24, 2026
 
-ADR 0000 and the **Foundation-0 Re-baselined Stage Plan v2.0** control the Foundation-0 slice. This architecture preserves the larger design; the stage plan owns sequence and evidence. The six stages target June 2027 with four to eight weeks of contingency. Stage 00 proves kernel crash recovery and runs an early Ubuntu sandbox admission probe; all eight real cross-component crash points close at release. Stage 02 proves a minimal Knowledge Context Compiler with ten expected answer-or-abstain outcomes (an always-abstain implementation fails), policy refusal, and hard-budget preflight. Stage 03 proves Ubuntu envelope and project/descendant containment; the full cloud-to-local F4 gate waits for the local runtime in Stage 04. Stage 05 proves the one-window English Home and the integrated gates. Each stage has an owner-runnable demonstration backed by a linked evidence receipt.
+ADR 0000 and the **Foundation-0 Re-baselined Stage Plan v2.1** control the Foundation-0 slice. This architecture preserves the larger design; the stage plan owns sequence and evidence. The six stages target June 2027 with four to eight weeks of contingency. Stage 00 proves kernel crash recovery and runs an early Ubuntu sandbox admission probe; all eight real cross-component crash points close at release. Stage 02 proves a minimal Knowledge Context Compiler with ten expected answer-or-abstain outcomes (an always-abstain implementation fails), policy refusal, and hard-budget preflight. Stage 03 proves Ubuntu envelope and project/descendant containment; the full cloud-to-local F4 gate waits for the local runtime in Stage 04. Stage 05 proves the one-window English Home and the integrated gates. Each stage has an owner-runnable demonstration backed by a linked evidence receipt.
 
 Ubuntu is the only full Foundation-0 security/execution reference. The platform-neutral Rust core builds and runs unit/contract tests on macOS throughout; native macOS envelope and desktop parity remain experimental. One OpenAI-compatible cloud access path is tested with non-sensitive synthetic data, with other providers requiring their own capability contracts. Managed restore must consult durable current revocation state even for a backup created before forgetting; absent trustworthy revocation state it refuses/quarantines, rather than presenting a false safe restore. No unproven platform or provider capability is advertised as supported. Product P0 priorities and the later Foundation Release do not expand the Foundation-0 gate set.
 
@@ -73,6 +75,8 @@ Revision 1.7 adds the long-term **Collaborative Intelligence** North Star withou
 20. Knowledge and Idea Fabric
 
 21. Canonical Data and Storage Architecture
+
+21A. Collaborative Intelligence Scaffold
 
 22. Source-of-Truth Rules
 
@@ -2741,10 +2745,15 @@ catalog, durable routines, quiet digests, learned skills.
 Writing/study/research/media/meeting/lecture and specialized domain
 packs on common primitives.
 
-## Stage 9 — Business/team readiness
+## Stage 9 — Windows parity + business/team readiness
 
-Tenancy, organization policy/memory, shared projects, admin/audit,
-delegated approvals, server deployment.
+Windows OS Capability/envelope parity after Ubuntu/macOS contracts are stable; tenancy, organization policy/memory, shared projects, admin/audit, delegated approvals, server deployment.
+
+## Stage 10 — Collaborative Intelligence / Inquiry & Discovery
+
+ExperienceEpisode projections, selective reflection, candidate abstractions, CognitiveRecipe evaluation, bounded exploration, Lightbulb lifecycle, domain verifiers, and transparent guidance build on the evidence substrate in §21A. Research prototypes require product Stage 4 Model Lab evidence and product Stage 6 governance; neither is Foundation-0 Stage 04. Productization follows the Master Build Sequence v1.1.
+
+**Exit:** repeatable verified uplift or useful discovery against simpler baselines within cost, attention, and privacy budgets. Candidates remain traceable, reversible, and separate from canonical truth and protected policy. “No useful insight” is valid.
 
 ### Stage transition rule
 
@@ -2767,7 +2776,7 @@ dependent checklist ordering is updated in the same change.
 
 # 50. Architecture Acceptance Tests
 
-Architecture v1.6 defines ten **Foundation-0 acceptance demonstrations** plus the W1 kernel crash gate. The live Stage Plan also tracks Bootstrap and the F4-lite intermediate policy checkpoint; F4 closes only in Stage 04. The eighth demonstration proves that Rikuri
+Architecture v1.7 defines ten **Foundation-0 acceptance demonstrations** plus the W1 kernel crash gate. The live Stage Plan also tracks Bootstrap and the F4-lite intermediate policy checkpoint; F4 closes only in Stage 04. The eighth demonstration proves that Rikuri
 itself is being built under the same evidence-first project discipline
 it should eventually provide to users.
 
@@ -2793,7 +2802,7 @@ than Foundation-0 blockers.
 
 # 51. Deferred Prototypes and Post-Foundation Decisions
 
-Architecture v1.6 intentionally closes several v1.0 questions and defers
+Architecture v1.7 retains the decisions that close several v1.0 questions and defers
 others until Foundation-0 provides evidence.
 
 ### Closed for Foundation-0
@@ -3320,4 +3329,4 @@ Intelligence state among authorized user devices and optional hub.
 occurred, such as tests, logs, source verification, screenshots,
 benchmarks, or state queries.
 
-**End of Rikuri Pi Architecture Specification v1.6**
+**End of Rikuri Pi Architecture Specification v1.7**

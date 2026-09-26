@@ -1,8 +1,11 @@
 # Rikuri Pi — Engineering Standard
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 **Version:** 1.2 Draft  
 **Applies to:** Rikuri Pi Foundation-0 and all later development  
-**Canonical repo path:** `docs/engineering/ENGINEERING_STANDARD.md`
+**Current repo path:** `doc/Rikuri_Pi_Engineering_Standard_v1.2.md`
+**Planned implementation path:** `docs/engineering/ENGINEERING_STANDARD.md` (move through an explicit repository change; do not maintain two authorities)
 
 > Professional quality must not depend on the builder being able to read every line of code. Rikuri uses standard work, executable gates, evidence, and explicit stage records so a novice can supply ideas and requirements while the platform supplies the project-management and verification discipline.
 
@@ -18,7 +21,7 @@ A coding agent may propose and implement work. It may not certify its own work m
 
 ## Foundation-0 operating profile
 
-ADR 0000 reconciles this Standard with the six-stage Foundation-0 Stage Plan v2.0. The Stage Plan is the live sequence and gate board; the 90-Day Build Plan v1.6 is historical. June 2027 is a planning target with four to eight weeks of contingency. A date never waives a gate. One coherent change still gets one Build Record made during planning, with plan, wiring point, verification, and disposition. Routine low-risk changes use a brief record; protected-core, privacy, security, money, deletion, migration, recovery, or irreversible work records full risk and negative-test evidence. Every existing protected crate has a Module Contract, real caller, health signal, and tests before the relevant gate closes.
+ADR 0000 reconciles this Standard with the six-stage Foundation-0 Stage Plan v2.1. The Stage Plan is the live sequence and gate board; the 90-Day Build Plan v1.6 is historical. June 2027 is a planning target with four to eight weeks of contingency. A date never waives a gate. One coherent change still gets one Build Record made during planning, with plan, wiring point, verification, and disposition. Routine low-risk changes use a brief record; protected-core, privacy, security, money, deletion, migration, recovery, or irreversible work records full risk and negative-test evidence. Every existing protected crate has a Module Contract, real caller, health signal, and tests before the relevant gate closes.
 
 The product owner need not read code. Each stage provides a short owner-runnable demonstration and a receipt with Pass, Fail, or Not yet proven, dated test/probe links, limitations, and the next decision. A demo proves visible usefulness; deterministic gates, failure drills, and appropriately independent adversarial review prove protected behavior. Review of high-impact security and restore claims happens before the internal Foundation-0 release. The later public-exposure release gate below retains its separate requirements, including a human external security audit.
 

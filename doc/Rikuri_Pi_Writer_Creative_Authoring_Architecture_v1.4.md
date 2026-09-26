@@ -1,7 +1,15 @@
 # Rikuri Pi Writer / Creative Authoring Architecture
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 **Human-first authorship, world creation, adaptive storyworlds, and timeless creative artifacts**  
 **Architecture & Roadmap Consolidation v1.4 - September 2026**
+
+## Scope and roadmap alignment
+
+This is a post-Foundation domain architecture under product Stage 8 (Rich domains) in the Master Build Sequence v1.1. Its “Foundation,” phases 1–6, and MVP describe Writer delivery order, not Foundation-0 commitments or platform stage numbers. Shared services may land earlier through their own stage gates. Learned cross-episode Pattern Mirror, cognitive ensembles, and Inquiry/Closure research follow Collaborative Intelligence v0.1 and product Stage 10 prerequisites (product Stage 4 evidence and Stage 6 governance). Ordinary author-requested critique does not require learned user-pattern inference.
+
+Canonical creative changes use the governed Knowledge Service and Rikuri-owned transaction path. Generated interpretations, critique, patterns, and story alternatives remain candidates until authorized promotion; fictional canon is author-approved project truth, not an assertion about the external world.
 
 ## Executive Summary
 

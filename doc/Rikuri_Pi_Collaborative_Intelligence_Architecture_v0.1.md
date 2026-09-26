@@ -1,5 +1,7 @@
 # Rikuri Pi — Collaborative Intelligence / Inquiry & Discovery Architecture
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 **Version:** 0.1 Research Baseline  
 **Date:** September 25, 2026  
 **Status:** Long-term product North Star and post-Foundation research track; not a Foundation-0 implementation commitment
@@ -252,9 +254,11 @@ The preferred collaboration style is subtle, timely and transparent. Rikuri shou
 
 Every material suggestion should be explainable: why it appeared, what evidence supports it, and what uncertainty/counterexamples remain.
 
-## 13. Foundation requirements — build now
+## 13. Foundation-0 evidence requirements and future extension points
 
-The current platform must preserve:
+Foundation-0 preserves evidence from implemented paths under PRD v1.2 §9.20, Architecture v1.7 §21A, and Stage Plan v2.1. Future object types need extension-friendly contracts, not empty services or autonomous learning. Product Stage 4 Model Lab evidence and product Stage 6 governance precede research prototypes; product Stage 10 owns productization.
+
+The platform must preserve:
 
 1. stable IDs for project/task/run/event/model/runtime/harness/profile/tool/artifact/source/outcome;
 2. append-only meaningful event history with typed failures and timestamps;
@@ -268,9 +272,11 @@ The current platform must preserve:
 10. privacy/security classification and separate read/search/export/execute authorities;
 11. extension-friendly schemas for future candidate-intelligence objects;
 12. durable user feedback/outcome links, including delayed usefulness;
-13. scheduling/idle/budget hooks for bounded future incubation;
+13. existing budget/cancellation contracts remain extensible; incubation scheduling and idle watchers are post-Foundation work;
 14. model/profile onboarding metadata sufficient to re-run comparisons;
-15. tests proving these records are actually wired end-to-end, not merely scaffolded.
+15. tests proving evidence from implemented paths is wired end-to-end (T00.12, T02.16, T04.18); future services remain deferred.
+
+Unavailable provider fields are explicitly unknown/unsupported, never invented. Profile references must be versioned or fingerprinted when exposed; replay uses deterministic fixtures and does not promise identical live-model responses. Sensitive content stays in deletion-governed referenced storage, not immutable event payloads. Delayed feedback uses durable outcome links; automated credit assignment remains deferred.
 
 ## 14. Explicit deferrals
 

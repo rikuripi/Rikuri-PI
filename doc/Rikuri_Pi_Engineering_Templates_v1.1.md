@@ -1,5 +1,7 @@
 # Rikuri Pi — Engineering Templates
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 **Version:** 1.1 Draft  
 **Purpose:** Canonical checklist/evidence templates used by the Engineering Standard and Foundation-0 build plan.
 
@@ -82,9 +84,11 @@
 
 > Every unchecked required item above gets a line here with reason, owner, and due date/stage. “To save time” is not a reason.
 
-| Item | Reason | Owner | Due date/stage |
-|---|---|---|---|
-| none | | | |
+| Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
+|---|---|---|---|---|---|---|
+| none | | | | | | |
+
+For execution changes, link the stable run/outcome, versioned execution/profile identity where exposed, verification result, significant retry/failure/intervention, and cost/time where available. Record unknown fields explicitly; exclude unauthorized sensitive telemetry. Documentation-only work records these fields as N/A.
 
 ## Evidence log
 
@@ -150,9 +154,9 @@ One paragraph describing what must become true, not a list of implementation tas
 
 ## Skipped / Deferred
 
-| Item | Reason | Owner | Due stage/date |
-|---|---|---|---|
-| none | | | |
+| Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
+|---|---|---|---|---|---|---|
+| none | | | | | | |
 
 ## Evidence
 

@@ -1,6 +1,8 @@
 # Rikuri Pi — Foundation-0 Re-baselined Stage Plan v2.1
 
-Sep 24, 2026 · @Henry C · Revised planning baseline
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
+Sep 25, 2026 · @Henry C · Revised planning baseline
 
 ## Purpose and operating assumptions
 
@@ -14,7 +16,9 @@ The owner judges the **visible result**, not the code. Each stage ends with a sh
 - Ubuntu LTS is the only full Foundation-0 execution and security reference. Platform-neutral Rust core build, unit, and contract tests also run on macOS in CI. Native macOS execution-envelope assurance and desktop parity are deferred; they must never be advertised as proven.
 - Prefer established components for infrastructure, after checking licenses, supported capabilities, integration cost, and failure behavior. The six time-boxed Rikuri-specific experiments in the register test distinctive claims; connecting existing components correctly still requires engineering and evidence.
 - A stage is COMPLETE only when its vertical slice runs end to end and every listed test is green with linked evidence. No calendar date advances a stage.
-- ADR 0000 records the reconciliation with PRD v1.1, Architecture v1.6, Engineering Standard v1.1, and Master Build Sequence v1.0. Freeze speculative redesign during execution; correct inaccurate requirements, security claims, and runbooks through an ADR and matching tests when evidence demands it.
+- ADR 0000 and its September 25 addendum reconcile PRD v1.2, Architecture v1.7, Engineering Standard v1.2, and Master Build Sequence v1.1. Freeze speculative redesign during execution; correct inaccurate requirements, security claims, and runbooks through an ADR and matching tests when evidence demands it.
+
+Foundation-0 stages use two digits (00–05). Product stages use unpadded numbers (0–10); product Stage 0 contains all six Foundation-0 stages. Product Stage 4 is Model Lab, not Foundation-0 Stage 04 (Pi/local coding). Writer phases are a separate domain roadmap.
 
 **Item ID scheme**
 
@@ -22,12 +26,12 @@ The owner judges the **visible result**, not the code. Each stage ends with a sh
 
 **Changes from Build Plan v1.6**
 
-| Change | v1.6 | v2.0 |
+| Change | Historical Build Plan v1.6 | Current Stage Plan v2.1 |
 | --- | --- | --- |
 | Duration | 13 weeks | About 9 months, 6 stages; 4–8-week contingency reserve |
 | Importers in Foundation-0 | 4 (ChatGPT, Claude, Obsidian, Git) | 2 (ChatGPT, Markdown/Obsidian); Claude + Git → early Stage 1 after F2/F9 |
 | macOS | continuous core build/test target | Keep platform-neutral core tests; native envelope and desktop assurance deferred |
-| Composite / vision-specialist plans | Week 8 | post-Foundation Stage 4 (S4.5) |
+| Composite / vision-specialist plans | Week 8 | post-Foundation product Stage 4, build item 15 |
 | Module Contracts | all 14 crates from Week 1 | only crates that exist and are protected-core |
 | Docs | changed with behavior | Keep operational docs and evidence current; architecture changes require ADR |
 | Pi API spike | none | 2-day throwaway spike in Stage 00 (E2); early Ubuntu sandbox feasibility probe |
@@ -35,6 +39,10 @@ The owner judges the **visible result**, not the code. Each stage ends with a sh
 ### Collaborative Intelligence scaffold rule
 
 Foundation-0 does **not** implement Experience Intelligence, nightly reflection, user-pattern inference, Lightbulbs, cognitive ensembles, or adaptive RL. It **does** preserve the evidence those later systems would need: stable task/run/event IDs; exact execution/profile identity where available; versioned prompt/frame/context profile IDs when Rikuri transforms user intent; model/runtime/harness/tool identity; verification and outcome links; retries/fallback/escalation; cost/latency; human intervention/feedback; provenance; and privacy classification. Missing evidence that would make later learning irrecoverably ambiguous is treated as foundation debt and must be dispositioned before the relevant gate closes.
+
+### Evidence scaffold traceability
+
+The scaffold rule is implemented within S00.04–S00.08 (identity/events), S02.02/S02.07 (context/model evidence), and S04.08/S04.14/S04.15 (execution registry, tools, handoff). T00.12, T02.16, and T04.18 verify it on those paths and rerun at release. Feedback is linked data; automated inference and incubation remain deferred.
 
 ## Live gate board
 
@@ -113,6 +121,8 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] T00.10 Smoke checks a content marker in `state.show`, not just process liveness
 - [ ] T00.11 Module Contract check: every crate in `crates/` has a contract file with owns/must-not-own/health
 
+- [ ] T00.12 CLI task → repository → ledger preserves stable task/run/event IDs, typed outcome and verification links across crash/replay; missing required references fail validation. Sensitive payloads remain deletion-governed references.
+
 **Stage 00 exit decision**: W1 green, Bootstrap green, E1/E2 and the Ubuntu sandbox admission probe recorded with outcomes, current macOS core suite green, four Module Contracts, and baseline scope ADR plus ADR 0001–0004 accepted.
 
 ## Stage 01 — Ownership Core
@@ -132,7 +142,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] S01.09 Retrieval corpus: ≥ 20 known-answer questions from real imported history, frozen in `tests/retrieval/`
 - [ ] S01.10 `rikuri-backup`: consistent snapshot (SQLite + ciphertext + key/recovery metadata + manifest + versions), `backup`, `restore --verify`, `forget <id>`; design a durable revocation record independent of any one old snapshot so a managed restore cannot silently restore deleted keys
 - [ ] S01.11 Managed restore applies the latest durable revocation record before materialization. If an old snapshot arrives without trustworthy current revocation state, block or visibly quarantine its sensitive material pending explicit recovery; never silently claim it is safe.
-- [ ] S01.12 ADR 0005–0008 (crypto-shredding contract, import identity/idempotency, FTS5 + VectorIndex boundary, two one-way Markdown flows)
+- [ ] S01.12 ADR 0005–0008 (crypto-shredding contract, import identity/idempotency, FTS5 + VectorIndex boundary, two one-way Markdown flows) and ADR 0014 (backup/restore and deletion-aware recovery)
 - [ ] S01.13 E3 spike: deletion-aware restore determinism (see Experiment register)
 
 **Adopt (do not build)**
@@ -163,7 +173,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] T01.14 Crash matrix point 8 (during backup snapshot creation): no corrupt backup written
 - [ ] T01.15 Documented case: user restores an unmanaged old export by hand; Rikuri does not claim to revoke or erase copies outside its managed restore path
 
-**Stage 01 exit decision**: F2 and F6 green from clean checkout; retrieval floor recorded; E3 outcome recorded; ADR 0005–0008 accepted; Module Contracts for content, import, search, backup.
+**Stage 01 exit decision**: F2 and F6 green from clean checkout; retrieval floor recorded; E3 outcome recorded; ADR 0005–0008 and 0014 accepted; Module Contracts for content, import, search, backup.
 
 ## Stage 02 — Trust and Money
 
@@ -211,6 +221,8 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] T02.13 ModelAdapter contract suite: identity, normalized request/response, cancellation, usage/error normalization, budget preflight; fake and live share kernel/policy/ledger/budget code
 - [ ] T02.14 Security health becomes Degraded when required enforcement probe is absent
 - [ ] T02.15 Knowledge Context Compiler: all 10 supersession/conflict cases meet their expected outcomes; current supported claims are returned where the fixture requires an answer, and uncertain or consequential conflicts explicitly abstain with a reason. Zero unsafe acceptance; an always-abstain implementation fails. Stable low-risk facts trigger no needless verification.
+
+- [ ] T02.16 Synthetic model execution records exposed model/access/runtime/profile/tool identity, versioned prompt/frame/context references when used, verification distinct from completion, retry/cost/intervention evidence, and explicit unknown fields. Privacy-denied content is absent from telemetry and cloud requests; delayed feedback links to the original outcome without rewriting events.
 
 **Stage 02 exit decision**: F5, F7, F4-lite green; E4 outcome recorded; ADR 0009–0012 accepted; Module Contracts for security, context, budget.
 
@@ -315,6 +327,8 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] T04.16 Cloud → local handoff continues a task without restatement and with current ProjectState; Local Only refuses cloud and proceeds only in the proven envelope (**F4**)
 - [ ] T04.17 Pi searches known-answer corpus through scoped `KnowledgeService` tools; direct storage/index access denied
 
+- [ ] T04.18 Pi coding and cloud/local handoff preserve run/outcome/profile provenance and feedback links end-to-end; a second profile remains distinguishable. Replay does not duplicate outcomes, candidate data cannot promote itself to canonical truth, and no autonomous learning service is required.
+
 **Stage 04 exit decision**: F4 and F10 green; E6 outcome recorded; Pi + profile ADRs accepted; Module Contracts for exec, scoped knowledge tools, and harness-pi.
 
 ## Stage 05 — Minimal Home + Foundation Freeze
@@ -333,7 +347,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] S05.08 Health board: last-success / Degraded for every required component
 - [ ] S05.09 Threat → control → test → evidence traceability table complete for all Foundation promises
 - [ ] S05.10 Master Build Sequence reordered to match actual Foundation evidence
-- [ ] S05.11 ADR 0015: Architecture v1.7 freeze recording every deviation from plan
+- [ ] S05.11 ADR 0013: single-window UI and i18n boundary; ADR 0015: Architecture v1.7 freeze recording every deviation from plan
 
 **Adopt (do not build)**
 
@@ -398,7 +412,7 @@ Every v1.6 Foundation item that moved is listed here with a disposition, per the
 | `VectorIndex` implementation + retrieval tuning (Week 4–5) | DEFERRED | Stage 1 | FTS5 baseline is mandatory; vectors are a quality experiment | Retrieval floor set by FTS only | Real dogfood retrieval failures that FTS cannot fix; corpus ≥ 40 questions |
 | `KnowledgeService` read-only harness tools (Week 4–5) | RESEQUENCED | S04.14 | Needs a harness to call it | Stage 04 adds it once Pi is wired | F10 vertical slice exercises search through scoped tools |
 | Native macOS execution envelope and desktop parity (all weeks) | DEFERRED | Stage 1+ | Ubuntu is the sole full Foundation assurance target | No native macOS protection claim; platform-neutral core tests remain continuous | Ubuntu Foundation gate green, followed by macOS threat model and native assurance tests |
-| Composite execution plan, lead + specialists, vision-specialist fixture (Week 7–8) | DEFERRED | Stage 4 (S4.5) | Single-agent evidence precedes composition | Router in S04.08 is single-role | Registry modality metadata + single-role F10 stable |
+| Composite execution plan, lead + specialists, vision-specialist fixture (Week 7–8) | DEFERRED | product Stage 4, build item 15 | Single-agent evidence precedes composition | Router in S04.08 is single-role | Registry modality metadata + single-role F10 stable |
 | Local sanitization / minimal-reproduction for frontier reasoning (Week 6) | KEPT | S02.11 | — | — | — |
 | Session-sequence anomaly signals (Week 9) | KEPT | S03.10 | — | — | — |
 | Monaco in Foundation coding view (Week 10) | CONDITIONAL | S05.07 | Only if F10 was uneventful | None | Disposition recorded at Stage 05 start |
@@ -441,7 +455,7 @@ Stages 2, 3 and 4 each depend only on Stage 1, so they can be sequenced by what 
 | 7 Personal Mesh + responsibilities | Replacement / offline / reconnect / concurrent-update converge without silent loss; backup independent of sync | Encrypted event replication; CRDT only where simultaneous text editing is proven necessary | \~3 months | Conflict semantics; hub optionality |
 | 8 Domain packs + Live Companion | Each domain is a projection over common primitives; no independent mini-brain | Whisper-class local transcription; embeddable editors | open | Per-domain, none foundational |
 | 9 Windows parity + business readiness | OS Capability parity after Ubuntu/macOS stable; tenancy without weakening personal foundations | Windows sandbox primitives (AppContainer / job objects) | open | Tenancy boundary |
-| 10 Collaborative Intelligence / Inquiry & Discovery | Evidence-backed Experience Intelligence and cognitive-recipe learning improve selected human+AI workflows; Inquiry/Discovery surfaces useful questions/connections without promoting speculation to truth | Prefer existing observability, statistics, retrieval, bandit/optimization and verification components behind Rikuri contracts | research/experimental | Begin prototypes only after Stage 4 execution evidence and Stage 6 governance are available; productization remains post-Foundation |
+| 10 Collaborative Intelligence / Inquiry & Discovery | Evidence-backed Experience Intelligence and cognitive-recipe learning improve selected human+AI workflows; Inquiry/Discovery surfaces useful questions/connections without promoting speculation to truth | Prefer existing observability, statistics, retrieval, bandit/optimization and verification components behind Rikuri contracts | research/experimental | Begin prototypes only after product Stage 4 Model Lab evidence and product Stage 6 governance are available; productization remains post-Foundation |
 
 Rough total from Foundation-0 exit to Stage 6 gate: about 18 months of stage estimates, with further contingency for discovery and integration. This is a planning range, not an end-of-2028 promise.
 

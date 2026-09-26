@@ -1,9 +1,13 @@
 # Rikuri Pi — Master Build Sequence & Integration Gate Map
 
+> Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
+
 **Version:** 1.1 | September 25, 2026  
 **Purpose:** The ordered build path after the six-stage Foundation-0 plan, including the post-platform Collaborative Intelligence research/productization track. It is dependency-driven rather than calendar-driven. Every module is built, tested, wired, observed, documented, and stage-gated before dependent capability expands.
 
 > **Core rule:** Build the boring trusted substrate first. Add one vertical capability at a time. Never allow a shiny downstream feature to hide a missing upstream guarantee.
+
+Foundation-0 stages use two digits (00–05). Product stages use unpadded numbers (0–10); product Stage 0 contains all six Foundation-0 stages. Product Stage 4 is Model Lab, not Foundation-0 Stage 04 (Pi/local coding). Writer phases are a separate domain roadmap.
 
 ## A. Universal per-module loop
 
@@ -50,7 +54,7 @@ Then reorder every dependent item in the live checklist in the same change. If t
 
 # Stage 0 — Foundation-0: trusted core
 
-**Live sequence:** Foundation-0 Re-baselined Stage Plan v2.0 and ADR 0000. The earlier 90-Day Build Plan v1.6 is historical. Six gates are estimated from October 2026 to June 2027 with a four-to-eight-week contingency reserve. Dates cannot close unproven gates. Ubuntu is the full execution/security reference; platform-neutral macOS core build/unit/contract tests run continuously, with native macOS envelope and desktop assurance experimental.
+**Live sequence:** Foundation-0 Re-baselined Stage Plan v2.1 and ADR 0000. The earlier 90-Day Build Plan v1.6 is historical. Six gates are estimated from October 2026 to June 2027 with a four-to-eight-week contingency reserve. Dates cannot close unproven gates. Ubuntu is the full execution/security reference; platform-neutral macOS core build/unit/contract tests run continuously, with native macOS envelope and desktop assurance experimental.
 
 1. **Stage 00 — Bootstrap and kernel:** CI/red drill, Engineering Standard/Build Records, IDs/storage/ledger, first transactional crash points, Pi driveability spike, and early Ubuntu namespace/AppArmor admission probe.
 2. **Stage 01 — Ownership:** real ChatGPT and Markdown/Obsidian import with provenance and lexical retrieval, project resolver, encryption, deletion keys, managed backup/restore. Restore both the pre-forget and post-forget snapshots with current durable revocation state; safely refuse/quarantine without it.
@@ -150,6 +154,7 @@ Build order:
 12. Auto router using verified evidence only after sufficient observations.
 13. Native-harness exception routing when measured material advantage exists.
 14. Background probation/revalidation daemon with thermal/battery/idle policy.
+15. Bounded composite execution (lead plus specialists), including a vision-specialist fixture, under per-role capability, privacy, verification, and shared budget limits; no bypass of later multi-agent governance.
 
 **Stage 4 gate:** adding a new compatible model normally requires registry/profile data and evaluation, not core code; Auto can explain why it selected model+runtime+harness+machine+privacy path.
 
@@ -199,7 +204,7 @@ Implement Windows OS Capability/envelope parity after Ubuntu/macOS contracts are
 
 # Stage 10 — Collaborative Intelligence / Inquiry & Discovery
 
-This is the long-term differentiating layer. It is deliberately downstream of trustworthy Personal Intelligence, Model Lab evidence, and multi-agent governance. Research prototypes may begin earlier after their prerequisites are green; none may become an authority over canonical state or protected policy simply because a prototype performs well.
+This is the long-term differentiating layer. It is deliberately downstream of trustworthy Personal Intelligence, Model Lab evidence, and multi-agent governance. Research prototypes may begin earlier after product Stage 4 Model Lab evidence and product Stage 6 governance are green; none may become an authority over canonical state or protected policy simply because a prototype performs well.
 
 Build/research order:
 
