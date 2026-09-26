@@ -1,6 +1,6 @@
 # Rikuri Pi
 
-Rikuri Pi is a planned Personal Intelligence Platform. This repository currently contains the project planning baseline and Git hygiene only. No Foundation-0 implementation or acceptance gate has passed yet.
+Rikuri Pi is a planned Personal Intelligence Platform. This repository currently contains the project planning baseline, Git hygiene, and the AI-session guard described in AGENTS.md. No Foundation-0 implementation or acceptance gate has passed yet.
 
 For repository work, follow [AGENTS.md](AGENTS.md), which adapts the build procedure to Rikuri Pi’s SDLC and current repository maturity.
 

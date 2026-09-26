@@ -7,7 +7,7 @@ Applies to work throughout this repository. Adapted from the supplied Build Proc
 1. Read `git status` and the relevant files before editing. Preserve user changes and other sessions' work; stage only changes belonging to this task.
 2. Read the [documentation index](doc/README.md), the active stage and affected requirements. Do not infer current files from stale editor tabs.
 3. Identify the task's stage, predecessor gates, real caller, and acceptance evidence. Documents describe intended behavior, not proof it exists.
-4. At this revision the repository contains planning documents and Git hygiene only. There is no Rust workspace, application, CI gate, or executable quality script yet. Check the tree each session; update this paragraph when bootstrap implements them.
+4. At this revision the repository contains planning documents, Git hygiene, and the AI-session guard below with its tests and CI workflow. There is no Rust workspace, application, Stage 00 CI gate, or executable quality script yet. Check the tree each session; update this paragraph when bootstrap implements them.
 
 ## Sources of authority
 
@@ -32,6 +32,15 @@ Foundation-0 stages are **00–05**; product stages are **0–10**. Product Stag
 3. **Use standard work every time.** One coherent change gets one Build Record, scaled to risk, begun during planning.
 4. **Detect absence of success.** Process liveness alone cannot prove useful work, successful backup, enforcement, or recovery.
 5. **Turn defects into tripwires.** Significant defects require a regression test, invariant, monitor, ratchet, or refusal that catches the failure class.
+
+## Deterministic gates
+
+Instructions can be skipped; a hook cannot. The hook is a tripwire, not a sandbox: it catches the common forms of each action, not every possible one. In Claude Code sessions, `.claude/hooks/guard.py` runs before every file and shell tool call (wired in `.claude/settings.json`). It refuses reads of secret files, force-pushes, and test edits while the fix-lock is engaged. It asks the owner before edits to protected paths (this file, CLAUDE.md, REVIEW.md, `.gitignore`, Claude settings, the guard, CI, quality scripts, the Engineering Standard and Templates, the Test and Acceptance Strategy, ADRs, the Stage Plan, stage-gate records), pushes to `main`, `gh pr merge`, and GitHub API writes, workflow, secret, or history changes. Policy and worked examples: `.claude/hooks/guard-config.json`. `guard.py` and `test_guard.py` are shared unchanged with the owner's other full-tier repositories; change the policy file, not them.
+
+- A deny is not an obstacle to route around. Stop and ask the owner.
+- Fixing a defect: write the failing test, see it fail, then `python3 .claude/hooks/guard.py fix-lock on <build-record>`. Tests and baselines become read-only until the owner releases the lock.
+- Verify with the `verifier` subagent (`.claude/agents/verifier.md`); review per [REVIEW.md](REVIEW.md).
+- The hook covers Claude Code only. Other agents follow the same rules by instruction.
 
 ## Per-change SDLC
 
@@ -79,7 +88,7 @@ Foundation-0 stages are **00–05**; product stages are **0–10**. Product Stag
 
 ## Verification by repository maturity
 
-**Documentation-only work now:** validate local links, current version references, stage/item references, scope consistency, and `git diff --check`; inspect `git status` and the final diff. Runtime tests are N/A when no executable behavior changes. Do not create trivial tests solely to satisfy a checkbox.
+**Documentation-only work now:** validate local links, current version references, stage/item references, scope consistency, and `git diff --check`; inspect `git status` and the final diff. Runtime tests are N/A when no executable behavior changes. Do not create trivial tests solely to satisfy a checkbox. When `.claude/` changes, run `python3 -m unittest discover -s .claude/hooks -p 'test_*.py'`. `.github/workflows/claude-guard.yml` runs the same tests on GitHub; do not call it green until a run has been observed.
 
 **Stage 00 bootstrap:** implement the planned `scripts/quality/full-gate.sh`, `scripts/quality/smoke.sh`, and `scripts/quality/scrap-sweep.sh` as small reviewable scripts. They are planned paths, not commands currently available. Establish protected-main workflow, Ubuntu format/build/clippy/unit/contract/secret/ratchet gates, macOS core checks, and red-test/secret-scan drills. Do not claim CI or branch protection exists until verified.
 

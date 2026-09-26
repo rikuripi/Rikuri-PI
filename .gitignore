@@ -77,6 +77,13 @@ core
 core.[0-9]*
 *.core
 
+# .claude/ is per-developer EXCEPT the shared gates (AGENTS.md >
+# Deterministic gates). state/ (fix-lock) stays local.
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/agents/
+
 # Editors
 .idea/
 .vscode/
