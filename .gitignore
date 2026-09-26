@@ -70,6 +70,12 @@ __pycache__/
 .directory
 .Trash-*/
 .nfs*
+.fuse_hidden*
+.goutputstream-*
+lost+found/
+core
+core.[0-9]*
+*.core
 
 # Editors
 .idea/
