@@ -9,7 +9,7 @@
 | Commits | This change (committed separately from the CLAUDE.md entry-point change) |
 | Stage Gate | N/A — agent tooling; no Foundation-0 gate opened or closed |
 | Related ADR / requirement | Engineering Standard v1.2 (protected main, secret scan, "point every AI session at this file"); AGENTS.md Five working laws |
-| Status | COMPLETE — verifier PASS (round 3); first CI run NOT YET PROVEN at commit time (see deferral table) |
+| Status | COMPLETE — verifier PASS (round 3); first CI run PASS (run 36212469175, py3.9 + py3.12) |
 
 ## 1. Plan
 
@@ -62,7 +62,7 @@ Protected set for this repository (the owner said "commit and push" after review
 
 ## 5. Close Out
 
-- [x] Full required gate green: the documentation-maturity gate (links, `git diff --check`) and the guard tests pass. The Stage 00 gates do not exist yet.
+- [x] Full required gate green: the documentation-maturity gate (links, `git diff --check`) and the guard tests pass, locally and in CI (run 36212469175 on c5a7ad9: py3.9 and py3.12 success). The Stage 00 gates do not exist yet.
 - [x] Scrap Sweep complete: scratch copies were used for the probes and removed. The test runs' `__pycache__` was removed. No temporary files remain in the checkout.
 - [x] No unexplained skipped/disabled tests or new unowned debt (see table).
 - [x] Documentation updated in the same change: AGENTS.md (Deterministic gates section, maturity paragraph, verification line), README.md, REVIEW.md. No help or RAG surface exists yet.
@@ -85,7 +85,7 @@ Protected set for this repository (the owner said "commit and push" after review
 
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
-| `claude-guard.yml` observed green on GitHub | NOT YET PROVEN | Never run: `.github/` is not on origin/main; the owner commits and pushes | Until then only local runs prove the tests; Python 3.9 on `ubuntu-latest` is unproven | Henry | first push after this change | Both matrix jobs (3.9, 3.12) green on that push |
+| `claude-guard.yml` observed green on GitHub | DONE — PASS | Run 36212469175 on c5a7ad9 (push to main, 2026-09-26T02:41Z): both jobs success; observed by the owner and confirmed through the read-only Rikuri-PI token | None | Henry | — | — |
 | Protected set confirmed | DONE | Owner said "commit and push" after reviewing the list (2026-09-25) | None; the set can be narrowed by editing `protected_globs` | Henry | — | — |
 | `.claude/settings.local.json` gap in rikurinode, Iceman, AISecurity | DEFERRED | Other repositories' protected policy files; rikurinode's has another session's uncommitted edits | Those repositories' hooks can be disabled by a silent write | Henry | next change to each repository's guard policy | Each policy protects `.claude/settings.local.json` with a worked example |
 | `guard.py` docstring lists only three repositories | DEFERRED | The shared file carries another session's uncommitted `fix_lock_preflight` change in all three repositories; editing it now mixes two changes | Documentation only | Henry | next `guard.py` sync | Docstring names all full-tier repositories; `cmp` identical across all four |
@@ -103,4 +103,5 @@ guard.py direct: Edit AGENTS.md -> {"permissionDecision": "ask", ...}; Edit doc/
 verifier round 1: VERDICT: FAIL (settings.local.json silent allow) + policy gaps -> fixed, 44 -> 67 examples
 verifier round 2: VERDICT: FAIL (gh auth status -t, graphql @file/--input/$VAR, -fKEY=VAL) -> fixed, 67 -> 78 examples; py3.12 + py3.9 Ran 16 tests OK
 verifier round 3: VERDICT: PASS (all round-2 items ask or are in Limitations; routine gh/git/cargo/build-record actions allow; 3.12 + 3.9 OK; cmp 9/9; one nit, the $-variable GraphQL false positive, added to Limitations)
+CI run 36212469175 (AI-session guard, push, c5a7ad9): success; Guard policy tests (py3.9): success; Guard policy tests (py3.12): success
 ```
