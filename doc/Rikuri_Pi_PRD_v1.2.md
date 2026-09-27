@@ -796,6 +796,40 @@ These requirements exist **now** so later Collaborative Intelligence can be scaf
 9. No later learning mechanism may directly self-modify protected core policy, security boundaries, canonical truth, or irreversible user state. Learned suggestions/promotions require explicit gates appropriate to consequence.
 10. The user MUST be able to inspect why a future suggestion, learned heuristic, or intervention was surfaced and which observations support it.
 
+## 9.21 Evidence-based decision support (post-Foundation)
+
+September 26, 2026 clarification: Rikuri should help individuals and small teams make credible strategic decisions through proportionate research, explicit alternatives, and inspectable evidence. Method details live in [Collaborative Intelligence §8](Rikuri_Pi_Collaborative_Intelligence_Architecture_v0.1.md#8-cognitive-ensembles). These requirements are future product scope; they add no Foundation-0 gate or runtime service. Product Stage 4 evidence and Stage 6 governance precede research prototypes; Stage 10 owns productization.
+
+| ID | Pri | Requirement | Acceptance for future implementation |
+|---|---|---|---|
+| DEC-001 | P1 | Simple request, rigorous procedure | An ordinary strategy question selects an inspectable, versioned method with explicit objectives, constraints, privacy, budget and stopping conditions; no agent configuration required. |
+| DEC-002 | P1 | Evidence for and against | Material claims retain provenance, source dependence, date, assumptions, contradictions and collection gaps; repeated sources do not become independent confirmation. |
+| DEC-003 | P1 | Meaningful choices | Normally two or three viable actions are compared across plausible scenarios with downside, reversibility, mitigation and reassessment conditions; unsupported alternatives and insufficient evidence remain visible. |
+| DEC-004 | P1 | Independent challenge and verification | Initial alternatives precede cross-critique; tests or targeted research address pivotal disagreement; dissent survives synthesis; agreement and ACH scores are not proof or calibrated probabilities. |
+| DEC-005 | P1 | Credible business and fundraising claims | Actual traction, estimates and forecasts are distinguished; market and financial calculations are reproducible; opposing evidence and financing dependencies are disclosed; claims remain traceable in exported material under source permissions. |
+| DEC-006 | P1 | Evaluated decision quality | Procedures outperform or justify their tradeoffs against simpler baselines on predeclared cases, including negative tests, cost and user effort; no promise of unbiased judgment, funding or business success. |
+| DEC-007 | P1 | Privacy-aware collaboration placement | Local, remote and mixed work use explicit data/authority admission; proprietary source-derived content cannot silently move to a VPS or cloud model; advice cannot authorize execution. |
+
+Foundation compatibility is limited to the existing §9.20 evidence hooks and Architecture §21A.8. New decision objects, ACH engines, councils, business workflows, watchers, and VPS executors remain deferred.
+
+## 9.22 Purpose-driven presets and tool-assisted work (post-Foundation)
+
+September 26, 2026 clarification: users should request a useful outcome and receive an appropriate, verifiable workflow with explanations suited to their needs. [Collaborative Intelligence §6.4–6.7](Rikuri_Pi_Collaborative_Intelligence_Architecture_v0.1.md#64-purpose-driven-capability-presets) defines preset semantics; Architecture §21A.3 and §25 define integration boundaries. Existing component stage order remains; integrated recipe research requires product Stage 4 evidence and Stage 6 governance, with Stage 10 productization. These requirements add no Foundation-0 gate.
+
+| ID | Pri | Requirement | Acceptance for future implementation |
+|---|---|---|---|
+| PRE-001 | P1 | Purpose-driven composition | An outcome selects a versioned recipe covering models/roles, tools, skills, plugins, context topology, success criteria and governance; use the smallest sufficient configuration. |
+| PRE-002 | P1 | User choice and customization | Built-in defaults, saved custom presets and task overrides resolve transparently; users inspect differences and save variants; incompatible selections explain why and offer eligible alternatives. |
+| PRE-003 | P1 | Safe reset and upgrades | Reset previews its target version and changes, supports policy-revalidated undo, preserves project data/work/evidence, and never regrants authority; upgrades preserve customizations and active runs retain resolved configuration. |
+| PRE-004 | P1 | Isolated and joint context | Initial independent work and later joint review have explicit information boundaries; source access restrictions survive sharing and synthesis. |
+| PRE-005 | P1 | Extensible tool choices | Plugins/MCP capabilities become selectable only with truthful capability, locality, cost, permission and evaluation information; installation does not grant execution or cross-project access. |
+| PRE-006 | P1 | Method and tool fit | Exact, numerical, stochastic and semantic tasks select appropriate tools; results preserve assumptions and reproducibility evidence; deterministic checks remain outside probabilistic authority. |
+| PRE-007 | P1 | Interpretation with expandable depth | Novices receive practical meaning and limitations; experts can inspect sources, methods, code and diagnostics; both views preserve the same material uncertainty. |
+| PRE-008 | P1 | Actionable evidence gaps | Missing data and decision impact are explicit; on request suggest collection/source options and their limitations, effort and cost without initiating unauthorized collection. |
+| PRE-009 | P1 | Outcome verification and graceful failure | Real tool outcomes are checked, missing dependencies/degradation are visible, and substituted tools require eligibility/evaluation; creative judgments remain distinct from technical checks. |
+
+Business, research, mathematical and video-production presets are illustrative future applications, not promises of specific commercial integrations. Foundation-0 retains only existing §9.20 evidence, identity, privacy and extension-friendly contracts; it does not implement a preset manager, plugin marketplace, team orchestrator or simulation/media suite.
+
 # 10. Security and Trust Requirements
 
 AISecurity is an existing Rust/Swift foundation to evolve into the Rikuri security layer. Security must be mandatory in the execution path, model-independent, and capable of remaining unobtrusive during normal operation while proving its own health.

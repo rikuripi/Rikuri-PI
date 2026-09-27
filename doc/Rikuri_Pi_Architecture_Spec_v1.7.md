@@ -1437,6 +1437,12 @@ A `CognitiveRecipe` is a versioned post-training operating configuration for a p
 
 Rikuri learns recipes empirically. Early selection is deterministic/evidence-based. Later contextual-bandit or RL-style controllers are allowed only after offline evaluation and protected promotion gates.
 
+### Purpose presets and resolved execution configuration
+
+September 26, 2026 clarification — future product scope. Purpose presets are user-facing CognitiveRecipe configurations binding model/worker roles, skills, tool/plugin capability references, isolated/shared context topology, verification, and policy/budget constraints. They compose the existing capability registry, execution profiles, task lifecycle and Connector Gateway rather than create a separate execution authority. [Collaborative Intelligence §6.4–6.7](Rikuri_Pi_Collaborative_Intelligence_Architecture_v0.1.md#64-purpose-driven-capability-presets) owns customization/reset, tool-method fit, explanations and admission cases; PRD §9.22 provides acceptance requirements.
+
+Resolve built-in version → saved customization → task overrides, then validate eligibility and authoritative policy. Record the effective immutable run configuration and versioned dependencies (unknown identities explicit); revalidate authority at execution, resume and configuration transition. Reset/undo affects configuration only and cannot restore revoked grants. Context joins remain policy-filtered. Recommendations and learned recipe choices cannot self-authorize installation, data disclosure, spending or publication. Foundation-0 preserves existing evidence hooks; preset resolution and these future object types are not new foundation services.
+
 ## 21A.4 Economical reflection and incubation
 
 The intended loop is:
@@ -1456,6 +1462,12 @@ Rikuri may eventually learn evidence-backed patterns about user strengths, recur
 ## 21A.7 Inquiry & Discovery
 
 A later Inquiry & Discovery Engine may generate better questions, reframings, cross-domain connections, rival hypotheses, counterfactuals, scenarios, and candidate solutions from Personal Intelligence plus authorized external research/tools. Novelty must not be confused with truth. Domain verifiers (tests, formal proof, calculators, simulations, source checks, experiments) should be used whenever available. A valid outcome may be “no sufficiently strong insight found.”
+
+### Decision procedure integration — September 26, 2026 clarification
+
+Future decision support implements PRD §9.21 through versioned cognitive recipes and the governed task lifecycle. [Collaborative Intelligence §8](Rikuri_Pi_Collaborative_Intelligence_Architecture_v0.1.md#8-cognitive-ensembles) owns method selection, evidence standards, ACH limitations, independent challenge, business decision briefs, and evaluation. This is design intent, not a shipped council or validated analytic method.
+
+A future decision record references the question/objectives, alternatives, evidence and source lineage, assumptions, scenarios, recipe/profile versions, verification, dissent, recommendation, owner disposition, and outcome/reassessment links. Reports and matrices are derived artifacts; model recommendations never become canonical facts, approvals, or tool authority merely by agreement. Evidence access and publication are separately governed. This extends existing provenance and promotion boundaries without requiring these future object types to be implemented in Foundation-0.
 
 ## 21A.8 Foundation-0 obligations versus deferrals
 
@@ -1641,6 +1653,12 @@ representation from its renderer so the same system graph can produce
 architecture, sequence, security-boundary, documentation, and
 interactive views. Diagram Design-class skill grammars are an
 implementation candidate, not a core renderer dependency.
+
+### 25.7 Purpose-preset capability choices
+
+Future plugins/MCP adapters expand the eligible choices in §21A.3 presets through §10 descriptors and §25.5 mediation. A skill specifies procedure and checks; a tool performs a declared operation; an adapter connects a provider; a model proposes interpretation/selection; Rikuri retains state, permission, cost and verification authority. Tool metadata and returned content remain untrusted inputs.
+
+The selection surface exposes task-relevant support/evaluation status, input/output contract, local/remote execution and data destinations, costs, permissions, side effects and success checks. Installation/connection never implies project admission or action approval. Missing or revoked dependencies trigger explicit failure or an eligible reviewed replacement; no silent cloud fallback or removal of required verification. Resetting a preset cannot install tools or grant credentials. Named video, image and mathematical tools remain candidates until their real integrations and failure paths are proven.
 
 # 26. Machine Intelligence and Privileged Execution
 
@@ -2262,6 +2280,20 @@ practical. Relay metadata exposure, replay resistance, key rotation,
 device revocation, short-lived pairing, lost-device recovery, and
 self-hosted relay operation require explicit threat modeling and tests.
 Relay compromise must not grant node authority.
+
+## 38.5 Optional VPS workers and privacy-preserving placement
+
+September 26, 2026 clarification — **future design; admission unproven**. VPS or other remote capacity is optional for authorized continuous work, availability, or resource needs. Remote access does not require remote execution or replication. Prefer keeping canonical state on the owner node initially and sending only admitted task context to disposable workers; no direct worker writes to canonical storage.
+
+Distinguish an encrypted transport relay, a compute endpoint, and backup storage. A relay can carry opaque envelopes under §38.4; an ordinary remote compute endpoint must access the plaintext needed for its task and brings the host/operator into the trust boundary. Self-hosting, transport encryption, or a private network does not alone prove confidentiality from that operator. Encryption of backups requires separate key custody and validated restore.
+
+A rented VPS is not silently eligible for Local Only. The existing local, proven no-network envelope remains controlling; any future change to that meaning requires explicit ADR reconciliation and evidence before admission. Other data requires explicit node/provider trust classification, project/user authorization, data minimization, retention policy, and declared downstream model/tool destinations. Team membership alone grants no cross-project access.
+
+Derived summaries, embeddings, hypotheses, telemetry, search queries and results retain applicable source restrictions; redaction or summarization is not automatic declassification. A useful mixed workflow researches public material remotely, then combines it with proprietary evidence locally. Private source material is not sent merely to make agents agree.
+
+Before remote worker admission, prove authenticated enrollment, scoped short-lived capabilities/credentials, revocation, filesystem/network containment, context/output policy, secret/log handling, lifecycle health and last-success evidence, cancellation and spending limits. Exercise allowed tasks and denied data flows, node loss, expired leases, duplicate delivery/effects, budget exhaustion, partial results, restart and revoked-device access. Results remain candidates validated through Rikuri services; lease/ACK/idempotency rules in §18.1 apply. No claim of production scale follows from an architecture diagram.
+
+Foundation-0 preserves its existing identity, policy, provenance, outcome and handoff contracts. VPS executors, team permissions, 24/7 scheduling, distributed leases and canonical replication are future work under the existing product sequence; no cloud deployment or unattended job is authorized by this design.
 
 # 39. Backup, Restore, and Time-Machine-Like Recovery
 

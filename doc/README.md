@@ -21,8 +21,12 @@ Foundation-0 stages use two digits (00–05). Product stages use unpadded number
 
 | Document | Role |
 | --- | --- |
-| [Collaborative Intelligence / Inquiry & Discovery Architecture v0.1](Rikuri_Pi_Collaborative_Intelligence_Architecture_v0.1.md) | Long-term product North Star and post-Foundation research baseline; not a Foundation-0 implementation commitment. |
+| [Collaborative Intelligence / Inquiry & Discovery Architecture v0.1](Rikuri_Pi_Collaborative_Intelligence_Architecture_v0.1.md) | Long-term product North Star and post-Foundation research baseline, including evidence-based decision procedures, ACH safeguards, and business/fundraising evidence; not a Foundation-0 implementation commitment. |
 | [Writer / Creative Authoring Architecture v1.4](Rikuri_Pi_Writer_Creative_Authoring_Architecture_v1.4.md) | Human-first creative authoring architecture and roadmap. |
+
+The September 26 decision-support clarification links PRD §9.21 to Architecture §21A and Collaborative Intelligence §8. Architecture §38.5 describes optional VPS placement and privacy admission. Existing Foundation-0 evidence hooks accommodate future work; no new implementation gate or assurance claim is added. See [the change record](../docs/build-records/2026-09-26-decision-procedures-and-vps-boundaries.md).
+
+Purpose-driven customizable presets and plugin/MCP tool choices are specified in PRD §9.22, Architecture §21A.3/§25.7, and [Collaborative Intelligence §6.4–6.7](Rikuri_Pi_Collaborative_Intelligence_Architecture_v0.1.md#64-purpose-driven-capability-presets), including safe reset, method selection, evidence-gap guidance and novice/expert explanations. See [the preset change record](../docs/build-records/2026-09-26-purpose-presets-and-tool-workflows.md).
 
 ## Engineering and acceptance references
 
