@@ -587,9 +587,15 @@ The detailed lifecycle, packet, freshness, provenance, and evaluation contracts 
 | KNOW-002 | P0      | Topic segmentation           | Split stream-of-consciousness conversations into coherent topics independent of thread boundaries.                       | One chat may generate/update multiple topic notes; a topic may span multiple chats.                                   |
 | KNOW-003 | P0      | Statement classification     | Classify extracted content as fact, idea, hypothesis, question, decision, preference, task, result, or reference.        | Brainstorming is not silently promoted to an accepted decision.                                                       |
 | KNOW-004 | P0      | Entity resolution and dedupe | Resolve topics/entities against existing knowledge before creating new notes.                                            | Duplicate notes such as “FlashAttention”, “FA ideas”, and “Flash Attention notes” are avoided or merged deliberately. |
-| KNOW-005 | P0      | Obsidian projection          | Materialize human-readable Markdown with properties and links suitable for an Obsidian vault.                            | User can browse/edit knowledge in ordinary Markdown and see relational links.                                         |
+| KNOW-005 | P0 | Obsidian projection | Generate browsable Markdown with properties and links from Rikuri records; import editable user-authored vault notes separately as versioned sources. | Two one-way flows; edited generated files are preserved and flagged before safe regeneration, never automatically merged into canonical state. |
 | KNOW-006 | P1      | Semantic knowledge graph     | Maintain typed relationships such as USES, DEPENDS_ON, RELATED_TO, SUPERSEDES, DERIVED_FROM, DECIDED_IN, and APPLIES_TO. | Rikuri can answer relationship questions beyond plain text similarity.                                                |
 | KNOW-007 | P1      | Thought trail                | Show how an idea/project evolved over time across chats, experiments, and decisions.                                     | Topic view can present chronological evolution with source links.                                                     |
+| KNOW-008 | P1 | Capture without prior organization | Offer a common Save/share action for admitted source types with source identity, version, project/conversation scope and visible capture/extraction/search status. | A saved original remains recoverable when extraction fails; no false saved/searchable status or capture merely because content was viewed. |
+| KNOW-009 | P1 | Correctable derived classification | Produce versioned descriptive tags, entities, topics and media descriptions with provenance and uncertainty; preserve user corrections separately. | Metadata can be applied automatically and corrected; classification cannot accept decisions, execute tools, expand sharing or hide originals from baseline retrieval. |
+| KNOW-010 | P1 | Conversational evidence contributions | Surface cited passages, images or files through bounded retrieval, source cards and attention controls; support request/mention, quiet suggestions and explicitly enabled automatic contributions. | Relevant evidence arrives with its source and reason; stale, duplicate, unhelpful or audience-ineligible material is suppressed; supported media and coverage limits are explicit. |
+| KNOW-011 | P0 | Recoverable document revisions | Preserve captured source versions and Rikuri-authored revision ancestry; durably preserve edited projections before regeneration with base references and verified recovery content. | Failed preservation or racing edits prevent overwrite. A later reviewed proposal can create a canonical revision through governed services; history/recovery copies obey privacy, retention and forget policy. |
+
+September 28, 2026 clarification: [Architecture §20.3.1](Rikuri_Pi_Architecture_Spec_v1.7.md#2031-revision-history-and-edited-projections) defines history and projection recovery; [§20.6](Rikuri_Pi_Architecture_Spec_v1.7.md#206-capture-classification-and-conversational-evidence) defines capture/contributions. Foundation S01.03/S01.05/S01.08 covers imported versions and safe projection preservation/flags only. Rich review UI follows product Stage 2; text classification/semantic experiments follow Stage 1 evaluation prerequisites; connectors and personal contributions Stage 5; shared conversations Stage 6; richer media Stage 8. History covers observed/captured versions, not every external keystroke or uncaptured past. All behavior is Not yet proven.
 
 ## 9.4 Projects, Resources, and Universal Search
 
@@ -904,7 +910,7 @@ Rikuri must treat conversations, ideas, Obsidian notes, source code, documents, 
 |---|---|---|
 | Original source archive | Durable evidence and original capture | Raw chats, photos, audio, video, PDFs, documents, handwritten-note images |
 | Canonical structured state | Authoritative identity/state/relationships for Rikuri-managed objects | Projects, ideas, tasks, decisions, people, entities, provenance, sharing, lifecycle states |
-| Human-readable projection | Portable human browsing/editing | Obsidian/Markdown, exported reports, notes |
+| Human-readable Markdown | Browse generated views; edit authoritative user notes | Obsidian/Markdown sources and separately generated reports/projections under §9.3 |
 | Authoritative external resources | Source of truth owned by an external mature tool | Git repository for code, office document file, original media file, live service/device state |
 | Project/resource registry | What exists and where | Lean_llama.cpp on Ryzen + Git remote; AISecurity on Mac; dataset on NAS |
 | Derived retrieval fabric | Fast exact/semantic/relational retrieval | Vector embeddings, full-text index, code/symbol index, graph projections, rerankers |
@@ -1113,7 +1119,7 @@ The normal UI should summarize these as simple Healthy / Degraded / Critical sta
 
 ## 19.1 “Single source of truth” means declared authority
 
-Rikuri must not require all data to live physically in one database. Instead, every durable object/resource type must have a declared authoritative representation and stable identity. Examples: Git is authoritative for source code; the original photo/audio/video file is authoritative for media; the raw conversation archive is authoritative for historical chat; Rikuri structured state is authoritative for project status, idea lifecycle, governance, relationships, and event history. Human-readable Markdown may be authoritative for selected user notes or may be a synchronized projection according to the object’s policy.
+Rikuri must not require all data to live physically in one database. Instead, every durable object/resource type must have a declared authoritative representation and stable identity. Examples: Git is authoritative for source code; the original photo/audio/video file is authoritative for media; the raw conversation archive is authoritative for historical chat; Rikuri structured state is authoritative for project status, idea lifecycle, governance, relationships, and event history. Human-readable Markdown may be authoritative for selected user notes or a generated one-way projection of Rikuri records. User-note imports retain captured source versions; edited projections are preserved/flagged and never automatically merged back under KNOW-005/011 and Architecture §20.3.1.
 
 If a derived index disagrees with the authoritative live resource, the authoritative resource wins. High-impact actions must resolve indexed references to the current authoritative object before execution.
 
@@ -1221,6 +1227,21 @@ The personal product should not be burdened by enterprise UI, but its core bound
 
 Business/team deployments must preserve the same user-alignment principles while introducing organization policy, role-based authority, separation of personal and organization knowledge, audit, approval delegation, and administrator controls. Enterprise connectors such as Slack, Teams, Asana, or project systems should be discoverable when relevant but invisible to users who do not use them.
 
+## 21.1 Shared human–AI project conversations
+
+September 28, 2026 — adopted post-Foundation scope. Product Stage 6 brings forward minimum membership, sharing and audit controls from Stage 9 so a small team can work with agents on one authoritative Rikuri node. It requires Stage 3 Link, Stage 5 source/contribution controls and Stage 6 governance first; Stage 9 retains enterprise tenancy/admin and Windows assurance. Stage 7 replication is optional. [Architecture §38.6](Rikuri_Pi_Architecture_Spec_v1.7.md#386-shared-humanai-project-conversations) owns the contract and [Master Build Sequence](Rikuri_Pi_Master_Build_Sequence_v1.1.md#stage-6--multi-agent-governance--project-graph) owns order. No shared-conversation runtime or security outcome is proven by these requirements.
+
+| ID | Pri | Requirement | Description | Acceptance |
+|---|---|---|---|---|
+| COLLAB-001 | P1 | Human and agent membership | Use separate human, device and worker identities, scoped expiring invitations, acceptance, member/guest roles, removal and explicit history grants. | Joining permits only granted conversation operations; guest membership cannot approve actions, invoke shell tools or read unrelated projects. |
+| COLLAB-002 | P1 | Shared project objects | Persist conversation events referencing artifacts, tasks, source revisions and decisions; preserve authenticated authorship and revision history through governed services. | Humans and agents can discuss the same object; conversational claims cannot mutate accepted decisions or verified task status without authorized transitions. |
+| COLLAB-003 | P1 | Audience-safe knowledge | Admit retrieval and posts against source policy and the conversation audience, including history readers; personal/agent-private context remains separately scoped. | Restricted content, metadata, previews and citations cannot leak through summaries, posts or history. New members receive only admitted history; source or membership changes invalidate pending delivery. |
+| COLLAB-004 | P1 | Controlled agent participation | Bind mention/quiet/automatic participation to explicit conversation scope, sources, audience, triggers, budgets and revocation, using the Attention Firewall. | Authorized useful contributions do not require repeated permission; redundant bursts, stale topics and unsupported conclusions do not become public agent chatter. |
+| COLLAB-005 | P1 | Authenticated LAN and remote collaboration | Apply the same application permissions over proven encrypted Link paths; Tailscale first, native direct/rendezvous/opaque relay later with Tailscale fallback. | A LAN and an outside participant share an authorized conversation. Network location and fallback do not expand access or weaken encryption; the node's plaintext processing and separate model disclosures are explicit. |
+| COLLAB-006 | P1 | Durable delivery and revocation | Use stable event IDs, acknowledgements, replay-safe effects and membership/device revalidation on reconnect; invalidate revoked subscriptions, pending posts and context. | Disconnect/retry cannot duplicate posts/actions; removed members cannot obtain new delivery or unauthorized history. Node outage is visible; already disclosed external copies are outside recall guarantees. |
+
+Stage 6's initial slice is text/file collaboration and evidence cards over supported sources. Rich image/audio/video extraction and explicitly activated meeting capture follow Stage 8. A voice instruction channel does not imply a live group voice/video conferencing implementation.
+
 # 22. Success Metrics
 
 | **Metric**            | **Target / intent**                                                                                                                             |
@@ -1256,7 +1277,7 @@ The build order is dependency-driven: each stage must be wired into the running 
 | **3 — Rikuri Link / Remote Control** | Tailscale initial connector; phone/tablet/laptop thin client; node identity/presence; approvals/status/chat/voice/file handoff; later native direct/rendezvous/E2E relay with Tailscale fallback. | User can securely “phone home” to the owner-controlled Rikuri Node. |
 | **4 — Model Lab + Intelligent Routing** | Dynamic discovery; compatibility registry; open-harness diff/eval; hardware fit; Auto routing; price/quota/local-cost advisor; controlled native-harness exceptions. | Routing is evidence-based across model+runtime+harness+machine, not model-name folklore. |
 | **5 — Browser, Connectors & Personal Assistant** | Browser/computer worker, email/calendar/contacts, research/travel/shopping, Attention Firewall maturity, just-in-time connections. | Daily assistant workflows operate through the same trust/state model. |
-| **6 — Multi-Agent Governance & Project Graph** | Evaluate Paperclip-like control-plane mechanisms; adopt or adapt event wakeups, task leases, worker adapters, durable runs, approvals, budget stops, and team templates behind Rikuri-owned contracts. Add coordinator/evaluator, durable DAG, Project Lifecycle Kernel, and Project Graph after single-worker gates. | An intent-led team can perform and verify work with bounded authority and durable ProjectState; complexity is shown only when useful. |
+| **6 — Multi-Agent Governance & Project Graph** | Evaluate Paperclip-like control-plane mechanisms; add coordinator/evaluator, durable DAG, Project Lifecycle Kernel and Project Graph. After Link and contribution/governance controls, deliver minimum human–AI conversation membership, sharing and audit brought forward from Stage 9. | A governed team works against durable ProjectState; two humans on LAN/remote clients and an agent share authorized evidence, reconnect without duplicates and enforce revocation. |
 | **7 — Personal Mesh & Persistent Responsibilities** | Encrypted replication, optional hub, cross-device resource catalog, durable routines, quiet digests, learned skills. | One Personal Intelligence spans owner devices without sync becoming canonical authority. |
 | **8 — Rich Domain/Companion Workspaces** | Writing/study/research/media/meeting/live companion and specialized domain packs. | Domain power reuses common windows, state, ideas, security, and execution. |
 | **9 — Business/Organization Readiness** | Tenancy, organizational memory, role policy, audit/admin, shared projects, enterprise deployment. | Institutional use without weakening personal/user-alignment foundations. |
@@ -1315,7 +1336,7 @@ The following are intentionally not frozen by this PRD. They should be evaluated
 
 - Rikuri Link native direct/rendezvous/relay protocol and device identity design after the initial Tailscale connector; Personal Mesh replication remains a separate protocol problem.
 
-- Obsidian bidirectional editing semantics and conflict handling.
+- Implementation primitives for safe preservation of externally edited Markdown projections, comparison/recovery UI, and separately authorized revision proposals under Architecture §20.3.1. Two one-way flows are settled; automatic bidirectional merge is excluded.
 
 - Durable workflow/checkpoint engine choice for long-running responsibilities.
 
@@ -1438,6 +1459,10 @@ P0 = foundational/required for the corresponding product release; P1 = important
 | KNOW-005  | P0      | Obsidian projection                |
 | KNOW-006  | P1      | Semantic knowledge graph           |
 | KNOW-007  | P1      | Thought trail                      |
+| KNOW-008  | P1      | Capture without prior organization |
+| KNOW-009  | P1      | Correctable derived classification |
+| KNOW-010  | P1      | Conversational evidence contributions |
+| KNOW-011  | P0      | Recoverable document revisions |
 | PROJ-001  | P0      | Project registry                   |
 | PROJ-002  | P0      | Live resource resolver             |
 | PROJ-003  | P0      | Universal search                   |
@@ -1493,6 +1518,12 @@ P0 = foundational/required for the corresponding product release; P1 = important
 | LINK-003  | P1      | Durable remote reconnect                |
 | LINK-004  | P2      | Native Rikuri E2E transport             |
 | LINK-005  | P2      | Multi-node execution placement          |
+| COLLAB-001 | P1 | Human and agent membership |
+| COLLAB-002 | P1 | Shared project objects |
+| COLLAB-003 | P1 | Audience-safe knowledge |
+| COLLAB-004 | P1 | Controlled agent participation |
+| COLLAB-005 | P1 | Authenticated LAN and remote collaboration |
+| COLLAB-006 | P1 | Durable delivery and revocation |
 | DEV-001   | P1      | Monaco editor Window                    |
 | DEV-002   | P1      | Native developer services               |
 | DEV-003   | P1      | Rikuri Plugin/Window API                |

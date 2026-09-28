@@ -138,7 +138,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] S01.05 Markdown/Obsidian snapshot importer (links, frontmatter, Unicode/CJK)
 - [ ] S01.06 Project Registry + Resource Resolver with authoritative location and trust state (`untrusted_read` default)
 - [ ] S01.07 FTS5 search returning canonical/source IDs + provenance; `VectorIndex` trait declared, not implemented
-- [ ] S01.08 Generated Markdown projection (one-way out); user vault imported as versioned source (one-way in)
+- [ ] S01.08 Generated Markdown projection (one-way out); user vault imported as versioned source (one-way in). Preserve/read back edited generated content with its base references before replacement, expose a recovery reference/flag, and block destructive regeneration on preservation failure or unresolved concurrent edits; no reverse merge. See Architecture §20.3.1.
 - [ ] S01.09 Retrieval corpus: ≥ 20 known-answer questions from real imported history, frozen in `tests/retrieval/`
 - [ ] S01.10 `rikuri-backup`: consistent snapshot (SQLite + ciphertext + key/recovery metadata + manifest + versions), `backup`, `restore --verify`, `forget <id>`; design a durable revocation record independent of any one old snapshot so a managed restore cannot silently restore deleted keys
 - [ ] S01.11 Managed restore applies the latest durable revocation record before materialization. If an old snapshot arrives without trustworthy current revocation state, block or visibly quarantine its sensitive material pending explicit recovery; never silently claim it is safe.
@@ -172,6 +172,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] T01.13 Unicode/CJK content round-trips through import, DB, FTS, projection
 - [ ] T01.14 Crash matrix point 8 (during backup snapshot creation): no corrupt backup written
 - [ ] T01.15 Documented case: user restores an unmanaged old export by hand; Rikuri does not claim to revoke or erase copies outside its managed restore path
+- [ ] T01.16 Projection/revision preservation: changed vault import retains prior captured source version and remains idempotent on repeat; unchanged projection regenerates; edited projection is preserved/read back/flagged without canonical mutation. Inject preservation failure, crash/retry, unknown base and racing edit; no unpreserved overwrite or false clean state. Preserved edits obey privacy/forget/current-revocation restore. See Test Strategy §6.3; rich comparison/promotion UI remains product Stage 2.
 
 **Stage 01 exit decision**: F2 and F6 green from clean checkout; retrieval floor recorded; E3 outcome recorded; ADR 0005–0008 and 0014 accepted; Module Contracts for content, import, search, backup.
 
@@ -425,7 +426,9 @@ Every v1.6 Foundation item that moved is listed here with a disposition, per the
 
 ## Post-Foundation stages 1–9
 
-The Master Build Sequence v1.0 order stands. Dates are removed; each stage activates only when its predecessor gate is green. Pacing below is a solo-builder estimate for planning conversations, not a commitment.
+September 28 clarification: [Master Build Sequence Stage 6](Rikuri_Pi_Master_Build_Sequence_v1.1.md#stage-6--multi-agent-governance--project-graph) owns the adopted S6.C1–C4 minimum human–AI conversation and its resequencing record from Stage 9. Stage 3 transport and Stage 5 source/contribution controls precede its membership/audience/governance integration; Stage 7 replication is optional. Stage 9 retains enterprise controls and Windows assurance. Capture/classification/source cards follow Architecture §20.6's existing product-stage boundaries. This adds no Foundation gate; S01.08/T01.16 clarify preservation within the existing Markdown/import contract. All new runtime outcomes remain Not yet proven.
+
+The Master Build Sequence v1.1 owns the order, including the September 28 Stage 6 clarification above. Dates are removed; each stage activates only when its predecessor gates are green. Pacing below is a solo-builder estimate for planning conversations, not a commitment.
 
 ```mermaid
 flowchart TD
@@ -436,13 +439,14 @@ flowchart TD
   S2 --> S5["Stage 5: connectors"]
   S4 --> S5
   S5 --> S6["Stage 6: governance"]
+  S3 --> S6
   S3 --> S7["Stage 7: mesh"]
   S6 --> S8["Stage 8: domain packs"]
   S7 --> S8
   S8 --> S9["Stage 9: Windows"]
 ```
 
-Stages 2, 3 and 4 each depend only on Stage 1, so they can be sequenced by what dogfood pain says is worst; Stage 5 needs both workspace and routing.
+Stages 2, 3 and 4 each depend only on Stage 1, so they can be sequenced by what dogfood pain says is worst; Stage 5 needs both workspace and routing. Stage 6 now needs Stage 3 Link as well as Stage 5 for its shared human–AI conversation gate; Stage 7 replication is not a prerequisite for that slice.
 
 | Stage | Gate (from Master Build Sequence) | Key adopt decisions | Solo pacing | Novel-claim experiments to run first |
 | --- | --- | --- | --- | --- |
@@ -451,13 +455,13 @@ Stages 2, 3 and 4 each depend only on Stage 1, so they can be sequenced by what 
 | 3 Rikuri Link | Leave home network, continue a task, approve a step, reconnect, recover same job; no relay plaintext, no router port | Tailscale first; native rendezvous/E2E relay later | \~2 months (Tailscale path) | Idempotent command delivery over reconnect |
 | 4 Model Lab + routing | New compatible model needs registry/profile data + evaluation, not core code; Auto explains its choice | llama.cpp / vLLM / Ollama behind one runtime trait; stock builds, no LeanKV/TQ dependency | \~3 months | Learned Auto router (evidence-only admission); Fast Decision Model shadow (S4.1) |
 | 5 Browser + connectors + assistant | Common assistant request works from natural language without exposing plumbing or expanding authority | Isolated browser profile per Task Space; MCP as connectivity only | \~3 months | Attention Firewall; connector least-authority tokens |
-| 6 Multi-agent governance + Project Graph | Plain-language request assembles one worker or a justified team; long-running workflow survives restart, compaction, model swap, cancellation | Paperclip evaluated at pinned revision per mechanism (S6.2 ADRs) before any adoption | \~4 months | Workflow IR; coordinator/evaluator separation; Strategy Council trigger policy |
+| 6 Multi-agent governance + Project Graph | Governed worker/team and durable workflow; S6.C1–C4 adds two humans on LAN/remote clients plus an agent, authorized sharing, replay-safe reconnect and revocation | Paperclip evaluated at pinned revision per mechanism (S6.2 ADRs); reuse admitted Stage 3 Link and Stage 5 source/attention controls | Re-estimate after predecessor gates; former \~4 months excludes the added multi-human slice | Workflow IR; coordinator/evaluator separation; membership/audience changes during pending delivery |
 | 7 Personal Mesh + responsibilities | Replacement / offline / reconnect / concurrent-update converge without silent loss; backup independent of sync | Encrypted event replication; CRDT only where simultaneous text editing is proven necessary | \~3 months | Conflict semantics; hub optionality |
 | 8 Domain packs + Live Companion | Each domain is a projection over common primitives; no independent mini-brain | Whisper-class local transcription; embeddable editors | open | Per-domain, none foundational |
-| 9 Windows parity + business readiness | OS Capability parity after Ubuntu/macOS stable; tenancy without weakening personal foundations | Windows sandbox primitives (AppContainer / job objects) | open | Tenancy boundary |
+| 9 Windows parity + business readiness | OS Capability parity after Ubuntu/macOS stable; enterprise tenancy/admin extends minimum Stage 6 membership/sharing without weakening personal foundations | Windows sandbox primitives (AppContainer / job objects) | open | Tenancy boundary |
 | 10 Collaborative Intelligence / Inquiry & Discovery | Evidence-backed Experience Intelligence and cognitive-recipe learning improve selected human+AI workflows; Inquiry/Discovery surfaces useful questions/connections without promoting speculation to truth | Prefer existing observability, statistics, retrieval, bandit/optimization and verification components behind Rikuri contracts | research/experimental | Begin prototypes only after product Stage 4 Model Lab evidence and product Stage 6 governance are available; productization remains post-Foundation |
 
-Rough total from Foundation-0 exit to Stage 6 gate: about 18 months of stage estimates, with further contingency for discovery and integration. This is a planning range, not an end-of-2028 promise.
+The former rough total from Foundation-0 exit to Stage 6 was about 18 months. It excludes the adopted multi-human slice and is superseded pending re-estimation after predecessor evidence and the S6.C1–C4 design review. Owner: product owner and Stage 6 implementer; publish a revised range with integration contingency before scheduling Stage 6. No end-of-2028 delivery promise follows from the earlier estimate.
 
 ## Stop-the-line rules and document control
 

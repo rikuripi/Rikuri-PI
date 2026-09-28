@@ -86,6 +86,8 @@ Before item 1, add **S1.01 Claude importer** after F2 and **S1.02 read-only Git/
 11. Open-harness analysis tool: diff Qwen Code/DeepSeek Harness behavior and test useful techniques against profiles.
 12. Dogfood: complete multiple real Rikuri changes entirely through the Rikuri coding workflow and Build Procedure.
 
+At item 7, evaluate correctable text classification and topic retrieval under Architecture §20.6 using real dogfood gaps, provenance and correction fixtures. Semantic/vector implementation remains an experiment requiring the live plan's ≥40-question corpus and failures the FTS baseline cannot resolve; automatic classification is not required to preserve/search originals. At item 2, Desktop Commander-style terminal/file adapters may be compared with native services, with pinned version/license, authority/locality, lifecycle cost and allowed/denied evidence before adoption. No product dependency is selected here.
+
 **Stage 1 gate:** a real feature can be planned -> coded -> diffed -> tested -> full-gated -> documented -> committed with evidence through Rikuri. External IDE is optional, not required.
 
 ---
@@ -109,6 +111,8 @@ Build order:
 13. Plugin lifecycle: provenance/pin/quarantine/verify/update/rollback/remove.
 14. Selective `monaco-vscode-api` compatibility only for demonstrated gaps.
 
+Item 4 includes evidence cards referencing existing source spans/artifacts and visible freshness/coverage. After the existing policy-backed workspace operations are available, add projection-edit comparison/recovery and explicit revision proposals under Architecture §20.3.1. Rich media extraction waits for Stage 8; multi-human membership waits for Stage 6. Source cards and recovery UI never grant canonical write authority.
+
 **Stage 2 gate:** chat + Monaco + terminal + tests + agent + logs can coexist, link, detach, restore, and remain project-consistent after restart.
 
 ---
@@ -131,6 +135,8 @@ Build order:
 12. Rendezvous/discovery service.
 13. E2E encrypted relay fallback.
 14. Keep Tailscale connector as backup even after native Link is primary.
+
+Items 1–4 must distinguish human/device/worker identity and use the same authenticated application permissions for LAN and outside clients. Tailscale is first; native direct/relay paths remain unavailable until their encryption, identity, replay and revocation contracts pass. Route switches cannot weaken authority or transport guarantees. The node is an admitted plaintext processing endpoint; untrusted relays are not. This establishes transport for Stage 6 collaboration, not multi-human membership by itself.
 
 **Stage 3 gate:** leave the home network, issue/continue a task on the Ubuntu node, approve a consequential step, disconnect/reconnect, and recover the same durable job without exposing plaintext to a relay or opening a router port.
 
@@ -166,6 +172,8 @@ Build order:
 
 Order: browser worker isolation -> connector capability model -> MCP/connectivity adapters -> email -> calendar/contacts -> files/cloud storage -> research -> travel/shopping -> routines/Attention Firewall -> richer voice. Every connector gets least-authority, approval, audit, and revoke tests. MCP remains a capability/connectivity layer; it does not own Rikuri workflow state, authority, memory, or audit truth.
 
+At files/cloud storage, wire common Save/share capture for supported source types with durable-save and extraction/search health. After source permission/freshness reconciliation and Attention Firewall controls, add personal conversational contributions (request/mention, quiet suggestions, explicitly enabled automatic mode) with budget, relevance/novelty, duplicate suppression and source cards. Shared multi-human posting waits for Stage 6's audience controls; richer media extraction waits for Stage 8. Failed classification must leave the original recoverable and baseline search usable.
+
 **Gate:** common assistant request works from natural language without exposing MCP/provider plumbing and without expanding authority silently.
 
 ---
@@ -178,7 +186,18 @@ Order: typed/versioned Rikuri Workflow IR -> schema/policy/security validation -
 
 Agents propose or repair workflows; deterministic infrastructure owns accepted execution. Each workflow records proposer/provenance, exact approved version, capabilities and credential scopes, data classes, outbound destinations, budget envelope, triggers, approvals, modifications, and outcomes. Governance is implemented and tested before autonomous workflow deployment.
 
+After the existing workflow/policy/governance substrate is verified, implement the minimum shared conversation in this order:
+
+1. **S6.C1 — membership and scoped authority:** authenticated human/device/worker identities; expiring invitations/acceptance; owner/member/guest capabilities; explicit history grants and removal. Requires Stage 3 transport; no implicit shell or approval rights.
+2. **S6.C2 — conversation and shared objects:** durable messages and attachment/source references, authenticated authorship, revision ancestry, task ownership/conflict handling and idempotent acknowledgements through Rikuri services. Requires S6.C1; use one authoritative node, no Stage 7 replication dependency.
+3. **S6.C3 — audience-safe agent contributions:** apply Stage 5 capture/retrieval/attention controls to shared posts and history; current audience and source checks before commit/delivery/read, invalidation of pending posts and contexts on membership changes. Requires S6.C2 and source reconciliation; private contexts are not implicitly joined.
+4. **S6.C4 — LAN/remote recovery and security slice:** two humans (one LAN, one outside) and an agent exchange a file and cited note; reconnect without duplicate effects; revoke a member/device during retrieval; refuse unauthorized history/source disclosure and injected tool instructions. Requires S6.C1–C3; test every enabled transport, leaving native paths unavailable until independently proven.
+
+**September 28 resequencing:** minimum project membership, sharing and conversation audit move from product Stage 9 (business/team controls, formerly unnumbered) to Stage 6 S6.C1–C4. Reason: meaningful human–AI collaboration requires them before enterprise deployment. Dependency impact: Stage 6 now includes Stage 3 transport and Stage 5 contribution controls plus its own governance before multi-human activation; Stage 9 extends this verified base. Owner: product owner and Stage 6 implementer. Reactivation: predecessor gates green and admitted-platform security available. Acceptance: S6.C4 and [Test Strategy §15](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#15-post-foundation-capture-and-shared-conversation-acceptance) pass with receipts. [ADR dated clarification](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--document-history-and-shared-conversation-clarification) records the decision. No Foundation scope or gate change; re-estimate Stage 6 from this added work rather than retaining an unsupported schedule.
+
 **Gate:** a plain-language request can assemble one worker or a justified team without manual hiring or runtime configuration. Atomic ownership, acknowledgements, authoritative ProjectState, and transactional commit are shown by integration tests. A long-running workflow survives agent exit, context compaction, restart, model replacement, durable waits, cancellation, and branch/rejoin without duplicate effects or lost state; unauthorized modification is rejected and visible. Multi-agent work then demonstrably improves selected tasks over one-agent baseline without losing budget/security/evidence control or spamming the user.
+
+The gate also includes S6.C4's shared human–AI conversation, with both authorized collaboration and denied disclosure/action paths proven. Neither a working owner-to-node Link demo nor a team of agents alone closes the multi-human requirement.
 
 ---
 
@@ -194,11 +213,15 @@ Order: second-device identity -> encrypted event/version replication -> conflict
 
 Writing, study, research, meeting/lecture, media, trading/other domain packs. Each is a projection over common project/window/idea/knowledge/security primitives; no independent “mini-brain.”
 
+Extend the common capture/classification/retrieval path with image/OCR, audio/transcript and video/frame provenance. Evaluate remembered-content queries, decisive visual evidence, failed extraction and user corrections. Shared contributions inherit Stage 6 audience/history controls. Meeting capture remains explicit and visible; group voice/video conferencing requires its own capability/transport assessment and is not implied by captured audio or Link voice instructions.
+
 ---
 
 # Stage 9 — Windows parity + business/team readiness
 
 Implement Windows OS Capability/envelope parity after Ubuntu/macOS contracts are stable, then organization identity, tenancy, role/policy admin, shared memory, centralized audit, enterprise deployment and connectors.
+
+Minimum project membership/sharing/conversation audit now belongs to Stage 6 S6.C1–C4. Stage 9 extends it with organization-wide administration and assurance; basic team conversation does not depend on Windows delivery.
 
 ---
 

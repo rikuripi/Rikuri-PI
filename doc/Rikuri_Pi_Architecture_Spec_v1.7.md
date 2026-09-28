@@ -1484,6 +1484,22 @@ external vault remains authoritative for those notes.
 There is no three-way merge between canonical Rikuri knowledge and a
 projection.
 
+### 20.3.1 Revision history and edited projections
+
+September 28, 2026 — adopted design clarification, implementation **Not yet proven**. A projection is a generated Markdown view of Rikuri records, with a manifest identifying source records/versions, generator version and the last generated content hash. It can be regenerated from its sources; an external edit does not become a canonical change merely because it appears in that view.
+
+User-authored vault notes remain editable at their authoritative location. Each changed, successfully imported snapshot creates a linked source version; unchanged re-imports are idempotent. Retain prior captured versions and source spans under the applicable retention/deletion policy. Record predecessor, content hash, observation time, source and author when actually known; explicitly mark unknown authorship. Rikuri cannot promise to recover edits made and removed between captures or history predating its first import. Documents changed through Rikuri likewise retain revision ancestry through the owning service; source code continues to use Git authority.
+
+Before replacing or removing a generated file, compare it with the recorded generated base. If changed, durably preserve its exact edited bytes and the base/version references needed to reconstruct the diff, read back and verify the preserved content, and expose a recovery reference and an edited-projection flag. Missing bases or unknown files in the generated tree are conflicts, never disposable output. If preservation fails or history cannot be established, block destructive regeneration and report the failure. Do not mark the projection synchronized or clean merely because a candidate generation succeeded.
+
+Preservation and replacement must survive crashes and retries without losing either the edited version or the last good generation. Account for external editors racing regeneration: revalidate identity/version at replacement and use an exclusive or version-conditional publication mechanism that cannot overwrite an intervening edit. Where the filesystem/editor path cannot provide that guarantee, publish the candidate separately and leave the edited file untouched. Ordinary generated-file cleanup obeys the same rule. Existing immutable/imported source history is not silently rewritten.
+
+Foundation S01.08 implements preservation, visible flags/recovery references and safe refusal within the existing one-way projection contract. Product Stage 2 adds a comparison/recovery UI: keep the preserved edit as a user-owned note, retain it for later review, or explicitly propose a change to the underlying knowledge. A proposal is a separate versioned candidate with source/base references; an authorized governed service validates current state, permission and any required approval before promotion. A stale base requires conflict resolution. Acceptance creates a new canonical revision and then a fresh projection; it never establishes automatic reverse synchronization. A wording change, hypothesis and accepted project decision have distinct meanings.
+
+History, preserved edits and diffs carry the source's privacy, retention, encryption, backup and forget constraints, including current revocation on managed restore. Recovery material cannot become a plaintext or permanent-history loophole. Unmanaged user vaults/exports retain the existing external-copy boundary. Exact storage/publication primitives are to be evaluated and pinned at implementation; a warning alone is insufficient evidence of preservation. Acceptance is in [Test Strategy §6.3](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#63-document-revisions-and-projection-preservation).
+
+Explicit authorized forget/retention deletion follows its deletion contract and must not recreate revoked content as recovery history; the preserve-before-replacement rule concerns ordinary regeneration and cleanup of still-eligible content.
+
 ## 20.4 Distillation
 
 Distillation output is derived Knowledge data with source-span
@@ -1511,6 +1527,22 @@ decisions. Derived vector stores remain disposable and rebuildable.
 This boundary allows local and frontier models, Pi-backed workers,
 native harnesses, and future multi-agent systems to use the same
 knowledge service without each embedding a separate RAG stack.
+
+## 20.6 Capture, classification and conversational evidence
+
+September 28, 2026 — future product design for PRD KNOW-008–010. A common Save/share action captures authorized notes, links, files and conversation attachments into the existing source/artifact service with stable identity, source version, project/conversation association and access scope. Users need not choose a taxonomy before saving. Show saved, extraction/indexing pending, searchable, partial or failed states with last-success evidence; never acknowledge durable capture before it exists. Watching, reading or downloading alone does not authorize capture. Rich media extraction follows Stage 8; earlier stages expose only supported types.
+
+Use separate bounded operations for extraction/classification, retrieval and contribution selection. A classifier has no shell, publishing or canonical-write authority by default. It returns validated structured candidates: descriptive tags, entities, topic links, statement types, image descriptions/OCR regions or transcript spans where supported, with source references, extractor/model/profile version and uncertainty. Cheap deterministic extraction comes first; model work uses admitted destinations and reserved budgets. Incorrect or unavailable classification cannot hide a successfully stored original or disable baseline search. Reprocessing after a model change creates versioned derived output and preserves user corrections.
+
+Descriptive metadata may be applied automatically as reversible, correctable derived data. Suggestions that promote a hypothesis to an accepted decision, attach commitments, expand sharing or change authoritative project state use separate governed services and authority. The same object may have multiple topics; uncertain entity matches remain candidates. Source restrictions propagate to tags, embeddings, summaries, thumbnails and relation metadata. Originals, classifications and user corrections remain distinguishable and deletion-governed.
+
+The existing §19 task/turn preflight retrieves evidence. A source card presents a relevant passage, image region, permitted preview or file reference, why it was surfaced, source/version/date, and important freshness/conflict/coverage limits. Open-original resolves the authoritative source under current access. Captions and transcripts do not prove visual coverage. Product Stage 2 can show cards for existing text sources; richer media follows Stage 8. An unavailable modality or failed extractor is visibly incomplete.
+
+Personal contribution controls at Stage 5 support on-request/mention, quiet suggestions, and an explicitly enabled bounded automatic contribution mode. Stage 6 applies them to shared conversations under §38.6. A conversation-scoped grant identifies eligible sources, audience, triggers, posting limits, expiry/revocation and model/spending policy, so authorized contributions need not ask permission for each post. Ranking considers relevance, novelty, source quality and interruption cost; coalesce bursts, deduplicate, cancel obsolete searches, bound retries and remain quiet when no useful evidence exists. A normal lookup does not create a recurring responsibility or enable speculative reflection.
+
+The contribution path is conversation event → current policy → Knowledge Service → Context Compiler → audience/Attention Firewall checks → governed conversation post with an idempotent event ID. Revalidate source permission, membership, topic generation and freshness before delivery. An agent's private search result may not be posted just because the agent can read it. Runtime-observed receipts record retrieval and delivery outcomes separately with minimized metadata; user usefulness feedback and false/duplicate interruption rates complement source-recall and latency measures. Evaluate against lexical/manual-request baselines with examples of both helpful contributions and justified silence.
+
+Obsidian supplies editable source notes and browsable projections under §20.3. Notion-style shared objects and mymind-style low-friction capture are reference behaviors; no dependency on either service is selected. Desktop Commander-style file/terminal tools are optional execution adapters to evaluate against the native Stage 1 services and Stage 5 Connector Gateway. Terminal access grants no knowledge or conversation authority. Before adopting a component, record pinned version/license, effective filesystem/process/network scope, model/data destinations, lifecycle/integration cost and allowed/denied failure evidence. No connector is installed or enabled by this design.
 
 # 21. Canonical Data and Storage Architecture
 
@@ -2475,6 +2507,24 @@ Before remote worker admission, prove authenticated enrollment, scoped short-liv
 
 Foundation-0 preserves its existing identity, policy, provenance, outcome and handoff contracts. VPS executors, team permissions, 24/7 scheduling, distributed leases and canonical replication are future work under the existing product sequence; no cloud deployment or unattended job is authorized by this design.
 
+## 38.6 Shared human–AI project conversations
+
+September 28, 2026 — adopted post-Foundation design, **Not yet proven**. A project conversation is a durable shared work surface for authenticated humans and explicitly identified AI participants. Messages reference stable artifacts, tasks, source versions and accepted decisions through existing Rikuri services. Conversation text does not replace authoritative ProjectState, and an agent's statement that work is done cannot create a verified result.
+
+Start with one authoritative owner-operated node and thin participant clients. Product Stage 3 proves Link transport and separates human, device and worker identities; minimum multi-human membership and sharing activate in Stage 6 after Stage 3 transport, Stage 5 source/contribution controls and Stage 6 governance prerequisites. They are brought forward from Stage 9; enterprise tenancy, organization-wide policy/admin and Windows assurance remain Stage 9. Personal Mesh Stage 7 replication is optional for this initial conversation path, which does not promise offline writes or concurrent document merging. [Master Build Sequence](Rikuri_Pi_Master_Build_Sequence_v1.1.md#stage-6--multi-agent-governance--project-graph) owns order and resequencing.
+
+**Membership and authority.** Use authenticated invitations bound to intended identity, conversation/project scope and expiry, with explicit acceptance. Define owner/admin, member and guest capabilities; separately grant read-history, contribute, attach/share, invite/manage membership, approve consequential actions and invoke tools. Agent identities bind to scoped task grants and accountable principals. Joining, mentioning an agent, or being on the same LAN/tailnet does not grant shell, approval or project-wide authority. Concurrent/conflicting instructions are resolved through existing task ownership and approval rules, never last-speaker precedence. Every accepted change records its authenticated principal.
+
+**Audience and history.** New members receive only the history explicitly admitted to them; adding a participant cannot silently expose old messages, source cards or attachments. A shared post requires permission for its declared audience, including the conversation's admitted history readers. Recheck on retrieval, contribution commit, delivery and later history/attachment reads. If source access differs, omit restricted material or offer an authorized private view; do not leak its title, existence, thumbnail, citation or summary to unauthorized people. A link-only post still requires authorization for the information in the link/card. Agent-private contexts and personal notes remain outside shared context unless explicitly admitted.
+
+**LAN and remote paths.** Both use the same authenticated Rikuri application protocol and authorization checks. Initial connectivity is Tailscale; a native LAN/direct path is admitted only when its authenticated encryption is proven. Later native Link uses rendezvous to establish direct encrypted transport, an end-to-end encrypted relay when direct reachability fails, and Tailscale as a supported alternative/fallback. Rendezvous is connection setup, not a plaintext processing endpoint. Route changes must preserve endpoint identity, replay protection, capability scope and encryption; no insecure automatic downgrade or public router forwarding. LAN locality supplies no trust shortcut. Specific maintained transport/key protocols require pinned component assessment and threat-model evidence before adoption; this design does not invent cryptography or claim a protocol is already selected.
+
+**Encryption endpoints.** The hosting Rikuri node is an explicitly trusted processing endpoint that can read the admitted conversation to run agents; endpoint encryption protects against intermediate networks/relays, not that node or authorized recipients. Cloud model calls or other remote workers are separate destinations admitted by source/project policy, with minimum necessary context. Local Only retains its existing proven no-network execution meaning; LAN, Tailscale or an encrypted tunnel does not make remote disclosure eligible. Do not advertise a server-blind group-encryption guarantee for a node that processes plaintext.
+
+**Recovery and revocation.** Use stable message/operation IDs, durable acknowledgement and replay-safe effects across reconnects and route switches. A queued or disconnected client is not proof of delivery; record pending, delivered, failed or unavailable as observed. Membership and device revocation invalidate sessions, capabilities, subscriptions, queued posts, caches and affected model contexts before further use; rotate/rekey as required by the admitted protocol. Already disclosed plaintext or external copies cannot be recalled. Explicitly define history/attachment retention and reconnection access checks. Node outage reports unavailable; it does not silently migrate canonical state or private context to another host.
+
+The Stage 6 acceptance slice is two humans (one LAN, one outside the LAN) and an agent sharing a project conversation, exchanging an attachment and cited prior note, continuing after interruption and denying revoked/unauthorized access. Prove source/audience restrictions, malicious retrieved instructions, duplicate suppression, conflicting instructions, lost-device revocation, and membership changes while retrieval is pending. Stage 8 adds rich image/audio/video extraction and visibly activated meeting capture; recorded communication and live voice/video conference transport are separate capabilities and neither is implied by text/file collaboration. Detailed cases are in [Test Strategy §15](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#15-post-foundation-capture-and-shared-conversation-acceptance).
+
 # 39. Backup, Restore, and Time-Machine-Like Recovery
 
 Backup/restore is part of Foundation-0 because it proves that Rikuri’s
@@ -2947,6 +2997,8 @@ connectors, research/travel/shopping, Attention Firewall maturity.
 Coordinator/COO, evaluator, Strategy Council, durable DAG/parallel work,
 Project Graph, team economics, consolidated user communication.
 
+After Link, source/contribution controls and membership/authorization prerequisites, add the minimum shared human–AI project conversation in §38.6, including LAN/remote clients, audience-safe retrieval and revocation/reconnect acceptance. This moves only the minimum team controls from Stage 9; no Foundation expansion or Stage 7 replication prerequisite.
+
 ## Stage 7 — Personal Mesh + persistent responsibilities
 
 Encrypted canonical replication, optional hub, cross-device resource
@@ -2960,6 +3012,8 @@ packs on common primitives.
 ## Stage 9 — Windows parity + business/team readiness
 
 Windows OS Capability/envelope parity after Ubuntu/macOS contracts are stable; tenancy, organization policy/memory, shared projects, admin/audit, delegated approvals, server deployment.
+
+Extend Stage 6's existing minimum membership and project-sharing controls for enterprise use; basic human collaboration does not wait for Windows or organization-wide administration.
 
 ## Stage 10 — Collaborative Intelligence / Inquiry & Discovery
 
