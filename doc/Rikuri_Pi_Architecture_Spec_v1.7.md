@@ -1128,6 +1128,74 @@ price, or changing which models share a subscription quota pool must be
 representable as registry/catalog data. It must not require
 model-specific branches in the Budget Governor.
 
+## 16.5 Scoped autonomy and user presets
+
+September 27, 2026 clarification — **future product design, not implemented and not an amendment to the current repository guard**. Routine development should proceed under a bounded grant without repeated approvals for shell or interpreter syntax. Authorization, execution containment, verification and activation are separate controls. The existing [Agent Standard Work](../AGENTS.md#deterministic-gates), owner-only fix-lock release and report-only verifier remain in force until separately reconciled and changed with explicit approval. The user's current mempool.api/live-node project is outside this documentation change.
+
+Autonomy follows actual resources, consequences and granted scope, not project age or the presence of `bash`/`python3` in a command. A prototype attached to real services may need stricter limits than a mature product's disposable test environment. Inspect the declared environment and prove the required containment; a “development” label, empty wallet, container name or model assurance is not an enforcement boundary.
+
+| User preset | Normally permitted within the approved scope | Separate authority or review |
+|---|---|---|
+| Inspect and plan | Read authorized files/state, search, diagnose and propose changes | Project-controlled execution and writes; inspection must not trigger helpers/hooks |
+| Isolated development | Edit/refactor, debug, run tests/builds, add project dependencies from approved sources, restart owned development processes, replace code with checkpoints, clean task-generated files and reset declared disposable fixtures | Host/global changes, new destinations or credentials, durable user data, publication/deployment, greater spend, or active enforcement changes |
+| Staging and integration | Exercise explicitly approved test services/accounts, bounded rehearsals and recovery with declared disposable data | Real-user effects, production systems, non-disposable data or broadened external access |
+| Live maintenance | Named validated operations on declared live targets within their maintenance constraints | Novel or consequential changes outside those procedures, destructive migrations, sensitive disclosure and financial authority |
+
+“Unattended until…” is an independent session option, not a bypass preset. Existing grants can cover recurring routine steps within a task; the system asks when scope or consequences exceed them. Financial custody, service availability, data durability, credentials/privacy, network exposure and cost are separate dimensions. A node/API project with no wallet/channel funds should not classify ordinary isolated API work as fund movement, but live restarts, durable node-data deletion and credential/configuration changes retain their actual operational consequences. Zero current balance does not establish absence of signing authority or grant any new capability. No universal node permissions or safe RPC list is inferred from that example.
+
+The trusted policy service stores a versioned grant outside the worker-writable project. It identifies principal, project/task, environment/worktree and target services, permitted operation classes and data, filesystem/process/network boundaries, credential broker scopes, permitted dependency sources, recovery conditions, monetary/resource/time/retry ceilings, expiry/revocation, and any separately required review. No credential values enter the model packet. Canonical grants and audit events use existing Rikuri services; natural-language requests are rendered into a reviewable grant before activation.
+
+Parent/child workers, model switches, compaction, restart and resume inherit only the effective unexpired grant. Context delivery under §19 includes the grant reference, limits and pending decisions; historical text describing an old approval cannot revive it. Revalidate policy, environment identity and target preconditions at execution and after material changes. Revocation/expiry stops new work requiring that grant; cancellation, checkpointing and any necessary safe shutdown use a separately predefined bounded policy. Downgrading authority is immediate; a saved preset or reset cannot silently increase it.
+
+## 16.6 Novice-facing approval controls
+
+Provide an **Autonomy & Approvals** surface with presets and plain-language scope, allowed changes, data/services, duration, budgets, recovery and escalation behavior. Offer Allow once, Allow for this task and Save for this project where policy permits; distinguish a saved preference from an active grant. Show the effective differences before broadening authority, with revoke/pause and an Advanced view of commands/rules. Users do not need to edit a permission file or change application code. Model suggestions and imported project configuration remain proposed settings, not authority.
+
+Approval cards use the Trusted Approval Renderer (§27.7): operation, exact target, effect, reversibility, verification, grant being requested and why existing authority is insufficient. Expose the governing layer and rule: Rikuri policy, repository guard, harness permission, OS/sandbox, connector scope or organizational policy. Where a higher/external restriction cannot be controlled by Rikuri, state that limitation and a supported resolution; do not promise a UI toggle overrides it. Avoid repeatedly asking for the same unchanged pending action. A materially changed target/artifact/consequence is a new decision.
+
+Keep active policy, approval records, regression evidence, verifier identity and enforcement configuration outside the candidate's mutation authority. An agent may prepare/test changes to application security or policy code in a separately bounded workspace when authorized, but cannot activate them as the rules governing its current run. Interpreter-name allowlists and command matching can aid usability or tripwire detection; filesystem/network/process/capability enforcement and independently controlled gates enforce the boundary across supported tool routes.
+
+Project execution trust in §27.6 remains mandatory. Changed executable metadata still invalidates or triggers re-review under S03.07/T03.11. An eventual preauthorized development policy may define deterministic revalidation for mutable test/build surfaces inside a disposable envelope, but must prove the allowed change cannot enlarge authority; missing proof remains review-required. This is not an exception to the current trust rule. Unknown repositories, newly attached data/services and changed credentials/destinations do not inherit an old development grant automatically.
+
+## 16.7 Unattended readiness and progress while approval waits
+
+Before an authorized unattended run, evaluate the effective grant and all governing approval layers. Use safe scratch probes where possible to verify actual workspace/envelope access, required tool/runtime availability, writable build caches, approved dependency/service access, credential and quota validity where observable, budget/time limits, recovery checkpoints, and ability to run the required gates. Detect owner-only lock releases, protected-path edits or unavailable enforcement likely to block the plan before the user leaves. Do not exercise destructive live operations as a readiness probe or claim preflight predicts all future dependencies. A known defect's expected red test need not prevent starting its repair; failure of the required enforcement boundary does.
+
+Return **Ready**, **Ready with limits**, or **Not ready**, with concrete allowed work, unresolved prerequisites and governing reasons. For example: “Local coding/testing can continue; publication remains queued for approval.” A limitation required by the next planned step cannot be hidden under Ready. A code checkout alone is not isolation: live mounts, credentials, endpoints and shared processes must remain outside the development grant unless separately admitted. If isolation is unavailable, report the constraint rather than falling back to unrestricted host execution.
+
+Approval waiting is scoped to the affected operation and dependent work. The workflow may implement and verify a candidate in isolation while authorization to activate it is pending. Continue existing authorized independent tasks where their inputs, workspaces and resources do not depend on or interfere with the blocked operation. Do not invent unrelated work, retry a denial through another tool, advance dependent work past a required red gate, or hide an environment-wide safety failure by moving to another branch. Where independence cannot be established, checkpoint and wait.
+
+Store a durable pending-decision record with task/dependencies, exact candidate/artifact revision, target and preconditions, intended effect, required authority, verification/rollback evidence and expiration. Before later activation, compare the approved version, current target, current policy and still-valid verification evidence; changed consequences require a new decision. Approval alone is not verification, and passing tests does not authorize deployment. Apply idempotency/recovery rules so restart or repeated approval delivery cannot duplicate effects.
+
+During an unattended wait, release unneeded resources, bound retries/polling, preserve checkpoints and show honest progress: running, awaiting decision, failed or finished. Notify according to the user's preferences on meaningful blocks/completion; quiet hours do not grant permission. On expiry/end of run, provide a digest of verified work, failed checks, queued decisions, actual blockers, remaining work and consumed budget. Report missed readiness assumptions as defects to investigate. Measure useful verified progress and avoidable interruptions alongside safety failures; a zero-prompt run is not success if it exceeded authority or did nothing useful.
+
+## 16.8 Defect-scoped regression evidence
+
+The proposed repair lifecycle preserves evidence for one defect without freezing all unrelated test development. It is a product design alternative to the current broad fix-lock, not a command to release or bypass that lock. Its activation requires explicit policy/ADR reconciliation with Agent Standard Work, Engineering Standard, REVIEW.md, the shared guard and verifier contract, followed by independent allowed/denied-path evidence. Until then, today's owner-only release and report-only verifier rules remain unchanged.
+
+1. **Characterize before sealing.** Record the defect/build ID, requirements, original code revision, intended failing test and actual failure. Check syntax, fixture validity, collection and quality constraints first; prove the failure is the intended behavior where practical, not a broken environment or empty test run.
+2. **Seal the evidence bundle.** Preserve immutable test/fixture/expected-result references and hashes, runner/discovery configuration, relevant dependencies/environment, original failure and acceptance contract. Record what may change in the candidate. Hashing detects changes but does not itself prevent tampering; the evidence store, runner and gate authority must be outside the repair worker's write scope. Sensitive artifacts retain existing privacy/deletion rules; an immutable reference cannot bypass managed forget, and unavailable evidence prevents claiming successful verification.
+3. **Repair within the grant.** The worker may change authorized implementation, add tests, and work on unrelated tests/tasks without altering the sealed evidence or weakening required gates. Candidate test/configuration changes cannot replace the protected oracle; tests that affect the sealed runner/fixtures/discovery require the amendment path. Preserve checkpoints and inspect sibling failures.
+4. **Verify independently.** A separately controlled verifier/runner executes the preserved regression and appropriate surrounding checks against the exact candidate/environment, confirms the relevant tests were collected/executed, and records results and required review. Detect disabled assertions, altered fixtures, skipped tests, substituted runners and narrowed discovery. A model's claim, green exit code or agreement between agents alone cannot establish success. The builder does not approve its own change.
+5. **Complete under policy.** A trusted controller may record the cycle as verified/complete only if the previously authorized development policy allows it, the independent evidence satisfies the unchanged acceptance contract, and all relevant gates pass. Bind the receipt to defect, candidate, evidence, verifier/runner, policy/grant and environment versions; stale or missing evidence blocks completion. Completion retains the original evidence and enables the next authorized development cycle; it neither unfreezes history nor grants deployment or releases today's shared guard.
+
+If the original test is incorrect, mark the cycle `amendment_required`, preserve the original and reason, and prepare a proposed correction separately. Obtain explicit approval from the owner or a separately authorized independent review role under the admitted amendment policy; the builder cannot silently replace its evidence. Changes to accepted behavior, protection or acceptance strength require owner review appropriate to the consequence. Adding an ordinary new test outside the evidence bundle is not such an amendment. Independent safe work can continue while the affected cycle waits.
+
+Crash/replay must preserve the sealed bundle, current candidate identity and last verified state. Duplicate completion events cannot close another defect or cause activation. Changing a candidate after verification invalidates its completion eligibility until rechecked. Enforcement failure, missing evidence or unavailable verifier yields a visible incomplete state; it never becomes an automatic release. The controller is deterministic policy infrastructure, not a second model asked to grant permission.
+
+## 16.9 Autonomy admission and acceptance boundaries
+
+PRD SEC-013–019 and [Test Strategy §14](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#14-post-foundation-autonomy-and-repair-acceptance) describe future product requirements. The [live Stage Plan](Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md) remains the gate authority; all behavior in §16.5–16.8 is **Not yet proven**. No running overnight service, preset UI, repair controller or node integration is claimed here.
+
+| Existing stage owner | Scope and prerequisites |
+|---|---|
+| Foundation Stages 02–05 | Existing risk/capability/approval and budget contracts (S02.01/S02.05/S02.08, T02.05–07/T02.11), project/envelope/trust rules (S03.04–09, T03.09–13), handoff (S04.14/S04.15, T04.13/T04.16), and approval-card rendering (S05.04/T05.04). No new preset UI, background scheduler or automatic fix-lock release |
+| Product Stage 1 | Development-scoped grants/settings and the bounded single-worker repair lifecycle fit project trust UI, test runner and coding profiles after Foundation gates. Automatic cycle completion specifically requires prospective owner-approved policy/ADR reconciliation and implementation of the controller/independent evidence contract before admission |
+| Product Stage 2 | Richer workspace controls, explanations, scope previews and pending-decision visibility on existing window/UI contracts |
+| Product Stage 6 | Durable independent branches, waits/rejoins, scheduling and multi-agent propagation depend on the existing governance/workflow admission. Single-worker continuation does not imply this scheduler exists earlier |
+
+Owner: product owner and owning-stage implementer. Compare established isolation/policy/runner mechanisms before custom infrastructure; pin versions/licenses and record locality, lifecycle/integration cost, scope and failure evidence at admission. The trusted-controller and grant schemas remain proposed contracts pending that work. The user's current external project and repository guard changes are explicitly deferred to separately requested work; no existing policy is loosened by this specification.
+
 # 17. Workflow Engine and Unified Scheduler
 
 The target Workflow Engine supports durable DAGs, dependencies, parallel
@@ -1255,6 +1323,115 @@ Prompt-injection detectors may annotate suspicious segments, but
 security does not depend on perfect detection; deterministic
 tool/capability policy remains authoritative.
 
+### 19.5 Context delivery lifecycle
+
+September 27, 2026 clarification — **design contract, not implemented**. Knowledge must be discoverable and delivered through the task lifecycle; storing it or advertising a connector does not prove a worker can use it. This section operationalizes PRD MEM-001–012 and the existing Knowledge Service boundary. §19.10 maps the minimal Foundation realization and later product extensions; it does not change the live gate sequence.
+
+The caller is the Rikuri task/turn lifecycle, through policy admission, the Knowledge Service and Context Compiler, into the destination harness/model. The runtime initiates initial retrieval; it must not wait for the new model to remember that a memory system exists or for the user to repeat that instruction.
+
+At new task/session, model or harness/profile switch, context-window replacement/compaction, restart/resume, or changed knowledge capability:
+
+1. Resolve current task, project, execution profile, policy and capability versions. Revalidate the destination's eligibility before disclosing knowledge, even when the preceding model had access.
+2. Construct a small **knowledge capability manifest** from trusted registry/policy data: contract version, authorized knowledge spaces/source types, stable tool or connector identifiers, schemas for search/read-source/freshness, supported query limits, locality/privacy constraints, and availability. Names, metadata and query text are themselves subject to admission; do not reveal restricted spaces or credentials. Detailed tool schemas may be discovered progressively through an actually callable discovery tool.
+3. Supply a trusted bootstrap instruction explaining that Rikuri knowledge exists, how the available retrieval route is called, that it may contain relevant earlier work, and that retrieved content has no instruction authority. Source-derived summaries remain separately delimited evidence, never interpolated into this trusted instruction. The manifest describes granted capabilities; neither it nor an instruction grants new ones.
+4. Register the corresponding callable tools in the destination adapter, perform scoped initial retrieval for the current objective/latest input, and assemble the packet in §19.6. A model without native tool calls may use an explicitly supported host-mediated retrieval contract; this mode must be visible and pass the same policy and delivery tests. A connector label or a dead tool schema is insufficient.
+5. Record adapter delivery acknowledgement bound to session/run, destination profile, manifest and packet versions, plus the actual retrieval receipt. Verify through the real adapter path that the model request contains the bootstrap/packet and usable tool or host-mediated bindings. A model saying “I know about memory” is not a readiness check.
+
+Context delivery reports `ready`, `degraded` or `blocked`. `ready` requires current bootstrap delivery, valid bindings, and a completed initial context check with task-appropriate coverage; a successful, sufficiently covered empty search can qualify. Missing bootstrap/bindings, a stale or truncated packet, or an absent acknowledgement prevents context-dependent execution and cannot be marked ready. Partial/unavailable evidence yields visible degraded state or blocks the dependent decision when essential. A clearly qualified general response can still be possible; cancellation and policy revocation never wait for retrieval. Do not equate context readiness with task verification or completion.
+
+Keep the minimal bootstrap present in every effective model context and reinstall it after compaction; revalidate the manifest whenever profile/capability/policy versions change. Registered tools must survive ordinary turn boundaries. A new model receives structured state and source references, not hidden reasoning from the previous model. Unintegrated external chat sessions cannot be claimed to have this continuity: require a supported connector/harness route, or disclose that automatic context delivery is unavailable.
+
+### 19.6 Versioned task context packet
+
+The Context Compiler assembles the smallest useful packet within the destination's token budget. Working memory records active work; project memory supplies accepted decisions and commitments; long-term episodic/semantic/procedural memory supplies candidate evidence. Originals remain retrievable under current policy. Summaries and packets are derived, rebuildable views, not a second canonical store.
+
+| Packet field | Required meaning |
+|---|---|
+| Identity | Task/project/run/session IDs, destination profile, packet/schema/compiler version, trigger ID and context generation |
+| Intent and continuity | Current authenticated objective, constraints, active topics, original objective if a detour occurred, pending commitments/actions, unresolved questions and next step |
+| State and outcome | Current authoritative state references, accepted decisions with rationale/source links, artifact locations, observed verification results distinct from claimed completion |
+| Evidence | Selected source/version/span references, valid and observed times, last checked time, provenance, privacy and conflict/supersession status; confidence does not replace verification |
+| Retrieval route | Admitted manifest/version and callable discovery/search/read-source operations or tested host-mediated equivalents |
+| Coverage | Expected/considered authorized source classes, sources actually searched and through which cursor/time, empty/partial/unavailable/not-searched/stale results, known gaps and conflicts |
+| Validity and limits | Source dependencies, policy/capability revision, freshness deadlines, token/time/cost budgets, omitted categories and reasons, required refreshes |
+
+Coverage metadata must not identify sources outside the recipient's permission or privacy envelope. Packet and evidence identifiers may refer to deletion-governed content; logs contain only admitted minimal metadata and references. Do not copy sensitive content into permanent telemetry or receipts.
+
+Compaction preserves the objective, accepted decisions, pending work, unresolved conflicts, verification references, manifest and retrieval pointers before discarding expendable detail. If required fields cannot fit, return an explicit truncated/insufficient-context result and select a compatible admitted profile or smaller task scope; never silently lose a commitment. A handoff is acknowledged only against the current packet generation. The recipient can reopen underlying evidence instead of relying on a recursive summary of summaries.
+
+### 19.7 Retrieval triggers and topic continuity
+
+Run a context preflight on each incoming user turn. For substantive new input, run a lightweight scoped lookup using that input and active task context, even when topic detection says “unchanged”; this limits dependence on a fallible semantic classifier. Pure control operations such as stop/cancel act immediately. Explicit task/project/topic switches and explicit references to earlier work are deterministic triggers. Semantic signals can suggest an implicit change, intersection or evidence gap, but cannot grant access or turn retrieved prose into a user command.
+
+| Trigger | Runtime response before a dependent answer/action |
+|---|---|
+| New model/session, switch, resume or compaction | Reestablish §19.5 discovery/delivery; retrieve against the current objective and validate continuity |
+| New or changed topic | Dispatch scoped search in the same turn; load relevant existing decisions/evidence rather than waiting for a later batch or an optional model tool request |
+| Topic intersection or return from a detour | Search the involved topics and their possible relationship within authorized scope; preserve separate claims/provenance and the original unfinished work |
+| New evidence, conflict, changed source or stale dependency | Invalidate affected packet portions, fetch current authority where warranted, and recompile |
+| Model reports an evidence gap or asks for more detail | Perform bounded additional retrieval/read-original operations through the same service and budget |
+| Permission revocation, forget or destination change | Invalidate affected packets, pending results and capabilities; re-admit before any further model delivery or action |
+
+“Immediate search” means dispatch during that turn before the context-dependent answer/action, not instant completion of a remote request. Track `pending → complete | empty | partial | unavailable | denied | timed_out | cancelled` per retrieval. A deadline produces a typed visible outcome, not an assumed empty corpus. Essential missing evidence blocks the dependent decision; nonessential gaps permit a qualified response with limitations. A brief progress acknowledgement is permissible while searching.
+
+Associate every request/result with task, trigger, context generation and effective policy version. Coalesce duplicate requests for the same generation without hiding their trigger receipts. On another topic switch, cancel obsolete work when possible; a late result cannot overwrite the active packet. Reuse it only after a new relevance, freshness and policy check. A policy/source change between search and delivery requires revalidation; recheck again before a consequential action.
+
+Retrieval starts with current state, explicit project/entity references, lexical/metadata search and source reads. Extend to semantic, code/symbol or graph retrieval only at their admitted stages and when measured gaps justify it. Topic crossover does not automatically join projects, share another agent's private context, change the task objective, attach an idea as a decision, or install/connect a new service. Cross-project candidates require existing authorization; ambiguous identities and contradictory claims remain visible. The runtime searches likely evidence even if the model has not requested it, while avoiding unbounded recursive searches.
+
+### 19.8 Source capture, freshness and invalidation
+
+Capture authorized changes incrementally where the source supports it; preserve source identity, version/hash, permission state, event/effective time, observed time, and importer/extractor version. Each connector declares snapshot/poll/webhook/live access, collection scope, cursor and last successful reconciliation, maximum tolerated lag, next reconciliation deadline, retry/backoff and outage-backfill behavior. Webhooks are hints that require reconciliation; failure, expired cursors or unsupported deletion events cannot silently produce a healthy index.
+
+Foundation snapshot imports report the imported snapshot/version and observation time; they must not claim continuous synchronization. Later connectors can combine indexed search for broad recall with live queries for recent or volatile data. Critical explicit user decisions/state changes are available through the authoritative state read immediately after commit even if a derived index lags. Costly extraction/consolidation may run asynchronously with visible pending status; this does not introduce autonomous reflection or inferred user traits into Foundation.
+
+| Source | Capture and verification contract |
+|---|---|
+| Chats and notes | Preserve original message/document versions and source spans; topics may cross threads. Resolve entities cautiously, deduplicate repeated evidence, and retain rejected alternatives as historical rather than current decisions |
+| Coding sessions | Preserve task/session IDs, decisions, unsuccessful attempts, pending questions, artifacts and verification receipts when the adapter exposes them; explicitly report unobservable session history. Verify current code using resolved checkout, branch/commit and working-tree changes, not a transcript's claim that an edit landed |
+| Email/calendar/service records | Keep source IDs, effective dates/time zones and current source versions. Recheck decision-relevant volatile state; conflicting email/calendar commitments remain unresolved until supported reconciliation |
+| Images/audio/video | Preserve permitted original or authoritative reference; retain OCR region/page, transcript time span and relevant frame/clip references, extraction version and uncertainty. Transcript/OCR descriptions do not replace visual/audio evidence needed for the task |
+| Watched/downloaded material | An explicit save/share or visibly active authorized capture path registers it. Watching/downloading alone is not proof of capture, relevance, consent to broader collection or indefinite retention |
+
+Represent source outcomes separately: a source can be connected but not indexed, partially indexed, stale, inaccessible, or unavailable. A completed query with no hits is not proof that uncaptured/unsearched material does not exist. Preserve last known-good eligible data with its age where safe, and reveal the gap; never silently substitute a cloud destination or unapproved source.
+
+Track source dependencies of summaries, indexes, packets and pending retrieval. Source updates, supersession, permission changes and forget operations invalidate dependent candidates. Recheck authorization at retrieval and delivery, not just at ingestion. Denied or revoked content cannot be served from a cache. For managed forget, prevent replay/materialization of revoked source-derived content, discard affected active contexts and rebootstrap before further use. Historical knowledge already sent to an external recipient cannot be recalled; the existing external-export/managed-restore boundary remains unchanged. Restore still consults trustworthy current revocation before materializing content.
+
+### 19.9 Timeliness, coverage and useful-context evidence
+
+Each execution/context profile declares finite local/remote retrieval deadlines, token/cost budgets, freshness policy and action-critical source requirements before work starts. Account for retries within the same budget; paid retrieval/model extraction reserves under the existing hard-budget contract. Prioritize source discovery and a compact packet, then fetch additional passages on demand. Cache with dependency/policy validation; do not trade correctness or privacy for latency.
+
+Initial **experimental targets**, not measured results or new Foundation gates: warm local initial retrieval plus packet assembly p95 ≤ 1 second, local terminal-status deadline 2 seconds, and remote-query terminal-status deadline 5 seconds. Measure bootstrap/tool readiness separately and end-to-end time as well. These are starting hypotheses for a declared representative corpus/hardware profile; record cold-start/index-build costs separately. At a deadline, report partial/timed-out/blocked status and cancel or detach further work explicitly; dependent actions still require the evidence. A timeout response is not counted as useful context merely because it arrived quickly. Profiles may adjust targets with recorded evidence; the implementation stage must adopt explicit thresholds before claiming performance acceptance.
+
+For later continuous connectors, record a source-specific update target and measure source-change-to-searchable delay where source timestamps are trustworthy, otherwise observation-to-searchable delay with the limitation. Polling interval, source API delay, outage backlog and permission reconciliation constrain freshness; do not advertise a universal real-time guarantee. Snapshot-only sources have snapshot age, not a live-sync SLA. A stale deadline triggers degraded health even if the process is alive.
+
+| Measure | Evidence and interpretation |
+|---|---|
+| Delivery/readiness | Fraction of admitted session/switch/resume/compaction cases with verified bootstrap, correct callable route and packet delivery; required deterministic fixtures permit zero silently skipped bootstrap/search triggers |
+| Latency | Trigger-to-dispatch, retrieval, compilation, adapter delivery and time to first useful context; p50/p95, sample count, cold/warm conditions, timeouts/errors and end-to-end timing reported separately |
+| Source freshness | Last successful cursor/reconciliation, age and update lag per authorized source; stalled/failed/pending extraction visible |
+| Evidence coverage | Required source/fact recall and missing-critical-evidence rate on frozen known-answer tasks; deduplicate dependent copies. Show coverage of known eligible sources, never claim exhaustive knowledge of unknown sources |
+| Correctness | Supported current answers, supersession/conflict handling, citation/span fidelity and justified abstention; zero unsafe acceptance on the required conflict fixtures and no always-abstain pass |
+| Boundaries | Zero unauthorized disclosure, source-derived instruction authority, or serving revoked content on the boundary fixtures; both legitimate retrieval and denial must pass |
+| Usefulness/cost | Verified task success and human correction burden alongside retrieval calls, model tokens, latency and cost; compare against the simpler FTS/current-state baseline |
+
+Bind minimal receipts to task/run/trigger/context generation, manifest/packet/compiler versions, admitted source references, search outcome and omission reasons, timings and destination delivery. Unknown exposed identities stay explicit. Receipt delivery is operational evidence, not proof of model comprehension; behavior is separately evaluated on tasks requiring the supplied context. Use deterministic clocks/scripted adapters for ordering/failure tests and actual adapters for delivery/behavior probes. See [Test Strategy §6.2](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#62-context-delivery-and-continuity).
+
+### 19.10 Stage boundaries and evidence
+
+The [live Stage Plan](Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md) retains gate authority. This design refines delivery over existing services; it neither declares them implemented nor introduces a second roadmap.
+
+| Existing owner | Realization and acceptance boundary |
+|---|---|
+| Foundation Stage 01 | S01.03/S01.07/S01.09, T01.06/T01.07: snapshot provenance, searchable originals and ≥20 known-answer questions; no live connectors or semantic topic classifier |
+| Foundation Stage 02 | S02.02, T02.01/T02.15/T02.16: minimal versioned policy/freshness/conflict-aware packet with provenance, typed omissions and execution evidence; preserve the ten required answer/abstain outcomes |
+| Foundation Stage 04 | S04.01/S04.02/S04.14/S04.15, T04.01/T04.06/T04.13/T04.16–18: bootstrap/tool delivery through the existing harness, scoped local lookup, explicit topic-change/crossover inputs, profile/handoff/resume fixtures and visible missing/stale/truncated failures. No separate topic engine, connector service or multi-agent scheduler |
+| Product Stage 1 | Claude/Git imports and code-aware context; richer coding-session capture and topic-retrieval evaluation through the existing developer/harness profiles. Semantic/vector improvements remain evidence-driven experiments |
+| Product Stages 2/5 | Workspace context links at Stage 2; incremental/live service connectors, cross-source reconciliation and assistant topic intersections at Stage 5, after its existing dependencies |
+| Product Stages 6/8 | Multi-agent context delivery/isolation at Stage 6; richer media extraction and Live Companion capture at Stage 8. Narrow capabilities enter only at their already authorized earlier stages |
+| Product Stage 10 | Experience consolidation/inference and learned retrieval policies remain future research/productization under the existing Model Lab/governance prerequisites |
+
+Owner: product owner and implementer of each owning stage. Activate each acceptance case only with its component and predecessor gates; record unresolved adapter/API/hardware constraints before admission. Candidate component reuse requires pinned version/license, trust/locality, lifecycle cost and real failure tests at that stage. No connector, temporal graph or media vendor is selected by this contract. All delivery, timing and source-coverage behavior remains **Not yet proven** until linked implementation receipts exist.
+
 # 20. Knowledge and Idea Fabric
 
 The Knowledge and Idea Fabric is the first serious dogfood application
@@ -1262,12 +1439,15 @@ of the canonical data model.
 
 ## 20.1 Import first
 
-Foundation-0 imports:
+Foundation-0 imports, following the live Stage Plan:
 
 - ChatGPT export
-- Claude export
 - user Markdown/Obsidian vault
-- Git repository manifest/content index
+
+Claude export and read-only Git repository manifest/content import are
+resequenced to early product Stage 1 (S1.01/S1.02), after their F2/F9
+preconditions. The broader source fabric does not imply all importers
+exist in Foundation-0.
 
 Every importer is designed as a pure transformation: source
 bytes/snapshot in -\> canonical records plus provenance out. Importers
