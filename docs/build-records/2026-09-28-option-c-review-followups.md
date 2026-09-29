@@ -6,7 +6,7 @@
 | Date | 2026-09-28 |
 | Author / agent session | Claude Code (Opus 5.5) review session |
 | Branch | main; no staging, commit or push requested |
-| Commits | Uncommitted; builds on the uncommitted [Option C Build Record](2026-09-28-option-c-security-and-personal-data.md) working tree, which is preserved |
+| Commits | `3b0c80e` (combined with the other September 28 Option C record because both edited the same files; owner asked to commit and push) |
 | Stage Gate | Documentation only; no gate closes. Creates the Stage 00 Stage Gate Record (NOT STARTED) |
 | Related ADR / requirement | ADR 0000 new dated addendum; SEC-005/020–022; S00.12, S00.13, S03.11, S04.02, E2, E5; T03.05, T03.16, T04.05; Test Strategy §8.1–8.2 |
 | Status | COMPLETE — documentation only; independent verifier PASS; runtime Not yet proven |

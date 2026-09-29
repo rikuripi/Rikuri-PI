@@ -6,7 +6,7 @@
 | Date | 2026-09-28 |
 | Author / agent session | Codex documentation session |
 | Branch | main |
-| Commits | Uncommitted; no commit or push requested for this change |
+| Commits | `3b0c80e` (combined with the other September 28 Option C record because both edited the same files; owner asked to commit and push) |
 | Stage Gate | Documentation only; no implementation gate closes |
 | Related ADR / requirement | ADR 0000 dated addendum; SEC-001–008, SEC-018, new SEC-020–024; S00.13, S03.01–12 and T03.01–16 |
 | Status | COMPLETE — documentation change only |
