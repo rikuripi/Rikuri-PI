@@ -1,0 +1,22 @@
+{
+  "tag_name": "v0.1.2",
+  "html_url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.2",
+  "published_at": "2026-09-28T03:58:00Z",
+  "target_commitish": "main",
+  "assets": [
+    {
+      "name": "openshell-gateway-x86_64-unknown-linux-gnu.tar.gz",
+      "size": 40882719,
+      "digest": "sha256:218d887845b3a020ab7535c9985eb9c666d6938f144044957f8b82b42892aadb",
+      "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.1.2/openshell-gateway-x86_64-unknown-linux-gnu.tar.gz"
+    },
+    {
+      "name": "openshell-x86_64-unknown-linux-musl.tar.gz",
+      "size": 10203618,
+      "digest": "sha256:7eb6917285331a09e3300266a0558616481a5e9927cae2612ea07c4045b6dd6f",
+      "browser_download_url": "https://github.com/NVIDIA/OpenShell/releases/download/v0.1.2/openshell-x86_64-unknown-linux-musl.tar.gz"
+    }
+  ],
+  "source_commit": "6648bd0c290efbc41ba131ee9831ee45cd431f94",
+  "archive_verification": "The original run compared both downloaded archives against the GitHub release digests before execution; archives are not included in this receipt."
+}

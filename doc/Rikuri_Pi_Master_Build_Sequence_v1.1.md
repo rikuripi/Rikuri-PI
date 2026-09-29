@@ -56,7 +56,7 @@ Then reorder every dependent item in the live checklist in the same change. If t
 
 **Live sequence:** Foundation-0 Re-baselined Stage Plan v2.1 and ADR 0000. The earlier 90-Day Build Plan v1.6 is historical. Six gates are estimated from October 2026 to June 2027 with a four-to-eight-week contingency reserve. Dates cannot close unproven gates. Ubuntu is the full execution/security reference; platform-neutral macOS core build/unit/contract tests run continuously, with native macOS envelope and desktop assurance experimental.
 
-1. **Stage 00 — Bootstrap and kernel:** CI/red drill, Engineering Standard/Build Records, IDs/storage/ledger, first transactional crash points, Pi driveability spike, and early Ubuntu namespace/AppArmor admission probe.
+1. **Stage 00 — Bootstrap and kernel:** CI/red drill, Engineering Standard/Build Records, IDs/storage/ledger, first transactional crash points, Pi driveability and harness-placement spike, and early Ubuntu execution-backend admission probe (OpenShell first candidate).
 2. **Stage 01 — Ownership:** real ChatGPT and Markdown/Obsidian import with provenance and lexical retrieval, project resolver, encryption, deletion keys, managed backup/restore. Restore both the pre-forget and post-forget snapshots with current durable revocation state; safely refuse/quarantine without it.
 3. **Stage 02 — Trust and money:** minimal Knowledge Context Compiler with ten expected answer/abstain outcomes, Auto/Private/Local Only admission, hard budget reservation, trusted approvals, and one synthetic non-sensitive cloud access path. F4-lite policy refusal is an intermediate checkpoint.
 4. **Stage 03 — Execution boundary:** Ubuntu filesystem/network envelope, ProjectTrust, untrusted read without execution, descendant containment. Prove the F4 envelope prerequisite; full cloud/local handoff waits for a local runtime.
@@ -87,6 +87,8 @@ Before item 1, add **S1.01 Claude importer** after F2 and **S1.02 read-only Git/
 12. Dogfood: complete multiple real Rikuri changes entirely through the Rikuri coding workflow and Build Procedure.
 
 At item 7, evaluate correctable text classification and topic retrieval under Architecture §20.6 using real dogfood gaps, provenance and correction fixtures. Semantic/vector implementation remains an experiment requiring the live plan's ≥40-question corpus and failures the FTS baseline cannot resolve; automatic classification is not required to preserve/search originals. At item 2, Desktop Commander-style terminal/file adapters may be compared with native services, with pinned version/license, authority/locality, lifecycle cost and allowed/denied evidence before adoption. No product dependency is selected here.
+
+Before any Stage 1 worker receives a credential or a permitted network destination (for example dependency fetch at items 5/8), that path must pass the Option C broker and permitted-destination qualification deferred from Foundation-0 ([Stage Plan deferral table](Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md#deferral-and-resequencing-table); Test Strategy §8.2). Until then it stays unavailable.
 
 **Stage 1 gate:** a real feature can be planned -> coded -> diffed -> tested -> full-gated -> documented -> committed with evidence through Rikuri. External IDE is optional, not required.
 

@@ -901,6 +901,25 @@ Pi may provide the agent loop, tool dispatch, skills/extensions, and
 session mechanics. It does not own canonical Rikuri state, privacy
 authority, project trust, budget authority, or completion status.
 
+**Harness placement and model routing** (September 28 [ADR 0000
+addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-review-follow-ups-and-foundation-0-credential-scope)).
+The Pi process reads untrusted project content and model output, so it
+is contained like any worker: either it runs inside the admitted
+execution envelope, or its built-in file/shell tools and in-process
+extension loading are disabled, proven disabled, and it holds no host
+authority. E2 decides which; if neither holds, E2's kill criterion
+fires. Pi holds no provider credential. Its model provider is a
+`rikurid`-owned endpoint that binds every request to the task's grant,
+privacy class and hard-budget reservation before any external request is
+built; a worker holding Local Only material cannot reach a cloud model
+through it, and Private material follows the PRD §10.1 admission rules.
+Local Only work reaches the local runtime only through that endpoint over
+a mounted local socket, so the worker's network policy stays empty; if
+the socket route proves impossible, the loopback allowance is a
+permitted destination with full qualification (§27.2). If Pi runs
+outside the envelope, E2 records its account, readable paths and network
+reach, and T04.05 re-verifies that it has no host authority.
+
 ## 13.2 Harness Profiles
 
 A **Rikuri Harness Profile** describes how a model family or checkpoint
@@ -1924,9 +1943,7 @@ component degraded.
 
 # 27. Security and Trust Architecture
 
-Security is built around **capability containment and trust
-boundaries**, with AISecurity components reused as defense-in-depth
-signals where they fit.
+Protection of the user's private, financial, personal/media, professional and proprietary data, and secrets is the highest product responsibility. Security is built around **capability containment and trust boundaries**. The September 28 Option C decision assigns trusted policy evaluation to AISecurity and containment to qualified adapters, while Rikuri retains canonical permission authority. Detectors add signals; they cannot grant authority or substitute for enforcement.
 
 ## 27.1 Foundation threat model
 
@@ -1942,7 +1959,7 @@ material, credentials, user intent, budget, audit integrity,
 backup/recovery keys, and future financial authority.
 
 The detailed threat model is maintained as a companion document at
-`docs/security/THREAT_MODEL.md`.
+[docs/security/THREAT_MODEL.md](../docs/security/THREAT_MODEL.md).
 
 ## 27.2 Egress by construction
 
@@ -1968,6 +1985,12 @@ is `Denied`.
 
 If the platform cannot prove the required envelope, Rikuri refuses that
 execution profile rather than silently weakening the privacy promise.
+
+The restricted local worker reaches the local model runtime only through
+the `rikurid`-owned model endpoint described in §13.1, over a mounted
+local socket. Its external network policy stays empty; a
+loopback or host-service allowance added for convenience is a permitted
+destination and needs the same qualification.
 
 Linux is the reference strong-enforcement platform for Foundation-0.
 macOS may support a no-network sandbox experiment, but host allowlisting
@@ -2016,7 +2039,7 @@ engine whose caller owns transport; non-shell intent actions largely
 fall through to configured defaults; and the macOS sandbox profile can
 deny all network when offline but cannot itself enforce DNS-host
 allowlists for permitted network. These are valuable inputs to Rikuri
-Security Core, not a complete boundary.
+Security Core, not a complete boundary. The inspected non-macOS `ai-exec` path currently warns and runs unsandboxed; it is inadmissible as a Rikuri containment fallback. Linux monitoring and mature macOS scaffolding do not establish execution protection. Reuse each component only within its verified contract, with workers unable to alter the active policy, broker, verifier or audit service.
 
 ## 27.6 Project/repository execution trust
 
@@ -2114,6 +2137,45 @@ build-breaking security regressions. The suite expands to native/local
 paths, daemon interruption, flags/xattrs/ACLs, copy/export/exfiltration,
 bulk reads, encrypted copies and key lifecycle, recovery, and
 user-visible notification.
+
+## 27.12 Option C: policy ownership and enforcement adapters
+
+**Adopted planning direction, September 28, 2026; implementation Not yet proven.** The [ADR addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-and-personal-data-protection) reconciles this decision with the live Stage Plan.
+
+| Layer | Responsibility and boundary |
+| --- | --- |
+| Rikuri kernel and governed services | Own user intent, privacy labels, project trust, approvals, scoped grants, budgets, revocation, canonical state and the audit ledger. Only trusted service operations change authority. |
+| AISecurity policy service | Evaluate those authoritative inputs, normalize consequences, apply detection signals, and compile a versioned enforcement plan. Run outside the worker's writable authority. It cannot independently expand a grant. |
+| Enforcement adapter | Apply the plan to actual filesystem, process, privilege and network access; return observed assurance, denials and lifecycle evidence. Refuse semantics it cannot enforce. OpenShell is the first Ubuntu candidate. |
+| Optional independent observer | Supply additional detection and response evidence. It cannot issue permission, replace baseline containment, or turn missing enforcement into a healthy state. Sentry is a research reference here. |
+
+The effective permission is the intersection of current grants and every governing restriction. Backend defaults, attached providers, proxies, inherited environment, mounted sockets and configuration are part of the effective plan. The worker cannot submit a broader backend policy, mint grants, mount the container-engine socket, reach an unrestricted broker/admin API, or replace its own evaluator. Test same-user process/IPC/filesystem access as well as container mounts; merely running a separate daemon is insufficient isolation.
+
+**Adapter contract.** Before launch, bind task/worker identity and descendants to a grant reference and epoch, expiry, policy hash, backend/version, platform/kernel/driver, immutable image identities, permitted operations and resources, and the verification receipt. Confirm enforcement before admitting data or starting work. The assurance descriptor distinguishes supported guarantees, observed results, unsupported paths and freshness; requested configuration is not observed protection. Renewals and policy changes require current authorization. Backend/provider/kernel/image/configuration changes invalidate affected evidence and require requalification. Unsupported or inconclusive translation/proof means the requested profile is unavailable.
+
+**Failure and revocation.** Enforce grant expiry and a measured maximum revocation latency outside the worker. The owning adapter ADR must set that limit and tests must meet it before admission. On controller, supervisor, broker or enforcement loss, reject new work and credential/egress use and fence or terminate affected workers and descendants within that bound. A stop operation must work without model cooperation; cutting a model connection alone does not stop local execution. Do not report revocation complete before the enforcement acknowledgement or proven fence. Preserve recovery/audit evidence without extending access. A last-known-good policy may run only while its authorization and freshness remain valid; restart or rollback cannot revive revoked grants or stale credentials. Failure to establish the bound makes the profile unavailable.
+
+**Backend-native approval channels.** A backend's own policy-change features are a second authority path and are disabled for Rikuri workers. OpenShell v0.1.2 lets a sandboxed process submit proposals through `http://policy.local` (`POST /v1/proposals`), drafts proposals from observed denials, and merges prover-clean proposals without a person when `proposal_approval_mode` is `auto`. Admission pins that mode to manual at gateway scope and verifies it as part of the effective policy at every launch. Block the worker's proposal route; where that is impossible, a proposal reaches Rikuri only as an untrusted request rendered by the Trusted Approval Renderer and granted through Rikuri. OpenShell's own approve/reject surface is never used for Rikuri workers. A worker proposal must leave the effective policy unchanged (T03.05).
+
+**Backend host privilege.** Access to a rootful container engine is root-equivalent. OpenShell's Docker driver controls the engine through its socket, and its supervisor uses host networking and is the mediated egress point. Run the backend controller under a dedicated service account or a rootless engine. Keep the accounts that run `rikurid`, Pi, local model servers and tool servers out of root-equivalent groups such as `docker` or `lxd`; a same-user path to the engine would bypass every envelope. The controller, supervisor and engine belong to the trusted computing base; test the supervisor's reach to host loopback services, including `rikurid` IPC and local model ports.
+
+**Backend selection.** Qualify one Ubuntu implementation first. OpenShell already combines multiple containment mechanisms; separate full implementations for containers, Landlock and seccomp are not required simply to call the design pluggable. Keep a narrow Rikuri contract and a replaceable adapter. A native Linux alternative requires an explicit qualification decision and the same suite; never fall back silently to plain execution. Native macOS remains experimental. A Linux VM on macOS proves only its admitted VM workload boundary, not native apps, Finder, clipboard, Keychain or desktop automation.
+
+**Credentials and egress.** Prefer a broker outside the worker that authenticates only granted operations, binds credentials to destination and operation, enforces expiry/revocation, and filters responses. Real credentials must not enter worker environment, arguments, files, model context, returned headers or logs. Provider configuration must be included in effective-policy checks. Unsupported credential protocols remain unavailable until a qualified broker path exists. Foundation-0 enables no credential-bearing or network-permitted worker; cloud model access stays inside `rikurid`'s provider adapter, so broker and permitted-destination qualification apply from the first later stage that enables such a path. A network allowlist alone cannot stop disclosure to an allowed destination. Keep Local Only/Secret admission separate from backend network policy; do not mix protected data with a general outbound shell, browser or connector.
+
+**Policy proofs and upstream learning.** Where available, use a policy checker to show that the complete effective plan is within the Rikuri grant. Record the supported model and unmodeled semantics; a successful proof is not evidence that the running kernel or proxy enforced it. Test actual I/O and failure behavior. The [OpenShell policy prover documentation](https://docs.nvidia.com/openshell/latest/how-it-works/policies/prover) is a reference for bounded policy checking. Upstream APIs/docs evolve; the [v0.1.2 receipt](../docs/security/evidence/2026-09-28-openshell-v0.1.2/README.md) describes only the release and cases tested.
+
+**Sentry research.** Study independent observation, credential separation, structured events and response on controller loss from [NVIDIA's published safety-platform architecture](https://nvidianews.nvidia.com/news/open-agent-safety-platform). Prefer documented mechanisms and inspect source only when legitimately available, with version/license recorded. No public Sentry implementation was located in this review, so no claim about audited internals is made. Hardware/DPU protection is an optional later layer, with its own deployment and threat model. A service sharing the host kernel does not provide hardware independence. OCSF-compatible event export may ease interoperability; Rikuri's ledger remains authoritative and privacy-minimized.
+
+## 27.13 Personal-data custody and honest assurance
+
+Use [SEC-020–024](Rikuri_Pi_PRD_v1.2.md#10-security-and-trust-requirements) and the [threat/control/test matrix](../docs/security/THREAT_MODEL.md) at each access-path admission. Default to scoped read access; writing, deleting, sharing, external processing and financial actions require their own authority. Preserve originals and validated recovery candidates. Read access to a professional database does not grant exports, unrestricted queries, mutation or administration; constrain object/row/column scope and resource use at a trusted service.
+
+Derived material inherits applicable source restrictions: OCR, transcripts, image/location metadata, thumbnails, embeddings, summaries, prompts, tool output, caches, crash reports, versions and backups. Do not put private payloads into routine audit records. Apply minimization, access control, retention and current-revocation recovery to both source and derived stores. Managed encrypted storage and recovery keys require tested lifecycle and restore semantics; encryption at rest does not protect plaintext deliberately exposed to a running worker. Unmanaged originals/exports and already disclosed remote copies remain outside Rikuri's recall guarantee.
+
+Optional vendor/product telemetry is off by default, including dependencies. [OpenShell's telemetry controls](https://docs.nvidia.com/openshell/latest/observability/telemetry) must be explicitly configured and then verified for the admitted build. Exercise gateway, supervisor, broker and host-service egress as well as worker traffic; an offline worker does not prove an offline control plane. Explicit diagnostic sharing is scoped, previewable, minimized and secret-free.
+
+Show users which task, data and operations are protected, by which admitted profile, when it was verified, and what is unavailable. Missing/stale evidence or a failed required probe cannot display Healthy/Protected. Restrict dependent operations and explain the consequence in ordinary language. Reliability comparisons require a stated threat model, representative allowed tasks, attack/failure fixtures, exact versions and independent review. The goal is to earn trust through repeatable evidence; no claim of universal protection or comparative superiority follows from this design or its smoke test.
 
 # 28. Workspace and Window Architecture
 
@@ -2801,6 +2863,7 @@ when wired to a real caller and gate.
 | Project execution trust     | LOCKED                                | new project read/untrusted by default; explicit scoped/reversible execution promotion; descendant containment |
 | OS abstraction              | LOCKED direction                      | OS Capability API; Ubuntu full Foundation reference, macOS continuous core tests with native assurance experimental, Windows later |
 | Linux base                  | **LOCKED reference**                  | Ubuntu LTS; Omarchy ideas optional, not dependency                                                            |
+| Execution containment       | LOCKED direction; backend PROVISIONAL | Option C (§27.12): Rikuri owns grants, AISecurity evaluates, qualified adapter enforces; OpenShell first Ubuntu candidate pending S00.13/E5; backend approval channels disabled; no unsandboxed fallback |
 | Egress promise              | LOCKED                                | context admission + proven no-network envelope by construction                                                |
 | Budget hard stop            | LOCKED                                | atomic reservation before paid call                                                                           |
 | Backup/deletion             | LOCKED direction                      | encrypted verified snapshot + deletion-unit key destruction/tombstone                                         |
@@ -3088,10 +3151,10 @@ others until Foundation-0 provides evidence.
 ### Prototypes during Foundation-0
 
 1.  E1: transactional kernel recovery versus simplest verified SQLite design; full matrix after other components exist.
-2.  E2: two-day throwaway headless Pi/tool-driveability spike.
+2.  E2: two-day throwaway headless Pi/tool-driveability spike, including the harness-placement and `rikurid` model-endpoint decision (§13.1).
 3.  E3: managed pre-forget backup restore with current revocation and safe refusal when unavailable.
 4.  E4: minimal Knowledge Context Compiler against ten required answer/abstain outcomes.
-5.  E5: tested Ubuntu network/filesystem envelope after an early namespace/AppArmor feasibility probe.
+5.  E5: tested Ubuntu network/filesystem envelope after the S00.13 backend admission probe (OpenShell first candidate).
 6.  E6: second compatible Harness Profile with zero kernel diff.
 
 FTS5 is the Foundation-0 retrieval baseline; a VectorIndex quality experiment and native macOS envelope work follow later. The F4 cloud/local integration closes in Stage 04 after the local runtime exists.

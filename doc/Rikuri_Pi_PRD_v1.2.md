@@ -846,7 +846,9 @@ Business, research, mathematical and video-production presets are illustrative f
 
 # 10. Security and Trust Requirements
 
-AISecurity is an existing Rust/Swift foundation to evolve into the Rikuri security layer. Security must be mandatory in the execution path, model-independent, and capable of remaining unobtrusive during normal operation while proving its own health.
+**Protecting the user's private information, financial records, personal files/photos/videos, proprietary and professional databases, and secrets is Rikuri Pi's highest product responsibility.** Confidentiality, protection against unauthorized changes, and dependable recovery take priority over convenience, autonomy and feature coverage. A capability stays unavailable when its required protection cannot be established.
+
+September 28, 2026 adoption: **Option C** keeps canonical permissions under Rikuri authority, uses AISecurity as a trusted policy/decision service, and delegates containment to qualified, replaceable enforcement adapters. OpenShell is the first Ubuntu candidate; adoption is conditional on qualification. [Architecture §27.12](Rikuri_Pi_Architecture_Spec_v1.7.md#2712-option-c-policy-ownership-and-enforcement-adapters) defines ownership, and the [threat model](../docs/security/THREAT_MODEL.md) defines assets, boundaries and test mapping. These are requirements; the current repository does not implement a secure personal assistant.
 
 | **ID**  | **Pri** | **Requirement**                  | **Description**                                                                                                                                        | **Acceptance**                                                                                   |
 |---------|---------|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
@@ -867,6 +869,11 @@ AISecurity is an existing Rust/Swift foundation to evolve into the Rikuri securi
 | SEC-017 | P1 | Defect-scoped regression evidence | Prospectively support per-defect repair cycles with immutable original regression tests, fixtures, expected outcomes and failure receipts, independent verification, and trusted-controller completion only under an explicitly admitted development policy. Preserve an auditable amendment route for faulty evidence or changed requirements. | Routine verified cycles can complete within that grant without recurring owner-release prompts. Tests, discovery or verification cannot be weakened to obtain success; adding independent tests remains possible. The coding agent cannot release its own restrictions, and the current owner-only fix-lock rule remains active until separately reconciled. |
 | SEC-018 | P1 | Grant continuity and revocation | Carry authenticated grant references, scope, expiry and pending approvals through model/harness switches, handoffs, resume and compaction. Revalidate against current trusted policy, revocation, environment and material changes before use; keep effective enforcement outside the worker's writable authority. | A replacement model receives valid authority without needless reapproval, but cached context cannot revive an expired/revoked grant or expand scope. Executable-metadata changes still trigger project-trust revalidation; an agent's edits to policy, verifier or application code cannot activate their own authority. |
 | SEC-019 | P1 | Live-service and financial consequences | Evaluate service availability, resource consumption, credentials, network exposure and durable data independently of custody, signing, wallets or channel funds. Permit only explicitly scoped live queries or admitted maintenance procedures. | An unfunded live-node/API development scenario can allow isolated coding and bounded authorized queries while live restarts, configuration or durable-data changes require their own grant or procedure. Zero funds neither grants live-system authority nor subjects every development action to financial approval. |
+| SEC-020 | P0 | Personal-data protection duty | Default to the least data and operations needed for the task. No blanket home-directory, media-library, professional database or everyday browser access. Distinguish reading, modifying, deleting, exporting and sharing. | Synthetic private assets remain inaccessible without a current scoped grant; legitimate granted work succeeds. Permission explanations name the data, destination, consequence and duration. |
+| SEC-021 | P0 | Qualified enforcement adapters | Keep Rikuri permission authority independent of backend choice. Bind execution to a verified backend, platform, effective policy and current grant; fail closed on unsupported, stale or failed assurance. | Backend loss or replacement cannot launch an unrestricted worker or preserve expired/revoked authority; descendants and control channels satisfy the same contract. |
+| SEC-022 | P0 | Brokered credentials | Keep real secrets outside worker files, environment, arguments, model context and logs. A trusted broker performs only granted operations, with endpoint/operation scope, expiry and revocation. | Synthetic canaries cannot be extracted or redirected; unauthorized use and stale grants fail. Financial read access does not permit signing, payment, trading or custody. |
+| SEC-023 | P0 | Private-data lifecycle and integrity | Source restrictions govern derived text, media metadata, thumbnails, embeddings, summaries, caches, logs, versions and backups. Preserve originals and verify recovery before claiming reversibility. | Derived data cannot bypass privacy, retention, audience or current-revocation checks; failed/racing mutations preserve the last valid state. Unrecoverable actions require explicit consequence handling. |
+| SEC-024 | P0 | Evidence-backed trust | Show protection per supported path/platform and tested configuration, including gaps, last verification and degradation. Publish scoped assurance and measure both attack refusal and successful authorized work. | No unsupported path is labeled protected; no comparative reliability claim appears without a reproducible comparison and independent review. Required failure/regression evidence blocks release. |
 
 > **Approval principle**
 >
@@ -880,9 +887,13 @@ Rikuri should classify information at least as **Normal**, **Private**, **Local 
 
 Where feasible, Rikuri should process sensitive source data locally and send only the minimum sanitized/derived result to a frontier model when policy permits. Multimodal privacy classification must eventually cover text, documents, images, audio, video, transcripts, metadata, and extracted text.
 
-## 10.2 Universal egress enforcement
+SEC-020–024 apply as each capability is admitted. Foundation-0 implements the existing scoped file/model/worker/storage paths through Stages 00–05; the [ADR addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-and-personal-data-protection) and Stage Plan specify the refined qualification work. Native desktop, media, connectors, collaboration and financial operations retain their later product stages and require their own evidence before enablement.
 
-The privacy router cannot be merely optional middleware. Rikuri Security must become an unavoidable capability and egress authority across supported AI calls, APIs/connectors, browsers, file uploads, clipboard, email attachments, GUI workers, shell/network access, and custom code. A path that bypasses policy is a security defect.
+Unclassified imports begin with conservative private/local handling until a trusted user or admitted policy assigns their permitted use. Model suggestions and source text cannot lower a restriction. Sanitization or summarization alone does not declassify data; a separately authorized, tested disclosure decision is required. Derived content inherits the applicable source restrictions, including audience and retention. Secrets are excluded from general indexing and model context; credential operations use the broker.
+
+## 10.2 Egress enforcement for supported paths
+
+The privacy router cannot be merely optional middleware. Rikuri Security must become an unavoidable capability and egress authority across supported AI calls, APIs/connectors, browsers, file uploads, clipboard, email attachments, GUI workers, shell/network access, and custom code. A path that bypasses policy is a security defect. Each path must be qualified before being offered as protected; this is not a claim to intercept all activity on the owner's computer. A permitted destination can still receive stolen data, so endpoint allowlists do not replace context admission and separation of private data from network-capable workers. Local Only requires both refusal before external request construction and a proven no-external-network execution profile. Optional telemetry and support uploads are off by default and must satisfy the same privacy rules when explicitly enabled.
 
 ## 10.3 Secrets and financial authority
 
@@ -1251,6 +1262,7 @@ Stage 6's initial slice is text/file collaboration and evidence cards over suppo
 | Distillation quality  | Human review finds ≥90% of important decisions/ideas/questions correctly classified, with low false promotion of brainstorming to decisions.    |
 | Execution reliability | For supported repair/task benchmarks, ≥90% of completed executions satisfy independent post-action verification without manual command editing. |
 | Cost efficiency       | Automatic routing reduces spend versus “always strongest model” baseline while maintaining target verified success rate.                        |
+| Security qualification | Every enabled sensitive path has current positive, denial, failure and recovery evidence; zero known boundary violations in the required release suite. Report suite/platform/version coverage and limitations, not a universal safety percentage. |
 | Security health       | Required security modules report measurable heartbeat/coverage; no “Protected” status while mandatory protection is known degraded.             |
 | Portability           | Restore/migrate a test workspace to another supported OS/device and recover canonical knowledge/projects without manual reconstruction.         |
 | Mesh reliability      | Selected shared state converges after offline concurrent edits with no silent data loss in test scenarios.                                      |
@@ -1513,6 +1525,11 @@ P0 = foundational/required for the corresponding product release; P1 = important
 | SEC-017   | P1      | Defect-scoped regression evidence        |
 | SEC-018   | P1      | Grant continuity and revocation          |
 | SEC-019   | P1      | Live-service and financial consequences  |
+| SEC-020   | P0      | Personal-data protection duty            |
+| SEC-021   | P0      | Qualified enforcement adapters           |
+| SEC-022   | P0      | Brokered credentials                    |
+| SEC-023   | P0      | Private-data lifecycle and integrity     |
+| SEC-024   | P0      | Evidence-backed trust                    |
 | LINK-001  | P1      | Phone-home remote access                |
 | LINK-002  | P1      | Tailscale initial connector             |
 | LINK-003  | P1      | Durable remote reconnect                |

@@ -17,6 +17,18 @@ The September 25 update set has been reconciled in-repository for version, scope
 
 Foundation-0 stages use two digits (00–05). Product stages use unpadded numbers (0–10); product Stage 0 contains all six Foundation-0 stages. Product Stage 4 is Model Lab, not Foundation-0 Stage 04 (Pi/local coding). Writer phases are a separate domain roadmap.
 
+## Security direction and evidence
+
+The September 28 **Option C** decision makes personal-data protection the highest product responsibility. Rikuri owns permissions; trusted AISecurity policy evaluation and qualified enforcement adapters apply them. OpenShell is the first Ubuntu candidate. [PRD SEC-020–024](Rikuri_Pi_PRD_v1.2.md#10-security-and-trust-requirements), [Architecture §27.12–27.13](Rikuri_Pi_Architecture_Spec_v1.7.md#2712-option-c-policy-ownership-and-enforcement-adapters), the [ADR addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-and-personal-data-protection) and [Test Strategy §8.2](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#82-option-c-qualification-and-personal-data-acceptance) define authority, fail-closed operation, private-data lifecycle and admission evidence.
+
+- [Personal-data threat model](../docs/security/THREAT_MODEL.md): assets, trusted boundaries, exclusions and existing-stage test mapping; a companion to the authoritative baseline, not another roadmap.
+- [OpenShell v0.1.2 containment receipt](../docs/security/evidence/2026-09-28-openshell-v0.1.2/README.md): ten synthetic smoke outcomes on this host; full qualification and Rikuri integration remain unproven.
+- [Security documentation Build Record](../docs/build-records/2026-09-28-option-c-security-and-personal-data.md): changes, review and limitations.
+
+No Foundation gate is marked complete. Native macOS remains experimental; Sentry is an optional research reference, with no required hardware layer.
+
+The [September 28 review follow-ups](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-review-follow-ups-and-foundation-0-credential-scope) disable OpenShell's own approval channel for workers, keep container-engine access away from Rikuri's processes, require E2 to decide where the Pi harness runs with all model calls through `rikurid`, keep Foundation-0 workers credential-free with no permitted destination (owner choice; Stage 03 dates unchanged), and freeze the baseline. New ideas go to the [parking lot](../docs/PARKING_LOT.md). Stage progress is tracked in [Stage Gate Records](../docs/stage-gates/foundation0/00-bootstrap-kernel.md), which link the live plan. See the [Build Record](../docs/build-records/2026-09-28-option-c-review-followups.md).
+
 ## Research and future architecture
 
 | Document | Role |

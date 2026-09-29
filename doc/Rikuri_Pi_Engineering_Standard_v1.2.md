@@ -25,7 +25,7 @@ ADR 0000 reconciles this Standard with the six-stage Foundation-0 Stage Plan v2.
 
 The product owner need not read code. Each stage provides a short owner-runnable demonstration and a receipt with Pass, Fail, or Not yet proven, dated test/probe links, limitations, and the next decision. A demo proves visible usefulness; deterministic gates, failure drills, and appropriately independent adversarial review prove protected behavior. Review of high-impact security and restore claims happens before the internal Foundation-0 release. The later public-exposure release gate below retains its separate requirements, including a human external security audit.
 
-Scope changes use an ADR and update the PRD, architecture, affected acceptance tests, and operating docs together. Park speculative additions; correct discovered errors during the build. For Foundation-0, run the platform-neutral core build/unit/contract checks on macOS continuously while full security/exec acceptance remains Ubuntu-only. Probe the pinned Ubuntu namespace/AppArmor environment early; never weaken host-wide restrictions to make a profile appear green. F4 closes only after the Stage 04 local runtime and handoff work. F6 requires a managed pre-forget backup restore test with current revocation state and safe refusal without it. The minimal Knowledge Context Compiler must meet ten expected answer/abstain outcomes; an always-abstain path fails. Rerun all eight crash points at release.
+Scope changes use an ADR and update the PRD, architecture, affected acceptance tests, and operating docs together. Park speculative additions; correct discovered errors during the build. For Foundation-0, run the platform-neutral core build/unit/contract checks on macOS continuously while full security/exec acceptance remains Ubuntu-only. Probe the pinned Ubuntu execution backend early (S00.13; OpenShell first candidate), including its host privilege and approval-channel settings; never weaken host-wide restrictions to make a profile appear green. F4 closes only after the Stage 04 local runtime and handoff work. F6 requires a managed pre-forget backup restore test with current revocation state and safe refusal without it. The minimal Knowledge Context Compiler must meet ten expected answer/abstain outcomes; an always-abstain path fails. Rerun all eight crash points at release.
 
 ---
 
@@ -292,6 +292,14 @@ Rikuri is its own first Collaborative Intelligence research subject. Claims that
   or deleted), never left ambient.
 
 ---
+
+## Security assurance and upstream maintenance
+
+September 28, 2026: protecting the user's private, financial, personal/media, professional/proprietary data and secrets is the highest product responsibility. [Option C](Rikuri_Pi_Architecture_Spec_v1.7.md#2712-option-c-policy-ownership-and-enforcement-adapters) reuses qualified enforcement components while Rikuri retains permission and release accountability. Each supported path needs a threat/control/test mapping, positive and negative controls, loss/revocation/recovery evidence, and an explicit platform/version/configuration boundary. Preserve failed experiments and limitations alongside successes.
+
+Before admitting or upgrading a backend, record version/license/advisories, provenance and immutable production image digests, privilege and service dependencies, policy/provider translation, resource cost, maintenance ownership and rollback. Test optional telemetry disabled and inspect control-plane egress. Requalify affected guarantees when dependencies, kernel, driver, images, provider bindings or policy semantics change. A revoked grant must stay revoked after rollback. A required regression or loss of assurance stops dependent execution and release; removing the failing test or quietly switching to an unrestricted adapter is prohibited.
+
+Publish a concise assurance statement listing supported platforms/paths, exclusions, test dates/results, unresolved findings, and how users stop work, revoke access, recover and report incidents. A confirmed incident requires containment/revocation, minimal preserved evidence, affected-user communication and a regression check under the existing incident procedure. Comparative reliability/security claims require an explicit shared threat model, reproducible benchmark and independent review; smoke tests and vendor reputation cannot justify superiority claims. The public gate retains independent human security review; agent review is supporting evidence.
 
 ## Release Gate — Definition of Done for public exposure
 
