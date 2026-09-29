@@ -5,8 +5,8 @@
 | Change | Record the owner's Foundation-0 reference installation (this machine, the newest stable Ubuntu LTS with its standard kernel: 26.04 LTS, kernel 7.0) and define two requalification tiers so routine kernel updates do not force a full sandbox qualification |
 | Date | 2026-09-28 |
 | Author / agent session | Claude Code (Opus 5.5) session |
-| Branch | main; no commit or push requested yet |
-| Commits | fill at close-out |
+| Branch | main |
+| Commits | `41c6e5d` |
 | Stage Gate | Stage 00 Stage Gate Record gains the reference-installation decision; no gate closes |
 | Related ADR / requirement | ADR 0000 new dated addendum; S00.13, S03.11, E5; T03.05, T03.16; Engineering Standard "Security assurance and upstream maintenance"; Architecture §27.12; Test Strategy §8.2 |
 | Status | COMPLETE — documentation only; independent verifier PASS on the final text (third pass); runtime Not yet proven |
@@ -67,7 +67,7 @@ The Plan's acceptance line was amended after that FAIL, from "state the same two
 - Full runtime gate: Not yet proven (no `scripts/quality/*` or Rust workspace yet).
 - [x] Scrap Sweep: the link checker lives in the session scratchpad, outside the repository; no task files left.
 - [x] Stage Gate Record updated.
-- [ ] Commit: not requested yet.
+- [x] Committed and pushed at the owner's request.
 
 ## Skipped / Deferred / Resequenced
 
