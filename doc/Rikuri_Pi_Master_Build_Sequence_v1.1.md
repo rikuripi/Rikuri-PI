@@ -67,32 +67,22 @@ Then reorder every dependent item in the live checklist in the same change. If t
 
 ---
 
-# Stage 1 — Pi coding dogfood + native developer platform
+# Stage 1 — Capture continuity and supporting execution
 
-**Why next:** Rikuri should become useful for building itself before expanding into many unrelated assistant features.
+**Why next:** Preserve creative sources and prove supporting execution before expanding the studio. Foundation-0 Stage 04's coding proof remains a security/reference slice, not an obligation to build a full IDE first.
 
-Before item 1, add **S1.01 Claude importer** after F2 and **S1.02 read-only Git/project manifest importer** after F9; run the importer and untrusted-project contract suites. Then build in this order:
+1. **S1.01 Claude importer** after F2: provenance, idempotency, supported-export coverage and visible gaps.
+2. **S1.02 read-only Git/project manifest importer** after F9: untrusted inspection without execution.
+3. **S1.03 capture continuity:** supported text imports and source revision receipts; correctable classification/topic retrieval under Architecture §20.6. Semantic/vector experiments require the existing ≥40-question corpus and FTS failures; originals remain retrievable without them.
+4. **S1.04 supporting execution and handoff:** reuse the admitted Foundation coding/tool path for one real Rikuri change, showing diff, verification, durable result and an external coding-tool handoff. A full Monaco/LSP/DAP/terminal product is not a predecessor of creative authoring.
 
-1. Monaco Window and file/diff model.
-2. Terminal/PTY service.
-3. Git service, worktree/branch isolation, project trust UI.
-4. LSP client/service and first languages used by Rikuri (Rust/TypeScript first).
-5. Test/build/task runner.
-6. Formatter/linter integration.
-7. Repository/symbol search and code-aware context.
-8. Docker/container/dev-tool capabilities.
-9. DAP/debug baseline where it provides material value.
-10. Pi coding profiles: small-model vs larger-model tool exposure, planner/reviewer, context/compaction, verification cadence.
-11. Open-harness analysis tool: diff Qwen Code/DeepSeek Harness behavior and test useful techniques against profiles.
-12. Dogfood: complete multiple real Rikuri changes entirely through the Rikuri coding workflow and Build Procedure.
+Compare established capture and tool adapters before adoption with pinned version/license, authority/locality, lifecycle cost and allowed/denied evidence. No dependency is selected by this plan.
 
-At item 7, evaluate correctable text classification and topic retrieval under Architecture §20.6 using real dogfood gaps, provenance and correction fixtures. Semantic/vector implementation remains an experiment requiring the live plan's ≥40-question corpus and failures the FTS baseline cannot resolve; automatic classification is not required to preserve/search originals. At item 2, Desktop Commander-style terminal/file adapters may be compared with native services, with pinned version/license, authority/locality, lifecycle cost and allowed/denied evidence before adoption. No product dependency is selected here.
-
-**Stage 1 gate:** a real feature can be planned -> coded -> diffed -> tested -> full-gated -> documented -> committed with evidence through Rikuri. External IDE is optional, not required.
+**Stage 1 gate:** supported imported sources survive restart with accurate coverage and provenance; inspection does not execute; one admitted development change and external handoff retain verification and project continuity. Unsupported provider history is visibly incomplete. Full native IDE dogfood is deferred to Stage 8's optional developer pack.
 
 ---
 
-# Stage 2 — Sterling Workspace + native plugin surface
+# Stage 2 — Creative Studio essentials and Sterling Workspace
 
 Build order:
 
@@ -109,11 +99,15 @@ Build order:
 11. Agent-callable Workspace API under policy.
 12. Rikuri Plugin API: editor/agent/tool/window extensions with explicit capabilities.
 13. Plugin lifecycle: provenance/pin/quarantine/verify/update/rollback/remove.
-14. Selective `monaco-vscode-api` compatibility only for demonstrated gaps.
+14. **S2.C1 — durable creative objects:** fragments, scenes, character/world notes, relationships, source cards and author intent over existing governed storage; browse/search/export/restart without a model.
+15. **S2.C2 — connected authoring views:** manuscript, scene/outline board, character/world bible and multiple story branches on the same canvas; selection and edits remain project-consistent.
+16. **S2.C3 — requested exploration:** create, compare, choose and selectively merge alternatives; ordinary critique and supplied-evidence abstraction retain provenance and author-controlled canon. No longitudinal inference or autonomous reflection.
+17. **S2.C4 — resume and production handoff:** recover the current work, open questions and alternatives; export a traceable creative brief/spec to an external coding or production tool.
+18. **S2.C5 — local plugin contract prototype:** explicit capabilities and entitlement boundary; host adapter cannot own canonical data. No public distribution or paid checkout is implied.
 
 Item 4 includes evidence cards referencing existing source spans/artifacts and visible freshness/coverage. After the existing policy-backed workspace operations are available, add projection-edit comparison/recovery and explicit revision proposals under Architecture §20.3.1. Rich media extraction waits for Stage 8; multi-human membership waits for Stage 6. Source cards and recovery UI never grant canonical write authority.
 
-**Stage 2 gate:** chat + Monaco + terminal + tests + agent + logs can coexist, link, detach, restore, and remain project-consistent after restart.
+**Stage 2 gate:** a creator starts with unorganized fragments, develops two alternative scene paths, links characters/world/source evidence, chooses or merges with visible conflicts, resumes after restart and exports a coherent production brief. Chat, authoring, sources, candidates and logs coexist, link, detach and restore. Rejected alternatives remain available under retention policy; AI cannot silently change canon. S2.C1–C5 satisfy STUDIO acceptance in Test Strategy §16. Rich media extraction, team governance, unattended research and learned reflection wait for their own gates.
 
 ---
 
@@ -168,9 +162,9 @@ Build order:
 
 ---
 
-# Stage 5 — Browser, connectors, assistant capability packs
+# Stage 5 — Creative research, connectors and distribution adapters
 
-Order: browser worker isolation -> connector capability model -> MCP/connectivity adapters -> email -> calendar/contacts -> files/cloud storage -> research -> travel/shopping -> routines/Attention Firewall -> richer voice. Every connector gets least-authority, approval, audit, and revoke tests. MCP remains a capability/connectivity layer; it does not own Rikuri workflow state, authority, memory, or audit truth.
+Order: browser worker isolation -> connector capability model -> MCP/connectivity adapters -> creative-source capture, files/cloud storage and research -> Attention Firewall and bounded proactive knowledge-gap suggestions -> external studio/plugin distribution adapter -> optional email/calendar/travel packs -> richer voice. Every connector gets least-authority, approval, audit, and revoke tests. MCP remains a capability/connectivity layer; it does not own Rikuri workflow state, authority, memory, or audit truth.
 
 At files/cloud storage, wire common Save/share capture for supported source types with durable-save and extraction/search health. After source permission/freshness reconciliation and Attention Firewall controls, add personal conversational contributions (request/mention, quiet suggestions, explicitly enabled automatic mode) with budget, relevance/novelty, duplicate suppression and source cards. Shared multi-human posting waits for Stage 6's audience controls; richer media extraction waits for Stage 8. Failed classification must leave the original recoverable and baseline search usable.
 
@@ -211,7 +205,9 @@ Order: second-device identity -> encrypted event/version replication -> conflict
 
 # Stage 8 — Rich domains and Live Companion
 
-Writing, study, research, meeting/lecture, media, trading/other domain packs. Each is a projection over common project/window/idea/knowledge/security primitives; no independent “mini-brain.”
+Deep world/character systems, scientific scenario tools, game/animation specification workflows, editable visual assets, marketing and other optional domains extend Stage 2 essentials. Each is a projection over common project/window/idea/knowledge/security primitives; no independent “mini-brain.”
+
+The optional developer pack resumes the former Stage 1 items: Monaco/file/diff; terminal/PTY; Git/worktree/trust UI; LSP; test/build tasks; formatter/linter; symbol context; containers; DAP; richer coding profiles; harness comparisons; full native dogfood. Preserve that internal order and platform admission gates. Selective `monaco-vscode-api` compatibility is evaluated here only for demonstrated gaps. It is not a prerequisite for creative briefs or external coding handoff.
 
 Extend the common capture/classification/retrieval path with image/OCR, audio/transcript and video/frame provenance. Evaluate remembered-content queries, decisive visual evidence, failed extraction and user corrections. Shared contributions inherit Stage 6 audience/history controls. Meeting capture remains explicit and visible; group voice/video conferencing requires its own capability/transport assessment and is not implied by captured audio or Link voice instructions.
 
@@ -270,3 +266,18 @@ A stage may be marked COMPLETE only when all are true:
 - [ ] Stage Gate evidence links complete.
 
 **Only then does the next dependent stage/function become active.**
+
+## September 30, 2026 — creative-studio resequencing
+
+This is the live post-Foundation order, superseding the earlier full-IDE-first and all-Writer-at-Stage-8 ordering. Foundation-0 00–05, W1/F1–F10, Bootstrap/F4-lite and T00.12/T02.16/T04.18 are unchanged. No dates, gates or implementations become green through this decision.
+
+| Item / disposition | Old position | New position | Reason / dependency impact | Owner | Reactivation / acceptance |
+| --- | --- | --- | --- | --- | --- |
+| Essential Writer foundation/MVP, RESEQUENCED | Product 8, unnumbered Writer pack | Product 2, S2.C1–C4 | Creator value follows trusted core and Stage 1 capture; advanced domains are not prerequisites | Product owner / Stage 2 implementer | Stage 0/1 gates; Test Strategy §16 essentials slice |
+| Full developer platform, DEFERRED | Product 1, items 1–12 | Product 8, optional developer pack, same internal order | Full IDE is not the lead product; Stage 1 S1.04 retains admitted coding verification and handoff | Product owner / developer-pack implementer | Demonstrated creator/developer demand, predecessor and platform gates; full native feature-to-commit dogfood receipt |
+| Advanced single-worker repair controller, RESEQUENCED | Product 1 coding lifecycle under SEC-013–019 | Product 8 developer pack after test-runner/trust contracts | Rich repair depends on deferred developer services; Stage 1 retains existing grants and verified supporting execution | Product owner / developer-pack implementer | Explicit policy/ADR reconciliation, independent verification and Test Strategy §14 single-worker acceptance; no owner-only fix-lock change |
+| Monaco compatibility, RESEQUENCED | Product 2, item 14 | Product 8 developer pack after editor contract | No editor dependency for first studio | Product owner / developer-pack implementer | Measured compatibility gap; capability/security/update/rollback evidence |
+| Scientific/media/game/marketing depth, RETAINED | Product 8 rich domains | Product 8 domain packs | Progressive depth; no universal simulator or design-tool clone promised | Product owner / domain implementer | Domain contract and allowed/denied verification; creator-approved handoff |
+| Learned reflection/abstraction, RETAINED | Product 10, research after 4 and 6 | Same | Requested critique differs from learning across episodes; instrument early, infer late | Product owner / CI implementer | Predeclared baseline comparison, counterexamples, revocation, budget and quiet-guidance evidence |
+
+Stage 5 distribution/research, Stage 6 governed parallel and overnight Pi work, and Stage 7 persistent responsibilities reuse their existing authority prerequisites. Initial Stage 2 requested comparisons are sequential; they cannot bypass later fleet governance. Writer phases map to this sequence, rather than becoming a second gate board. See ADR 0000 September 30 clarification.

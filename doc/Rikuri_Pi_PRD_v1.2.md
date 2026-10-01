@@ -2,7 +2,7 @@
 
 > Repository consistency revision: September 25, 2026. Source version retained; see [reconciliation record](reviews/2026-09-25-documentation-consistency.md).
 
-**Personal Intelligence Platform**  
+**Creative Studio powered by Personal Intelligence**
 **Product Requirements Document**  
 Version 1.2 | September 25, 2026 | Collaborative Intelligence North Star
 
@@ -108,17 +108,19 @@ Each stage produces a short owner-runnable demonstration and a plain-language Pa
 
 Appendix A. Priority Requirement Matrix
 
+27. September 30 creative-studio requirements
+
 Appendix B. Example User Journeys
 
 Appendix C. Key Terms
 
 # 1. Executive Summary
 
-Rikuri Pi is a portable, model-agnostic Personal Intelligence platform that sits above operating systems, AI vendors, applications, storage locations, and individual devices. A user expresses an intent in ordinary language; Rikuri determines the appropriate context, model, native runtime or generic harness, tools, machine, security envelope, and execution path, then returns a sensible answer or verified result.
+Rikuri Pi is a local-first, model-agnostic creative studio powered by a durable Personal Intelligence platform. Its initial audience is writers and storyworld creators, with game, animation and marketing workflows expanding incrementally. A creator can begin with a fragment, scene, question or image, explore alternatives with persistent AI collaborators, connect the pieces and develop a coherent work without choosing one AI ecosystem for its lifetime. Rikuri organizes and facilitates the creative process; its trusted infrastructure chooses admitted models, tools and execution paths within the creator’s authority.
 
 The platform is designed around continuity rather than chat sessions. User knowledge, project state, decisions, skills, conversations, machine context, and execution history belong to Rikuri, not to any one model vendor. Frontier models, local models, specialized runtimes, tools, and computers are replaceable resources that Rikuri selects according to capability, cost, privacy, reliability, and task requirements.
 
-Rikuri is also intended to be useful immediately as a personal and executive assistant. After the user connects the services they actually use, ordinary requests such as “check my email,” “find what matters,” “draft a reply,” “schedule a meeting,” “take notes on this lecture,” or “plan this trip” should work without requiring the user to create agents, configure MCP servers, edit prompts, understand model parameters, or build automation workflows.
+General personal and executive assistance is a later capability-pack opportunity, rather than the initial product promise. Through those admitted packs, after the user connects the services they actually use, ordinary requests such as “check my email,” “find what matters,” “draft a reply,” “schedule a meeting,” “take notes on this lecture,” or “plan this trip” should work without requiring the user to create agents, configure MCP servers, edit prompts, understand model parameters, or build automation workflows.
 
 Rikuri’s interface is designed around **a simple entrance and an expandable spatial workspace**. The default Home surface is a universal conversation/voice box with a small horizontal row of capability shortcuts such as Agent, Code, Research, Browser, Projects, and More. When work becomes complex, Rikuri can unfold into a workstation of freely movable, resizable, tileable, linkable, detachable windows containing agents, live documents, code, browser sessions, project graphs, diffs, tests, research, dashboards, and other work surfaces. The user may arrange these manually or tell Rikuri how to arrange them.
 
@@ -138,7 +140,7 @@ For difficult work, Rikuri acts as a management institution rather than a single
 
 # 2. Product Vision and User Promise
 
-Rikuri Pi should feel like a durable second intelligence belonging to the user rather than a collection of AI applications. Its purpose is to preserve continuity across time, models, devices, operating systems, and projects while making powerful AI execution simple enough that the infrastructure largely disappears from view.
+Rikuri Pi should feel like a creative studio whose work and intelligence belong to the creator. The creator can freewheel, explore several possibilities and return later to find the fragments, sources, choices and consequences connected. Its purpose is to preserve continuity across time, models, devices, operating systems, and projects while making powerful AI execution simple enough that the infrastructure largely disappears from view.
 
 - One Personal Intelligence, many interchangeable AI brains.
 
@@ -176,6 +178,8 @@ Rikuri Pi should feel like a durable second intelligence belonging to the user r
 # 4. Goals and Non-Goals
 
 ## 4.1 Product goals
+
+The September 30 creative-studio direction prioritizes human authorship, reusable creative objects, connected spatial views and disciplined exploration. Coding, executive assistance and broader domain goals below remain supporting or later capability packs; they are not all first-release commitments.
 
 - Model-agnostic continuity across frontier, open, and local models.
 
@@ -287,9 +291,9 @@ Rikuri Pi should feel like a durable second intelligence belonging to the user r
 
 # 6. Target Users and Core Use Cases
 
-## 6.1 Primary personal user
+## 6.1 Primary creator
 
-An individual who uses several AI systems, devices, documents, code projects, and applications and wants a persistent assistant that remembers context, executes work, learns procedures, and keeps knowledge organized without requiring AI infrastructure expertise.
+A writer or storyworld creator who wants to develop ideas, characters, scenes and research across AI models without losing continuity, authorship or ownership. Game and animation creators extend this audience through later production-specification packs. The creator should not need AI infrastructure expertise.
 
 ## 6.2 Advanced/technical personal user
 
@@ -872,13 +876,30 @@ AISecurity is an existing Rust/Swift foundation to evolve into the Rikuri securi
 >
 > Do not ask the user to approve syntax they cannot evaluate. Present the intended change, consequence, affected scope, risk, rollback, and verification plan. Raw command details belong behind an Advanced view.
 
-September 27, 2026 clarification: SEC-013–019 describe **future product behavior, not implemented approval settings or a change to current repository permissions**. [Architecture §16.5–16.9](Rikuri_Pi_Architecture_Spec_v1.7.md#165-scoped-autonomy-and-user-presets) owns the detailed contract. Product Stage 1 owns initial settings and bounded coding/repair flows after Foundation-0 and explicit policy/ADR reconciliation; product Stage 2 adds richer workspace UX, and product Stage 6 owns durable branching/wait recovery and multi-agent governance. Foundation-0 retains its existing capability, budget, approval and execution-envelope commitments without expansion. [AGENTS.md](../AGENTS.md#deterministic-gates) still requires owner release of the current fix-lock, and the [verifier](../.claude/agents/verifier.md) remains report-only. The live-node example illustrates consequence separation; it authorizes no access or change to the user's current project. All new behavior remains **Not yet proven** until the owning stages supply implementation and acceptance evidence.
+September 27, 2026 clarification: SEC-013–019 describe **future product behavior, not implemented approval settings or a change to current repository permissions**. [Architecture §16.5–16.9](Rikuri_Pi_Architecture_Spec_v1.7.md#165-scoped-autonomy-and-user-presets) owns the detailed contract. Product Stage 1 retains scoped settings and supporting execution; the September 30 resequencing moves the advanced single-worker repair controller to the optional Stage 8 developer pack after its test/trust contracts and explicit policy/ADR reconciliation; product Stage 2 adds richer workspace UX, and product Stage 6 owns durable branching/wait recovery and multi-agent governance. Foundation-0 retains its existing capability, budget, approval and execution-envelope commitments without expansion. [AGENTS.md](../AGENTS.md#deterministic-gates) still requires owner release of the current fix-lock, and the [verifier](../.claude/agents/verifier.md) remains report-only. The live-node example illustrates consequence separation; it authorizes no access or change to the user's current project. All new behavior remains **Not yet proven** until the owning stages supply implementation and acceptance evidence.
+
+## October 1 security-draft reconciliation
+
+The supplied Security Architecture v1.0 is reviewed in [the comparison record](reviews/2026-10-01-security-draft-review.md). Compatible additions below supplement SEC-001–019. Architecture §27 remains the maintained security design; the draft's phase sequence and backlog are not adopted. Product-level P0 describes a required protection when its dependent capability is offered, not a new Foundation-0 commitment. All additions are unimplemented requirements.
+
+| ID | Pri | Requirement | Acceptance |
+| --- | --- | --- | --- |
+| SEC-020 | P0 | Independent policy decision and enforcement | Authenticated human/device/Pi/run identity is attribution, not trust. Trusted policy issues scoped capabilities; actual file/process/tool/provider/network/restore boundaries enforce them. Models and plugins cannot edit effective authority; missing required enforcement refuses the dependent action. |
+| SEC-021 | P0 | Data movement authorization and classification propagation | Read/search do not grant copy/export/upload/share/sync or bulk extraction. Sources, attachments, derivatives, caches and cross-project copies retain applicable restrictions; trusted explicit declassification records basis and provenance. Destination permission alone cannot authorize payload disclosure; contradictory labels refuse rather than downgrade. |
+| SEC-022 | P0 | Brokered credential use and freshness | Authorized tools use scoped credentials through a trusted broker without putting raw secrets in any model context, worker-controlled environment or telemetry. Leases bind operation/service/task, expire and revoke before further use; adapters reject unsafe redirects and destinations. Platforms/provider tokens without bounded revocation disclose the limitation and refuse profiles requiring it. |
+| SEC-023 | P0 | Provider privacy evidence | Record endpoint, access mode/account contract, retention/training/region conditions where relevant, evidence provenance and last verification/expiry. Unknown or stale required assurances prevent that routing choice; provider/model switches cannot weaken privacy. Sanitization alone cannot make Local Only/Secret content eligible. |
+| SEC-024 | P1 | Private-network and egress capability lifecycle | Network identity does not replace application authority. Verify installed policy, source/destination/protocol limits, DNS/redirect/alternate-route behavior and expiry/revocation including existing sessions. Controller failure cannot retain forbidden access; stop/isolate if revocation cannot be proved. Tailscale is initial Link transport, not arbitrary Internet egress enforcement. |
+| SEC-025 | P1 | Step-up authentication and understandable security state | Trusted approval states actor, concrete target/data/destination, duration, cost, reversibility and verification. Stronger authentication for configured high-impact operations proves identity and cannot override forbidden policy, Secret exclusion, forgetting or unavailable assurance. Show Unknown/Unverified separately from fresh verified health and prevent dependent use without required proof. |
+| SEC-026 | P0 | Transactional security policy activation | Validate, durably write/read back and atomically promote versioned policy/grants/keys; independently verify the effective enforcement state before exposing the capability as active. Partial external rule changes, failed activation or rollback isolate/refuse dependent work with visible health. Recovery uses current revocation; old known-good policy cannot resurrect revoked access. |
+| SEC-027 | P1 | Lifecycle evidence and threat-path assurance | Record minimized, access-controlled request/grant/approval/revocation/decision/outcome/verification evidence. For each advertised guarantee prove authorized, forbidden, bypass and broken-enforcement paths on the admitted platform/profile. Local packages/plugins/runtime changes revalidate trust; incident and signed-update/rollback contracts follow existing Engineering Standard release discipline. Learned anomaly signals may restrict or request review, never grant authority. |
+
+[Architecture §27.12](Rikuri_Pi_Architecture_Spec_v1.7.md#2712-october-1-security-contract-reconciliation) specifies the boundary/interpretation; [Test Strategy §17](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#17-security-draft-addition-acceptance) maps future evidence and stage dependencies. Existing Foundation gates are unchanged. Rich secret brokerage/connectors belong to product Stage 5, network/device integration to Stage 3 with richer delegation at Stage 6, replication to Stage 7, enterprise/attestation to Stage 9, and learned anomaly methods only after their research/evidence prerequisites. Existing Foundation credential handling, cryptography, identity and basic sequence signals remain required at their existing stages.
 
 ## 10.1 Privacy classification and data minimization
 
-Rikuri should classify information at least as **Normal**, **Private**, **Local Only**, or **Secret**, with user override and domain-specific policy. Classification must affect context assembly before model invocation. Local Only raw content cannot be sent to an external model/service. Secret material such as seed phrases, private signing keys, OAuth refresh tokens, SSH private keys, and comparable credentials should not be exposed to AI models at all.
+The existing context schema uses **Normal**, **Private**, **Local Only**, and **Secret**, combined with Auto/Private/Local Only execution intent. Proposed Public/Confidential labels are descriptive sensitivity metadata, not replacement execution modes or permission grants; an unspecified mapping refuses admission. User changes use trusted authorized policy, not inferred reclassification. Local Only/Vault content and Secret credentials must remain distinct: Secret never enters even a local model context. Classification must affect context assembly before model invocation. Local Only raw content cannot be sent to an external model/service. Secret material such as seed phrases, private signing keys, OAuth refresh tokens, SSH private keys, and comparable credentials should not be exposed to AI models at all.
 
-Where feasible, Rikuri should process sensitive source data locally and send only the minimum sanitized/derived result to a frontier model when policy permits. Multimodal privacy classification must eventually cover text, documents, images, audio, video, transcripts, metadata, and extracted text.
+Where feasible, Rikuri should process sensitive source data locally and send only the minimum sanitized/derived result to a frontier model when policy permits. Derived data retains restrictions unless a trusted explicit declassification approves a distinct non-secret outbound artifact; an LLM summary or detector score cannot authorize it. Secret values remain excluded from all model context. Multimodal privacy classification must eventually cover text, documents, images, audio, video, transcripts, metadata, and extracted text.
 
 ## 10.2 Universal egress enforcement
 
@@ -1188,11 +1209,11 @@ The canonical schema should keep a strong stable core for identity, ownership, t
 
 Rikuri should not build separate “mini-products” with independent memory for every profession. Coding, writing, research, study, marketing, product development, media creation, business planning, trading, and future specialties should reuse the same canonical primitives and add domain-specific windows, skills, evaluators, and knowledge projections.
 
-## 20.1 Coding as one workspace specialization
+## 20.1 Coding as a supporting workspace specialization
 
 Coding uses source files, Git branches/worktrees, diffs, tests, terminals, browsers, previews, code indexes, and coding-specialist agents. The user may observe parallel work through linked windows while Rikuri manages isolation, integration, and review under the common project/event/security model.
 
-## 20.2 Writing as another workspace specialization
+## 20.2 Writing as the lead creative workspace
 
 Writing uses manuscripts/reports/scripts, comments/revisions, research sources, idea cards, style guidance, structured outlines, and optional domain canon. Rikuri should initially integrate mature open or automatable editors rather than recreate a full office suite solely for ownership. A later Rikuri-native editor may provide deeper semantic structure while preserving import/export to common user-owned formats.
 
@@ -1272,14 +1293,14 @@ The build order is dependency-driven: each stage must be wired into the running 
 | Stage | Scope | Exit intent |
 |---|---|---|
 | **0 — Trusted Core / Foundation-0** | Six gate-closed stages: engineering/kernel; ChatGPT and Markdown import, provenance, lexical search, managed backup/forget; minimal knowledge/policy/budget; Ubuntu envelope and project trust; Pi local coding and cloud/local handoff; one-window English Home. Continuous macOS core tests, native macOS assurance experimental. | One coherent, recoverable, bounded single-node proof with owner-runnable demonstrations and linked evidence. |
-| **1 — Pi Coding Dogfood + Native Developer Platform** | Add Claude and read-only Git/project manifest importers after F2/F9; dogfood Pi on one real Rikuri change; then Monaco, terminal/diff/tests, LSP/DAP/Git, richer coding profiles. | Rikuri can safely help build Rikuri on Ubuntu through its own coding surface. |
-| **2 — Sterling Workspace Substrate** | First-class windows; freeform/tiled layouts; Context/Agent/Prompt links; saved layouts; detach/multi-monitor; status model Working/Blocked/Done/Idle; plugin/window API. | Multiple chats/agents/code/terminal/test windows coexist without IDE/workbench lock-in. |
+| **1 — Capture continuity and supporting execution** | Claude and read-only project imports; source coverage; admitted coding/tool slice and external handoff. Full IDE deferred. | Sources survive restart and permitted execution/handoff remains verified. |
+| **2 — Creative Studio essentials / Sterling Workspace** | Shared creative objects, flexible linked windows, scenes/characters/world notes, requested alternatives, author-approved canon, resume/export and local plugin prototype. | S2.C1–C5 and Test Strategy §16 essentials slice; creator completes an end-to-end story exploration without a full IDE. |
 | **3 — Rikuri Link / Remote Control** | Tailscale initial connector; phone/tablet/laptop thin client; node identity/presence; approvals/status/chat/voice/file handoff; later native direct/rendezvous/E2E relay with Tailscale fallback. | User can securely “phone home” to the owner-controlled Rikuri Node. |
 | **4 — Model Lab + Intelligent Routing** | Dynamic discovery; compatibility registry; open-harness diff/eval; hardware fit; Auto routing; price/quota/local-cost advisor; controlled native-harness exceptions. | Routing is evidence-based across model+runtime+harness+machine, not model-name folklore. |
-| **5 — Browser, Connectors & Personal Assistant** | Browser/computer worker, email/calendar/contacts, research/travel/shopping, Attention Firewall maturity, just-in-time connections. | Daily assistant workflows operate through the same trust/state model. |
+| **5 — Creative research, connectors and distribution** | Supported capture, research, attention controls, bounded proactive suggestions and host/plugin adapters; optional general assistant packs. | Traceable research/capture and governed distribution with visible privacy/coverage limits. |
 | **6 — Multi-Agent Governance & Project Graph** | Evaluate Paperclip-like control-plane mechanisms; add coordinator/evaluator, durable DAG, Project Lifecycle Kernel and Project Graph. After Link and contribution/governance controls, deliver minimum human–AI conversation membership, sharing and audit brought forward from Stage 9. | A governed team works against durable ProjectState; two humans on LAN/remote clients and an agent share authorized evidence, reconnect without duplicates and enforce revocation. |
 | **7 — Personal Mesh & Persistent Responsibilities** | Encrypted replication, optional hub, cross-device resource catalog, durable routines, quiet digests, learned skills. | One Personal Intelligence spans owner devices without sync becoming canonical authority. |
-| **8 — Rich Domain/Companion Workspaces** | Writing/study/research/media/meeting/live companion and specialized domain packs. | Domain power reuses common windows, state, ideas, security, and execution. |
+| **8 — Advanced creative domains and optional developer pack** | Deeper world/character systems, science-backed scenarios, media, games/animation, marketing; optional full IDE stack in original internal order. | Domain-specific validation reuses trusted services; essentials do not depend on these packs. |
 | **9 — Business/Organization Readiness** | Tenancy, organizational memory, role policy, audit/admin, shared projects, enterprise deployment. | Institutional use without weakening personal/user-alignment foundations. |
 | **10 — Collaborative Intelligence / Inquiry & Discovery** | Experience Intelligence; selective reflection and consolidation; pattern abstraction; cognitive recipes; champion/challenger optionality; bounded curiosity; Question/Frame generation; Cognitive Ensembles; Lightbulb lifecycle; incubation sessions; domain-specific discovery labs; cautious adaptive routing/learning. Research prototypes may begin earlier once product Stage 4 (Model Lab) and product Stage 6 (multi-agent governance) evidence/governance prerequisites exist, but this stage is not a Foundation dependency. | Rikuri can demonstrate reproducible, evidence-backed improvement in how the user + models + tools work together and can surface useful non-obvious questions/connections without silently converting speculation into truth or preventing project completion. |
 
@@ -1772,5 +1793,28 @@ P0 = foundational/required for the corresponding product release; P1 = important
 | Cross-lingual retrieval | Ability to find semantically relevant content written in another supported language while preserving the original source and provenance. |
 | Canonical data               | Durable source/state that must survive migration and from which derived indexes can be rebuilt.                                      |
 | Derived data                 | Embeddings, indexes, caches, summaries, or projections that can be regenerated.                                                      |
+
+# 27. September 30 creative-studio requirements
+
+This dated refinement controls product emphasis while retaining the detailed Personal Intelligence requirements above. General assistant and full IDE capabilities remain optional supporting packs. The first differentiated product is the creator's connected studio; initial focus is fiction/storyworld work. Games/animation and marketing expand after that experience proves useful.
+
+| ID | Requirement | Delivery / acceptance |
+| --- | --- | --- |
+| STUDIO-001 | Freeform capture and modular linked authoring views over shared canonical creative objects; organization can happen later | Stage 2 S2.C1–C2; Test Strategy §16 |
+| STUDIO-002 | Preserve author intent, branch ancestry, canon versus candidates, source evidence and unresolved contradictions; merge only with authorized semantic resolution | Stage 2 S2.C3; §16 |
+| STUDIO-003 | Preserve distinct scenario packets, rationale, assumptions, uncertainties, consequences, comparison and execution recipe; partial work visibly incomplete | Stage 2 sequential; governed parallel/overnight after Stage 6; §16 |
+| STUDIO-004 | Requested reflection/abstraction offers useful reframing and questions; advanced cross-episode learning retains CI evidence/promotion/lifecycle controls | Requested Stage 2; learned Stage 10 after 4/6; §16 |
+| STUDIO-005 | Science-backed exploration distinguishes supported external facts, unknowns, modeled consequences and deliberate fictional departures | Stage 8 domain tools; §16 |
+| STUDIO-006 | Capture coverage is explicit per connector/source/revision; no memory engine, screen monitor or provider login implies complete history access | Foundation import contracts; Stage 1/5/8 adapters; §16 |
+| STUDIO-007 | Proactive discovery may suggest relevant disciplines or current research within a scoped grant; queries, costs, source sharing and interruptions obey existing policy | Stage 5 bounded discovery; learned incubation Stage 10; §16 |
+| STUDIO-008 | Pi identity and responsibilities persist independently of model, worker or upstream Pi harness; creator can inspect, revoke and change its role | Basic identity Stage 2; governed delegation Stage 6; persistence Stage 7; §16 |
+| STUDIO-009 | Portable local work remains readable/searchable/exportable after model changes or subscription cancellation; paid services never hold creative data hostage | Stage 2 storage/export; distribution Stage 5; §16 |
+| STUDIO-010 | Production handoff preserves decisions, constraints, assets, unresolved issues and rights/provenance; coding or publication remains separately authorized | Stage 2 brief; richer Stage 8 specs; §16 |
+
+**Naming:** use **Pi** (plural **Pis**) for a persistent collaborator, with the creator’s proposed family **StrawberryPi, ChocolatePi, PumpkinPi and ApplePi**. **Pie/Pies** may be an informal nickname. Names are expressive identities, not fixed specialties: a creator may assign and revise each Pi’s role without renaming it or binding it to a model. Pi means Personal Intelligence in the product name. Technical contracts call the separate upstream dependency the **Pi harness**. A named collaborator is a Rikuri-owned identity/role with governed state and capabilities, not a model, a license to act, or a promise of continuous inference. Final public naming and availability review remain open.
+
+**Free and advanced packages:** proposed free essentials include durable capture, basic connected authoring, retrieval, model choice, requested critique and portable export. Advanced subscriptions may add deeper domains, governed ensembles, extended research, professional integrations and collaboration. Exact limits/prices are not decided. Security, correction, forgetting and access to existing work are baseline protections. Compute is separately disclosed and budgeted, including BYO/local options; subscription never implies unlimited provider calls or an entitlement to reuse another service's quota.
+
+**Measures:** creator can recover a fragment/source, resume a project, compare and resolve alternatives and export a usable brief; assess time/rework and creator-rated usefulness against simpler chat/document baselines. Measure actual use of suggestions, continuity errors, capture gaps, budget adherence and nuisance. Creative quality and audience impact need human evaluation; verbosity, generation counts and arbitrary numerical aesthetic scores do not prove improvement.
 
 **End of Rikuri Pi Product Requirements Document v1.2**
