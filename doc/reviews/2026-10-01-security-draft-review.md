@@ -28,15 +28,15 @@ This table is traceability to existing stages, not another execution checklist. 
 
 | Draft topic | Existing gate / delivery position | Deferred acceptance / impact |
 | --- | --- | --- |
-| S0 constitution/contracts | Foundation 00 identity/events; 02 security/policy contracts | Detailed threat-model companion remains planned; its creation must reconcile current sources, not grant authority |
-| S1 filesystem/process, S2 provider, S3 network | Foundation 02 provider admission; 03 Ubuntu process/no-network proof; 04 integrated local path | Preserve actual order; richer per-destination networking after Link 3 and governed delegation 6 |
-| S4 secret broker | Foundation credential exclusion/one trusted cloud adapter; richer broker product 5 | Broker conformance before enabling credential-bearing connectors; unsafe raw-secret paths refused |
+| S0 constitution/contracts | Foundation 00 identity/events; 02 security/policy contracts | Threat-model companion maintained since September 28 ([THREAT_MODEL.md](../../docs/security/THREAT_MODEL.md)); October 2 added SEC-025–032 to its acceptance cells |
+| S1 filesystem/process, S2 provider, S3 network | Foundation 00 S00.13 backend admission (OpenShell candidate; dedicated controller account or rootless engine); 02 provider admission; 03 Ubuntu process/no-network proof; 04 integrated local path | Preserve actual order; richer per-destination networking after Link 3 and governed delegation 6 |
+| S4 secret broker | Foundation-0: no worker credential or permitted destination; cloud access only inside `rikurid`'s provider adapter; broker rows N/A (ADR 0000 September 28 decision 4). Broker and destination qualification (Test Strategy §8.2) before the first stage enabling either, expected product 5 or the Stage 8 developer pack | Broker conformance before enabling credential-bearing connectors; unsafe raw-secret paths refused |
 | S5 identity/delegation | Foundation IDs/scoped capabilities; product 6 governance | Prove non-escalating delegation, current revocation and attributable effects |
 | S6 private networking | Product 3 Tailscale-first Link; richer service/Pi network delegation 6 | Verify installed rules, application rights, expiry and loss-of-controller behavior; no selected doxx.net/Headscale replacement |
 | S7 knowledge protection | Foundation 01 encryption/forget/restore; 02 classification; product 5/6 movement, 7 replication | Foundation protection cannot wait for late DLP; unmanaged exports remain outside forget guarantee |
 | S8 behavioral security | Foundation 03 deterministic sequence signals; later governed richer signals | Learned anomaly research follows evidence/privacy/governance prerequisites; no detector can grant rights |
 | S9 teams/business | Minimum multi-human controls product 6; replication 7; enterprise/attestation 9 | Preserve S6.C1–C4; no new dependency on enterprise delivery for basic sharing |
-| S10 continuous improvement | Engineering Standard from bootstrap and each release | Existing security CI/incident/update obligations; never defer basic vulnerability response until product Stage 10 |
+| S10 continuous improvement | Engineering Standard from bootstrap and each release | Existing security CI/incident/update obligations; never defer basic vulnerability response until product Stage 10; runtime/backend/kernel changes revalidate at the Engineering Standard two-tier rule |
 
 ## External claims checked October 1
 
@@ -47,3 +47,20 @@ This table is traceability to existing stages, not another execution checklist. 
 ## Evidence limits and next work
 
 The raw AISecurity Protection Matrix PDF and AISecurity source were not supplied for this review. Existing repository assessments are retained, but the draft's specific copy finding is not independently verified. No code, live firewall, provider contract, secret broker or platform probe was exercised. Do not call these additions delivered or advertise their protection. [Build Record](../../docs/build-records/2026-10-01-security-draft-review.md) records document verification; the live Stage Plan continues to govern implementation.
+
+## October 2 recheck against Option C
+
+This review was written on a branch that did not yet contain the September 28 Option C, review follow-up and reference-installation addenda, the [threat model](../../docs/security/THREAT_MODEL.md) or the [OpenShell v0.1.2 smoke receipt](../../docs/security/evidence/2026-09-28-openshell-v0.1.2/README.md). Statements above that no standalone security spec exists, that the threat-model path is absent, or that the companion remains planned are superseded. The receipt covers the OpenShell smoke cases only; it is not the AISecurity matrix this review could not inspect. Option C (Architecture §27.12–27.13, PRD SEC-020–024, Test Strategy §8.2) governs wherever this review's additions overlap it.
+
+| Finding | Disposition |
+| --- | --- |
+| §27.14 put decision in "trusted Rikuri policy" and enforcement in "a trusted administrator/broker", mixing the credential broker with the enforcement adapter and omitting AISecurity | Corrected to Option C's three layers in §27.14 and SEC-025; the broker is a separate trusted service |
+| Broker timing implied Foundation broker paths and limited the broker to Stage 5 connectors | Foundation-0 N/A per ADR decision 4; qualification precedes the first credential- or network-permitted worker (row S4 above, PRD §10, Test Strategy §17, §27.14 data movement) |
+| SEC-025–032 changed security acceptance without a dated ADR under the September 28 baseline freeze | Recorded in ADR 0000 October 2 clarification as refinements of SEC-020–024; no stage or gate change |
+| Test Strategy §17 overlapped §8.2 without citing it | Each §17 row names its §8.2 boundary; §8.2 governs backend qualification |
+| Revocation had no measured bound | SEC-029/031 and §27.14 tie revocation and activation to the adapter ADR's latency bound (S03.11) |
+| Backend-native approval channels, requalification tiers, telemetry/control-plane egress and container-engine root equivalence were missing | Added to §27.14, SEC-025/032, §17 and rows S1–S3/S10 above |
+| Threat model did not map SEC-025–032 | Added to its acceptance cells |
+| SEC-027 and parts of §27.14 duplicate SEC-022 and §27.12–27.13 | SEC-027 marked "Refines SEC-022"; §27.14 states that §27.12–27.13 govern overlaps. Deeper consolidation is optional editorial work |
+
+No runtime evidence was produced; every outcome remains Not yet proven.
