@@ -251,13 +251,35 @@ Required Foundation vertical slice:
 1. Open synthetic coding project in `Untrusted/Read` state.
 2. Search/read through Rikuri/Pi; assert no executable project surface runs.
 3. Request execution; render explicit trust promotion showing scope and consequences.
-4. Run Pi with a local model/fake deterministic model through the Ubuntu envelope.
+4. Run Pi with a local model/fake deterministic model through the Ubuntu envelope, with Pi placed as E2 decided (inside the envelope, or with its built-in tools and extension loading disabled). Pi's model calls go only through the `rikurid`-owned endpoint; Pi holds no provider key, and the Local Only worker's network policy stays empty.
 5. Edit one file, run the declared test command, capture diff and verification evidence.
-6. Attempt malicious child-process escape; assert denied.
+6. Attempt malicious child-process escape; assert denied. Repeat the hostile inputs against the Pi process itself: no read outside the grant, no network, no disabled built-in tool or extension, no model call except through `rikurid`.
 7. Swap to a second model-family/profile fixture; same core execution path and canonical state remain valid.
 8. Mutate executable project metadata and prove trust re-review/invalidation policy fires.
 
 The test distinguishes runtime support from Harness Profile compatibility. A checkpoint may be runtime-compatible but agent-incompatible and must not be shown as `Optimized`.
+
+## 8.2 Option C qualification and personal-data acceptance
+
+September 28, 2026 clarification: this table refines the existing Stage 03 contract/failure/security suite and maps related storage/context/release obligations. It does not close a gate or bring later product surfaces into Foundation-0. Apply SEC-020–024 before admitting each access path. Use synthetic personal/financial/media/professional data and credential canaries; never use the owner's real files, accounts or secrets as attack fixtures.
+
+| Boundary / owning tests | Required evidence before admission |
+| --- | --- |
+| Backend admission — S00.13, S03.02, T03.01/05 | Exact release, license/advisory review, platform/kernel/driver/LSM, immutable production image digests, full effective policy (including providers/defaults), required host privilege/services, grant epoch/expiry, probe version/date and evidence freshness. Record the account running the backend controller (dedicated service account or rootless engine), container-engine socket ownership, and that the accounts for `rikurid`/Pi/model and tool servers are outside root-equivalent groups (`docker`, `lxd`). Backend-native approval is pinned manual at gateway scope and verified at launch. Measure startup, resource/latency cost and operational recovery. Pinning alone is insufficient. |
+| Least file access — T03.02/05/09/10 | Allowed read/write and independent read-back succeed; forbidden read/write/delete, read-only mutation, symlink/path tricks and child-process escapes fail. No broad home/media/credential mounts, host process access or container-engine/admin socket access. |
+| Private outbound data — T03.03/04/14/16 and Stage 02 F4-lite | Local Only/Secret refusal before external request construction; in-envelope TCP/UDP/DNS/IPv4/IPv6, HTTP/proxy, redirects, loopback/host-service and alternate egress probes as applicable. An unreachable fixture is not a pass: prove a positive network control. Separately test an admitted allowed destination with permitted data, then private-data disclosure to that same destination; Foundation-0 admits no worker destination, so that pair applies from the first later stage that enables one. The local model is reached only through the `rikurid` endpoint; probe that a Local Only worker cannot reach a cloud model through it and that Private material follows PRD §10.1 admission; a loopback or host-service allowance used instead of the socket route counts as a permitted destination; and probe the supervisor's reach to host loopback services. |
+| Broker authority — T03.05/09/16 for enabled credential paths (none in Foundation-0; applies from the first later stage that enables one) | Synthetic secret stays outside worker environment/arguments/files/proc access, model context, error/response headers and logs. Allowed scoped operation succeeds; wrong worker, destination, port/path/operation, redirects, credential echo, refresh/replay and expired/revoked use fail. Provider binding cannot expand the grant. Unsupported protocols remain unavailable. |
+| Loss and recovery — T03.04/12/15 | Interrupt controller, relay, broker and supervisor separately during active I/O. Exercise grant expiry, revoked permissions, policy updates, failed renewals, stale receipts and rollback/restart. New work refuses; ongoing authority is fenced within the bound fixed by S03.11. Descendants stop, stale credentials do not work, and health/audit/alerts reflect actual state. Test the stop path without model cooperation. |
+| Untrusted input — T03.06–11 and F7/F9 | A project, imported note, model or tool output cannot run metadata hooks during inspection, change policy/grants, replace verification or obtain a broader backend. A worker's backend-native policy proposal (OpenShell `policy.local` `POST /v1/proposals`) is refused or leaves the effective policy hash unchanged, and no auto-drafted proposal is approved outside Rikuri. Privilege/capability/resource limits and process-tree escape attempts remain bounded. |
+| Data lifecycle — Stages 01/02, F6, T02.16, T03.16 and feature-owning product stages | Classification, audience and retention carry into derived text/media metadata, summaries, embeddings, prompts, logs, temporary files and backups for each implemented path. Canary absence is checked at serialized requests and actual sinks. Forget/restore consults current revocation; mutation/racing-write/failure tests preserve valid originals and verify rollback/read-back. Later media/database paths need their own fixtures before activation. |
+| Telemetry and service egress — T03.16 | Optional vendor/product telemetry starts disabled; capture worker and controller/gateway/supervisor/broker outbound activity under normal operation and failures. A worker no-network result alone is insufficient. Enabled diagnostic export requires scoped consent, minimized payloads and secret exclusion. |
+| User trust and upgrades — T03.12/13/16 and Stage 05 release | Denial and loss of protection are understandable, linked to the real event, and cannot appear Healthy. Relevant backend/kernel/image/provider/configuration updates invalidate affected qualification; rerun mandatory suites and rollback without resurrecting authority. Requalify at the applicable tier of the Engineering Standard's [two-tier rule](Rikuri_Pi_Engineering_Standard_v1.2.md#security-assurance-and-upstream-maintenance): this full table is tier 2, and a change not listed as tier 1 is tier 2. Profiles stay unavailable until the applicable tier passes; receipts record the running kernel (`uname -r`). |
+
+For every denial case, distinguish enforced denial from a timeout, missing file, broken fixture or unsupported test. Use baseline/positive controls and independently observe side effects. Policy proofs record their modeled scope and unsupported fields; they do not substitute for runtime tests. Publish measured revocation times and permitted-task success/failure, not only attack counts. Resource exhaustion and failures are exercised in bounded disposable environments.
+
+The [OpenShell v0.1.2 receipt](../docs/security/evidence/2026-09-28-openshell-v0.1.2/README.md) supplies ten earlier smoke outcomes, including a successful ordinary-container baseline. It does not cover this qualification table: permission revocation, credential brokering, controller failure, DNS/IPv6, permitted OpenShell network access, control-plane egress and the real Rikuri caller remain unproven. Do not count a disabled/unimplemented surface as tested protection. Independent review and release gates remain mandatory.
+
+September 28 review follow-up ([ADR addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-review-follow-ups-and-foundation-0-credential-scope)): the receipt's run also auto-drafted one network proposal (its later status was not captured), showed an unexplained provider-environment settings change with no providers attached, and denied network twice over (container `network_mode: none` plus OpenShell policy). Qualification must explain the settings change and test the configuration Rikuri will actually ship, including the `rikurid` model endpoint path.
 
 ## 9. Forget/restore tests
 
@@ -351,7 +373,8 @@ A Foundation-0 build is not releasable/dogfood-ready unless:
 - no unexplained skipped tests or debt-ratchet increase exists;
 - Module Contracts exist for protected-core crates;
 - Scrap Sweep/clean-tree review is complete;
-- Foundation threat -> control -> test traceability is current;
+- Foundation threat -> control -> test traceability is current, including the [personal-data threat model](../docs/security/THREAT_MODEL.md);
+- every enabled sensitive path has current Option C qualification evidence; unsupported/stale paths are unavailable, known boundary failures block release, and public protection claims match the admitted platform/configuration;
 - F8 engineering-assurance demonstration passes.
 - F9 untrusted-project/GitSpawn-class containment demonstration passes.
 - F10 Pi + Rikuri Harness Profile local coding vertical slice passes.
@@ -425,7 +448,7 @@ Evaluate creator usefulness versus simpler chat/document baselines with predecla
 
 # 17. Security draft addition acceptance
 
-October 1, 2026: future acceptance for PRD SEC-020–027 and Architecture §27.12. These do not add Foundation stages or claim runtime tests exist. Fake and live adapters must share policy, ledger, budget and validation paths. Each enabled control needs authorized, denied, bypass and failed-enforcement evidence; no detector output or configuration file is a security oracle.
+October 1, 2026: future acceptance for PRD SEC-020–027 and Architecture §27.14. These do not add Foundation stages or claim runtime tests exist. Fake and live adapters must share policy, ledger, budget and validation paths. Each enabled control needs authorized, denied, bypass and failed-enforcement evidence; no detector output or configuration file is a security oracle.
 
 | Requirements | Allowed / denied / bypass / failure fixture | Delivery and dependency |
 | --- | --- | --- |

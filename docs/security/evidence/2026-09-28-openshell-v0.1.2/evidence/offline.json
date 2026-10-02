@@ -1,0 +1,73 @@
+{
+  "uid": 1000,
+  "gid": 1000,
+  "marker": "openshell-offline",
+  "results": [
+    {
+      "name": "allowed_read",
+      "outcome": "allowed",
+      "value": "synthetic-visible\n"
+    },
+    {
+      "name": "allowed_write",
+      "outcome": "allowed",
+      "value": 24
+    },
+    {
+      "name": "readonly_write",
+      "outcome": "blocked_or_failed",
+      "error": "PermissionError",
+      "errno": 13,
+      "detail": "[Errno 13] Permission denied: '/readonly/visible.txt'"
+    },
+    {
+      "name": "forbidden_read",
+      "outcome": "blocked_or_failed",
+      "error": "PermissionError",
+      "errno": 13,
+      "detail": "[Errno 13] Permission denied: '/forbidden/not-for-agent.txt'"
+    },
+    {
+      "name": "forbidden_write",
+      "outcome": "blocked_or_failed",
+      "error": "PermissionError",
+      "errno": 13,
+      "detail": "[Errno 13] Permission denied: '/forbidden/attempt.txt'"
+    },
+    {
+      "name": "symlink_escape",
+      "outcome": "blocked_or_failed",
+      "error": "PermissionError",
+      "errno": 13,
+      "detail": "[Errno 13] Permission denied: '/workspace/escape'"
+    },
+    {
+      "name": "child_forbidden_read",
+      "outcome": "blocked_or_failed",
+      "error": "PermissionError",
+      "errno": null,
+      "detail": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"/usr/local/lib/python3.12/pathlib.py\", line 1027, in read_text\n    with self.open(mode='r', encoding=encoding, errors=errors) as f:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/pathlib.py\", line 1013, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nPermissionError: [Errno 13] Permission denied: '/forbidden/not-for-agent.txt'"
+    },
+    {
+      "name": "raw_tcp",
+      "outcome": "blocked_or_failed",
+      "error": "PermissionError",
+      "errno": 13,
+      "detail": "[Errno 13] Permission denied"
+    },
+    {
+      "name": "http_request",
+      "outcome": "blocked_or_failed",
+      "error": "URLError",
+      "errno": null,
+      "detail": "<urlopen error [Errno 13] Permission denied>"
+    },
+    {
+      "name": "raw_udp",
+      "outcome": "blocked_or_failed",
+      "error": "OSError",
+      "errno": 89,
+      "detail": "[Errno 89] Destination address required"
+    }
+  ]
+}

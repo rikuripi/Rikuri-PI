@@ -94,8 +94,8 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] S00.09 Module Contracts for the four crates that exist (domain, storage, ledger, testkit)
 - [ ] S00.10 ADR 0001–0004 (ID format, SQLite current-state model, ledger + idempotency, threat-model assumptions)
 - [ ] S00.11 E1 spike: simplest implementation of the Transactional State Evolution invariant for kernel transactions (see Experiment register); later components extend the crash matrix
-- [ ] S00.12 E2 spike: Pi headless driveability, 2 days, throwaway branch
-- [ ] S00.13 One-day Ubuntu sandbox admission probe on the exact reference installation: can `bwrap` create the required user/network/mount namespaces under default AppArmor settings without globally weakening security? Record a viable approved fallback or block Stage 03 planning if not.
+- [ ] S00.12 E2 spike: Pi headless driveability, 2 days, throwaway branch. Also decide harness placement: Pi runs inside the envelope, or its built-in file/shell tools and extension loading are disabled and proven disabled; Pi's model provider is a `rikurid`-owned endpoint and Pi holds no provider key (Architecture §13.1)
+- [ ] S00.13 Time-box the initial Ubuntu backend admission probe to one day on the exact reference installation: evaluate pinned OpenShell first under default host protections; record versions/images, required privileges/services, filesystem/network evidence, license/advisories, operational cost and remaining qualification work. Record `proposal_approval_mode` pinned to manual at gateway scope and whether the worker's `policy.local` proposal route can be blocked; the account running the backend controller (dedicated service account or rootless engine) and proof that the accounts for `rikurid`/Pi/model servers are outside root-equivalent groups (`docker`, `lxd`); and the supervisor's reach to host loopback services. If incomplete, leave admission open and re-estimate. A native Linux/bubblewrap alternative needs an explicit decision and equivalent evidence; never weaken host-wide security or fall back to unrestricted execution. The September 28 host smoke test is input, not completion of this item.
 
 **Adopt (do not build)**
 
@@ -234,26 +234,26 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 **Build**
 
 - [ ] S03.01 `rikuri-platform`: normalized OS Capability API (process, filesystem, network, service, sandbox contracts)
-- [ ] S03.02 `platform-ubuntu` + `envelope-ubuntu` adapters; assurance descriptor per profile (filesystem, network, privilege, backend/version, verification time)
+- [ ] S03.02 `platform-ubuntu` + `envelope-ubuntu` adapters implementing Option C; OpenShell is the first candidate after S00.13 admission. Bind the assurance descriptor to filesystem/network/privilege, effective policy and grant epoch/expiry, backend/kernel/driver/image identities, evidence and verification freshness; no worker may modify the governing policy/broker/controller.
 - [ ] S03.03 `platform-macos` compiles and platform-neutral core contract/unit tests pass in CI; native macOS envelope retains `assurance: experimental`, with no protection claims
 - [ ] S03.04 ProjectTrust contract: `untrusted_read` → `trusted_scoped_execute` → `revoked/review_required`; promotion is explicit, scoped, and renders consequences
 - [ ] S03.05 Descendant-process policy: children inherit parent envelope; parent binary name (`git`, `cargo`, `npm`) grants nothing
 - [ ] S03.06 Executable-metadata inspector: `.git/config` (`core.fsmonitor`, helpers), hooks, npm lifecycle scripts, Make/Cargo/Python build hooks, Docker/devcontainer/MCP/workspace configs
 - [ ] S03.07 Trust invalidation/review rule when tracked executable metadata changes
-- [ ] S03.08 Launch workers only through the declared Ubuntu envelope; preflight mount/network/namespace assurance and mark a profile unavailable if the probe cannot establish its guarantees. Full cloud-to-local task handoff is S04.15.
+- [ ] S03.08 Launch workers only through the qualified Ubuntu envelope; confirm enforcement before admitting data or execution. Mark unsupported/stale/failed profiles unavailable. Enforce expiry, bounded revocation, controller-loss fencing and descendant termination without model cooperation or unsafe fallback. Credential-bearing paths require a qualified external broker. Full cloud-to-local task handoff is S04.15.
 - [ ] S03.09 Provenance chain: request → grant/deny → tool call → result → alert, linked by stable event IDs
 - [ ] S03.10 Session-sequence signal: bulk reads followed by staging/compression/egress, or repeated denied escalation, triggers configured response
-- [ ] S03.11 ADR: envelope assurance levels (was 0011 scope); ADR: project trust + descendant containment
+- [ ] S03.11 ADR: envelope assurance levels (was 0011 scope), including Option C translation, complete effective policy, operational dependencies, maximum revocation latency, upgrade/rollback qualification, disabled backend-native approval channels, backend host privilege (dedicated controller account or rootless engine) and, under the [two-tier requalification rule](Rikuri_Pi_Engineering_Standard_v1.2.md#security-assurance-and-upstream-maintenance), the tier-1 regression suite's content and any component class moved into tier 1 with its written reason ([ADR 0000 addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--reference-installation-and-requalification-tiers)); ADR: project trust + descendant containment
 - [ ] S03.12 E5 spike: envelope assurance as tested property (see Experiment register)
 
 **Adopt (do not build)**
 
 | Need | Component | Note |
 | --- | --- | --- |
-| Filesystem + PID isolation | bubblewrap (`bwrap`) candidate | Requires successful Stage 00 probe on the pinned Ubuntu image and AppArmor configuration; never disable system-wide namespace restrictions to make a test pass |
-| Network denial | Linux network namespace (`--unshare-net`) | no interfaces = no egress; probe from inside |
-| Path allow-listing | Landlock (kernel ≥ 5.13) | belt to bwrap's braces |
-| Syscall filtering | seccomp-bpf via `libseccomp` | conservative default profile |
+| Execution containment | OpenShell first Ubuntu candidate | Pin and qualify the complete driver/runtime/supervisor configuration after S00.13; production images use immutable digests; never disable host protections |
+| Filesystem/network/process restrictions | Qualified backend's namespaces, Landlock, syscall filters and mediated network path | Test actual permitted/denied I/O and descendants; declared settings or upstream feature lists do not prove enforcement |
+| Policy and credential services | Reuse AISecurity components; upstream broker mechanisms only when a later stage enables a credential path | Rikuri owns authority; service isolation, endpoint/operation scope, expiry/revocation and failure behavior require evidence. Foundation-0 workers hold no credential (ADR 0000, September 28 review follow-ups) |
+| Alternative native Linux backend | bubblewrap only after explicit admission decision | Same Rikuri contract and regression suite; no silent fallback or obligation to build multiple backends in parallel |
 | Git metadata parsing | `gix-config` / `git2` read-only | never invoke `git` binary during inspection |
 
 **Tests — complete when all green**
@@ -262,7 +262,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] T03.02 Worker reads Local Only test file inside allowed mount; cannot read a path outside the envelope
 - [ ] T03.03 Worker cannot connect to external IP, resolve DNS, or complete HTTP when `external_network = Denied`; failure observed from inside the envelope (**F4 envelope prerequisite**, full F4 remains open)
 - [ ] T03.04 No-network assurance failure → profile marked unavailable; no silent downgrade
-- [ ] T03.05 ExecutionEnvelope contract: declared assurance matches observed filesystem/network behavior
+- [ ] T03.05 ExecutionEnvelope contract: declared assurance matches observed filesystem/network behavior and the complete effective policy, including provider-added authority; unsupported translation/proof refuses. Legitimate scoped work succeeds alongside negative controls. Qualification evidence is invalidated on relevant backend/platform/policy changes. A worker's backend-native policy proposal (OpenShell `policy.local`) is refused or leaves the effective policy unchanged, and the gateway-scope approval mode is verified manual at launch.
 - [ ] T03.06 Untrusted project opened/read/indexed with no project-controlled side effect
 - [ ] T03.07 Malicious `core.fsmonitor` fixture does not execute during read-only inspection; untrusted `git status` path cannot run a configured helper
 - [ ] T03.08 Git hook, npm lifecycle, Make/Cargo/Python hook, devcontainer/MCP fixtures each detected and reported, none executed
@@ -272,8 +272,10 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] T03.12 Denied operation produces deterministic security decision + evidence; material blocks emit a user-visible alert (silent block fails the gate)
 - [ ] T03.13 Provenance reconstruction from a single event ID recovers the full chain
 - [ ] T03.14 Local Only refuses cloud and runs a synthetic task only inside the proven envelope; exercise the policy and envelope together. Cloud → local continuity is T04.16.
-- [ ] T03.15 Native/local fixtures: daemon interruption, flags/xattrs/ACLs, copy/export/exfiltration attempt, bulk sequential reads → configured session response
-- [ ] T03.16 AISecurity regression matrix runs for supported paths; no prior BLOCKED cell silently becomes ALLOWED
+- [ ] T03.15 Native/local fixtures: controller/supervisor/broker interruption, expiry/revocation during active work, descendant fencing, restart/rollback with stale grants, flags/xattrs/ACLs, copy/export/exfiltration attempt, bulk sequential reads → configured session response. Prove the ADR's maximum revocation latency and visible degradation; last-known-good configuration cannot resurrect authority.
+- [ ] T03.16 AISecurity/adapter regression matrix runs for supported paths; no prior BLOCKED cell silently becomes ALLOWED. Include synthetic credential canaries and broker confused-deputy tests for each enabled credential path and permitted-destination leakage for each permitted destination (none is enabled in Foundation-0, so these rows are N/A until a later stage enables one; a loopback or host-service allowance counts as one), telemetry/control-plane egress, and private derived-data/log handling. Unsupported paths remain explicitly unavailable. Use [Test Strategy §8.2](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#82-option-c-qualification-and-personal-data-acceptance) for qualification detail.
+
+September 28 clarification: [ADR 0000's Option C addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-and-personal-data-protection) changes the first backend candidate and refines existing acceptance, without claiming implementation or adding a stage. Re-estimate S00.13/Stage 03 from evidence. The [v0.1.2 smoke receipt](../docs/security/evidence/2026-09-28-openshell-v0.1.2/README.md) is limited candidate evidence; credential, failure, revocation and Rikuri integration qualification remain unproven. The [review follow-up addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-review-follow-ups-and-foundation-0-credential-scope) keeps Foundation-0 workers credential-free with no permitted destination, so broker and permitted-destination qualification leave Stage 03 and the Stage 03 dates stand; it also adds the backend approval-channel and host-privilege checks to S00.13/S03.11/T03.05.
 
 **Stage 03 exit decision**: F9 and the F4 envelope prerequisite green; full F4 remains open until Stage 04. E5 outcome recorded; envelope + trust ADRs accepted; Module Contracts for platform and the two Ubuntu adapters; macOS core checks green with native envelope explicitly experimental.
 
@@ -284,7 +286,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 **Build**
 
 - [ ] S04.01 `rikuri-exec`: `HarnessAdapter` trait (session/turn/tool/result/cancel lifecycle), `Tool` trait (schema + risk + execute + verify), `ExecutionEnvelope` launch
-- [ ] S04.02 `adapters/harness-pi`: Pi driven headlessly with Rikuri tools injected; Pi types never cross crate boundaries
+- [ ] S04.02 `adapters/harness-pi`: Pi driven headlessly with Rikuri tools injected; Pi types never cross crate boundaries. Pi is placed as E2 decided (inside the envelope, or with built-in tools and extension loading disabled); its only model provider is the `rikurid`-owned endpoint, and it holds no provider key
 - [ ] S04.03 Harness Profile schema: family / task / runtime / hardware / privacy / project overlays, versioned; `HarnessProfileStore`
 - [ ] S04.04 Runtime-compatibility record separate from agent/profile-compatibility record; status values Optimized / Experimental / Unavailable
 - [ ] S04.05 `adapters/local-openai-compat`: llama.cpp server as the one local runtime
@@ -314,7 +316,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] T04.02 `HarnessProfile` contract suite: versioned overlay validation and compatibility metadata
 - [ ] T04.03 Vertical slice: open synthetic project untrusted → search/read through Pi, assert no executable surface runs → promote scoped trust → Pi edits one file, runs declared test, returns diff + verification evidence (**F10**)
 - [ ] T04.04 Project process and local-model process cannot write canonical DB; only `rikurid` commits
-- [ ] T04.05 Malicious child-process escape attempt during the Pi slice is denied (re-runs T03.09 through the harness path)
+- [ ] T04.05 Malicious child-process escape attempt during the Pi slice is denied (re-runs T03.09 through the harness path). The same fixtures run against the Pi process itself: a hostile project file or model output cannot make Pi read outside the grant, reach the network, use a built-in tool or extension that E2 disabled, or call a model except through the `rikurid` endpoint
 - [ ] T04.06 Swap to second profile fixture: same core execution path, no kernel diff, no project-state loss
 - [ ] T04.07 Property: adding a compatible model/profile requires registry/profile data only; kernel has no model-name branch (grep gate + fixture)
 - [ ] T04.08 Disable profile support deliberately → status Experimental/Unavailable, never silent fallback
@@ -390,10 +392,10 @@ Six Rikuri-specific claims are deliberately time-boxed. Each spike has a kill cr
 | ID | Claim under test | Spike | Time box | Kill criterion → fallback | Stage | Outcome |
 | --- | --- | --- | --- | --- | --- | --- |
 | E1 | Find the simplest implementation satisfying Transactional State Evolution and last-known-good recovery | Compare versioned SQLite transaction with an explicit candidate/promotion design at Stage 00 kernel crash points; rerun all eight real points after dependent modules exist | 3 days initial spike | If versioned SQLite transactions satisfy the same invariant and crash tests, omit redundant ceremony; if neither passes, Stage 00 remains open | 00; full matrix at 05 |  |
-| E2 | Pi can be driven headlessly with Rikuri tools injected and results captured, without leaking Pi types | Throwaway branch: start Pi session, inject one fake tool, capture tool call + result + cancel | 2 days | Cannot inject tools or capture results → escalate: either Pi extension work or reconsider harness substrate before Stage 04 | 00 |  |
+| E2 | Pi can be driven headlessly with Rikuri tools injected and results captured, without leaking Pi types | Throwaway branch: start Pi session, inject one fake tool, capture tool call + result + cancel | 2 days; the placement decision may add one recorded day | Cannot inject tools or capture results, or cannot either run Pi inside the envelope or prove its built-in tools/extension loading disabled (recording its account, readable paths and network reach) with model calls only through a `rikurid` endpoint → escalate: either Pi extension work or reconsider harness substrate before Stage 04 | 00 |  |
 | E3 | Deletion-aware managed restore cannot resurrect a forgotten item, including a managed snapshot made before forgetting | Create backup A → forget X → create backup B; wipe and restore each with durable revocation state; attempt A without revocation state; test randomized orderings | 2 weeks | If guarantee cannot be proven, keep F6 red and redesign revocation/restore; a weaker promise requires explicit owner decision and a changed requirement, never an unchanged green F6 | 01 |  |
 | E4 | Minimal Knowledge Context Compiler can use source authority, time, supersession, conflict, and risk to avoid unsafe context | 10 hand-built cases with explicit answer/abstain expectations, including consequential stale/conflicting claims and stable low-risk facts | 1 week | Ship the smallest rule table that meets each expected outcome; unsafe acceptance or abstaining on a required clear answer blocks Stage 02. Later stages may improve ranking and coverage, not postpone the safety gate | 02 |  |
-| E5 | Envelope network and filesystem denial are tested properties on the pinned Ubuntu image, not prompts | After Stage 00 feasibility check, test `bwrap` under default AppArmor with DNS/TCP/HTTP and out-of-mount reads from inside; verify allowed work still succeeds | 1 week | No deterministic denial without weakening host security → STOP LINE; choose an independently tested alternative via ADR before Stage 03 can close | 03 |  |
+| E5 | Envelope network and filesystem denial are tested properties on the pinned Ubuntu image, not prompts | After S00.13 admission, test the pinned Option C backend under default host protections with in-envelope DNS/TCP/UDP/HTTP and out-of-mount reads, positive controls and the Test Strategy §8.2 qualification suite; record remaining work and re-estimate if the spike is incomplete | 1 week | No deterministic denial without weakening host security → STOP LINE; choose an independently tested alternative via ADR before Stage 03 can close | 03 |  |
 | E6 | A second model family/profile swaps in with zero kernel diff | Second synthetic profile fixture; `git diff crates/rikuri-kernel` must be empty; grep gate for model names in kernel | 3 days | Kernel `match` on family required → profile schema is wrong; fix schema before F10 | 04 |  |
 
 **Rules for experiments**
@@ -413,6 +415,7 @@ Every v1.6 Foundation item that moved is listed here with a disposition, per the
 | `VectorIndex` implementation + retrieval tuning (Week 4–5) | DEFERRED | Stage 1 | FTS5 baseline is mandatory; vectors are a quality experiment | Retrieval floor set by FTS only | Real dogfood retrieval failures that FTS cannot fix; corpus ≥ 40 questions |
 | `KnowledgeService` read-only harness tools (Week 4–5) | RESEQUENCED | S04.14 | Needs a harness to call it | Stage 04 adds it once Pi is wired | F10 vertical slice exercises search through scoped tools |
 | Native macOS execution envelope and desktop parity (all weeks) | DEFERRED | Stage 1+ | Ubuntu is the sole full Foundation assurance target | No native macOS protection claim; platform-neutral core tests remain continuous | Ubuntu Foundation gate green, followed by macOS threat model and native assurance tests |
+| Option C broker and permitted-destination qualification (T03.16 / Test Strategy §8.2 rows; not a v1.6 item) | DEFERRED | First stage that gives a worker a credential or permitted destination; expected product Stage 1 (dependency fetch, container/dev tools) or Stage 5 (connectors) | Owner scope choice, [ADR 0000 September 28 review follow-ups](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-review-follow-ups-and-foundation-0-credential-scope): Foundation-0 workers hold no credential and have no permitted destination | Stage 03 dates unchanged; Foundation-0 cannot demo credentialed or network-permitted workers | Owner: product owner and security implementer. Before enabling the path, its broker/destination rows pass; reversal inside Foundation-0 by a later dated addendum re-estimates Stage 03 |
 | Composite execution plan, lead + specialists, vision-specialist fixture (Week 7–8) | DEFERRED | product Stage 4, build item 15 | Single-agent evidence precedes composition | Router in S04.08 is single-role | Registry modality metadata + single-role F10 stable |
 | Local sanitization / minimal-reproduction for frontier reasoning (Week 6) | KEPT | S02.11 | — | — | — |
 | Session-sequence anomaly signals (Week 9) | KEPT | S03.10 | — | — | — |
@@ -489,7 +492,7 @@ The v1.6 stop-the-line table carries forward unchanged. Three rules are added fo
 
 **Next actions (this week)**
 
-- [ ] Copy this plan to `docs/stage-gates/foundation0/00-plan-v2.md` and create one Stage Gate Record per stage from Template B
+- [x] Stage Gate Record for Stage 00 created at [`docs/stage-gates/foundation0/00-bootstrap-kernel.md`](../docs/stage-gates/foundation0/00-bootstrap-kernel.md) (September 28). It links this plan rather than copying it, because a copy would become a second gate board; later stages' records are created from Template B when each stage begins.
 - [x] ADR 0000 reconciles the PRD, Architecture, Engineering Standard, and Master Build Sequence with this scope (September 24, 2026); preserve continuous macOS core tests and defer native envelope claims.
-- [ ] Run the one-day Ubuntu namespace/AppArmor admission probe on the actual reference image and schedule E2 for the first two build days of October
+- [ ] Run the one-day S00.13 backend admission probe (OpenShell first) on the actual reference installation and schedule E2 for the first two build days of October
 - [ ] Agree on the six owner-facing stage demos and evidence-receipt format before the first build change

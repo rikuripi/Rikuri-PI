@@ -5,7 +5,7 @@
 | Date / change | 2026-10-01; compare supplied Security Architecture v1.0 and incorporate compatible requirements |
 | Agent / branch / commits | Codex; codex/creative-studio-security-drafts; owner authorized commit/push October 1 |
 | Stage / authority | Documentation only; live Foundation plan and accepted invariants unchanged |
-| Related requirements | SEC-020–027; Architecture §27.12; future Test Strategy §17 |
+| Related requirements | SEC-020–027; Architecture §27.14 (numbered §27.12 before the merge with main); future Test Strategy §17 |
 | Status | COMPLETE — documentation review; enforcement unproven |
 
 ## 1. Plan and characterization
@@ -21,7 +21,7 @@
 
 ## 2. Build
 
-Pass: coherent comparison record, SEC-020–027, Architecture §27.12, future acceptance §17 and documentation index completed. Runtime contracts/Module Contracts, migrations and implementation tests: N/A; no application exists.
+Pass: coherent comparison record, SEC-020–027, Architecture §27.14 (numbered §27.12 before the merge with main), future acceptance §17 and documentation index completed. Runtime contracts/Module Contracts, migrations and implementation tests: N/A; no application exists.
 
 ## 3. Debug
 

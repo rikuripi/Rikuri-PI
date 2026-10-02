@@ -1,0 +1,63 @@
+{
+  "uid": 1000,
+  "gid": 1000,
+  "marker": "baseline",
+  "results": [
+    {
+      "name": "allowed_read",
+      "outcome": "allowed",
+      "value": "synthetic-visible\n"
+    },
+    {
+      "name": "allowed_write",
+      "outcome": "allowed",
+      "value": 24
+    },
+    {
+      "name": "readonly_write",
+      "outcome": "allowed",
+      "value": 26
+    },
+    {
+      "name": "forbidden_read",
+      "outcome": "allowed",
+      "value": "synthetic-forbidden\n"
+    },
+    {
+      "name": "forbidden_write",
+      "outcome": "allowed",
+      "value": 26
+    },
+    {
+      "name": "symlink_escape",
+      "outcome": "allowed",
+      "value": "synthetic-forbidden\n"
+    },
+    {
+      "name": "child_forbidden_read",
+      "outcome": "allowed",
+      "value": "synthetic-forbidden"
+    },
+    {
+      "name": "raw_tcp",
+      "outcome": "blocked_or_failed",
+      "error": "TimeoutError",
+      "errno": null,
+      "detail": "timed out"
+    },
+    {
+      "name": "http_request",
+      "outcome": "blocked_or_failed",
+      "error": "URLError",
+      "errno": null,
+      "detail": "<urlopen error timed out>"
+    },
+    {
+      "name": "raw_udp",
+      "outcome": "blocked_or_failed",
+      "error": "TimeoutError",
+      "errno": null,
+      "detail": "timed out"
+    }
+  ]
+}
