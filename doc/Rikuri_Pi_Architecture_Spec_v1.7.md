@@ -814,6 +814,43 @@ Output is a `TaskRequirements` record rather than a direct model choice.
 This separation allows routing logic to improve without changing the
 user-facing task model.
 
+## 11.1 Preserved intent and clarification contract
+
+October 2, 2026 — design refinement; all runtime behavior is **Not yet proven**. The Rikuri task/turn controller calls the Capability Planner before routing and again when new evidence materially changes the task. A versioned `TaskRequirements` record preserves the authenticated objective, target/deliverable, constraints, authorized scope/grant references, evidence requirements, success criteria, unresolved decisions, explicit assumptions and user answers. Link revisions to task/run IDs and retain continuity through handoff, resume and compaction; revalidate grants against current policy. Model-generated interpretation is a candidate, not new user authority.
+
+Clarity is assessed from unresolved decisions and consequences, not model self-reported confidence. Ask a focused question when multiple plausible interpretations materially change outcome, target, authority, risk, cost or work: assessment versus applied edits, conflicting accepted requirements, unspecified audience/environment, or undefined success. Present the consequential alternatives in ordinary language; do not demand that the user rewrite the whole request. A clarification answer supplies intent only within the answering actor's authority; retrieved history or tool text cannot answer on the user's behalf or grant permission.
+
+Resolve factual uncertainty through authorized inspection, measurement or retrieval where possible. Resolve minor reversible choices using established preferences and a visible assumption. Continue independent authorized work during a clarification wait; dependent consequential actions wait for an answer. Silence, timeout or an expired question is not approval. Cancellation, unresolved ambiguity and changed assumptions remain visible; new evidence may reopen a settled interpretation. Measure intended-outcome success, correction burden and avoidable interruptions together, rather than rewarding few questions alone.
+
+## 11.2 Evidence-directed task classification and small-model profiles
+
+The owner's Bitcoin-node orchestration experience motivates this contract: constrained local deployments using roughly 2–4B models on 8–16 GB RAM benefited from distinguishing requests for data from explanations and requiring measured data or RAG before factual answers. This is supplied experience, not a benchmark or a guarantee that a particular model fits that hardware. Evaluate exact model/quantization/runtime/context/tool footprint on the admitted machine.
+
+Classify the required evidence, allowing mixed tasks:
+
+| Requested result | Required route and admissible evidence |
+| --- | --- |
+| Current system state or numeric measurement | Authorized read-only instrument/adapter; target identity, observation time, units, source and freshness. Retrieved documentation cannot prove current node state |
+| Project facts, accepted decisions or source-backed explanation | Scoped Knowledge Service/RAG and source inspection; current revision, relevant spans, coverage and conflict status |
+| Explanation of measured behavior | Measurements plus relevant documentation; distinguish observation, supported explanation and hypothesis. Correlation alone does not establish cause |
+| Creative proposal or explicitly hypothetical reasoning | Clearly label invention/assumptions; factual supporting claims still meet their evidence requirements |
+
+The trusted controller initiates required evidence acquisition and checks receipts before admitting factual completion. Small-model profiles may require retrieval or measurement for every factual answer, narrow tool sets, typed outputs, constrained stages and explicit unsupported-claim refusal. Strict prompt instructions reinforce this behavior but do not enforce it: the controller must visibly reject missing, stale, wrong-target, contradictory or irrelevant evidence and prevent an unsupported result from being marked verified. A tool call or citation alone does not prove support; domain verifiers check claims where feasible, and semantic support remains Not yet proven without task-specific evaluation. No universal hallucination-free guarantee is claimed.
+
+If required evidence is unavailable, report what is missing, return only supported portions with limitations, or ask the user for a material intent decision; do not invent readings or silently replace measurements with RAG. Instrumentation itself needs current authority: inspection does not authorize installation, execution in an untrusted project, mutation, cloud disclosure or spending. Retrieval, query text, receipts and answers remain subject to privacy admission, Secret exclusion and revocation. A larger/cloud model fallback requires eligible policy, budget and destination; inability to fit a local model cannot weaken Local Only.
+
+## 11.3 End-to-end harness contract and bounded evolution
+
+“Rikuri harness” names the surrounding intent, execution and assurance infrastructure; the upstream Pi harness remains the default agent-loop substrate (§13). This refinement does not add a parallel home-grown agent runtime. The production path is task/turn controller → preserved intent → policy-admitted evidence/context → Execution Profile → Pi/worker adapter → governed tools → independent verification → authorized durable outcome and ledger. Policy applies before retrieval/assembly and at every action boundary, not only once after context construction. The adapter compiles admitted intent/context with versioned model-family guidance without dropping constraints, reclassifying evidence as instructions or increasing authority. Unsupported adapter capabilities and omitted constraints are visible failures.
+
+The controller records explicit transitions: planning, acquiring evidence, awaiting clarification/approval, executing, verifying, repairing, blocked, failed, cancelled and completed. Bound retries, elapsed time, calls and cost; preserve checkpoints and expose termination reasons. Verification failure permits repair/escalation only within current grants, envelope and reserved budget. Cancellation/revocation stops further effects and preserves honest partial outcomes. Recovery never claims the primary path succeeded, and completion requires the task's outcome evidence rather than worker narration. Exact transition implementation remains owned by the relevant stage; advanced repair follows §16.8 and its policy prerequisites.
+
+Verification is task-specific: coding uses declared tests and artifact/integration evidence; research uses support, freshness and coverage; creative work separates technical checks from creator judgment. A model grader is fallible supporting evidence, not authority or a universal oracle. Durable promotion uses governed services and existing validation/write/read-back contracts. “Commit” does not imply authorization for Git commits, publishing, deployment or canonical truth promotion.
+
+Harness changes follow candidate → sandbox evaluation → regression/security and task comparison → authorized admission → versioned rollout → monitoring/rollback. Record exact model/runtime/profile/compiler/tool identity, sample counts, cost and verified outcomes; preserve the known-good profile. Significant changes use existing developer/owner review and release policy; profile data cannot alter security, budget or approval authority. Model Lab owns measured profile tuning at product Stage 4; learned recipes/user-pattern inference remain product Stage 10 after its prerequisites.
+
+**Scope:** Foundation remains 00–05 with deterministic routing and single-role execution. This contract clarifies existing S02.02/S02.07 and S04.01–03/S04.06/S04.08/S04.14–15 evidence/wiring; T02.15–16 and T04.01–03/T04.10/T04.18 remain unchanged. General intent classification/clarification is realized through product Stage 2 task surfaces; richer connector evidence through Stage 5, measured profile promotion through Stage 4, advanced developer repair through Stage 8, and adaptive learning through Stage 10. No new Foundation gate or runtime completion claim is introduced. Future acceptance is [Test Strategy §19](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#19-harness-intent-and-evidence-contract-acceptance).
+
 # 12. Execution Profile and Router
 
 The long-term routing unit remains an **Execution Profile**:

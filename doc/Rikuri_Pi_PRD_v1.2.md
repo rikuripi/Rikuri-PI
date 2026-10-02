@@ -623,6 +623,17 @@ September 28, 2026 clarification: [Architecture §20.3.1](Rikuri_Pi_Architecture
 | ROUTE-006 | P0 | Simple privacy/execution modes | Expose Auto, Private, and Local Only/Vault as persistent project/workspace intent; advanced users may inspect/override exact model/runtime/provider. | A nontechnical user can obtain enforceable privacy behavior without knowing ZDR, inference runtimes, or network policy. |
 | ROUTE-007 | P0 | Harness compatibility registry | Track model-family/profile compatibility separately from runtime support, including tool-call, context, planning, editing, reasoning, and subagent behavior. | New models normally reuse a family profile or a small override; harness core changes are exceptional. |
 
+### Harness intent and evidence refinement — October 2, 2026
+
+These product requirements refine Architecture §11.1–11.3; priority is not Foundation scope. Acceptance: Test Strategy §19. All runtime capability is **Not yet proven**.
+
+| ID | Priority | Requirement | Acceptance |
+| --- | --- | --- | --- |
+| HAR-001 | P1 | Preserve versioned intent, constraints, authority, evidence needs and success criteria across adapters/handoffs; clarify material ambiguity and retain answers/assumptions | Consequential alternatives trigger focused questions; independent work continues; silence grants no authority; factual uncertainty uses available inspection |
+| HAR-002 | P1 | Route factual work according to declared task evidence requirements to authorized measurements, scoped RAG or both; constrained-model profiles may require lookup for every factual answer | Missing/stale/wrong-target/irrelevant evidence cannot produce verified facts; legitimate supported answers succeed; creative assumptions remain explicit |
+| HAR-003 | P1 | Bound execution/verification/repair transitions with cancellation, visible blockers and task-specific completion evidence | Retry exhaustion, revocation and failed verification cannot appear completed or expand rights; partial work remains inspectable |
+| HAR-004 | P1 | Compile admitted intent using versioned adapters and promote evaluated profile candidates under existing review/rollback policy | Constraints survive model switches; candidate profiles cannot promote themselves or change policy; regressions preserve known-good versions |
+
 ## 9.6 Local Model Lab and Dynamic Harness
 
 | **ID** | **Pri** | **Requirement** | **Description** | **Acceptance** |
