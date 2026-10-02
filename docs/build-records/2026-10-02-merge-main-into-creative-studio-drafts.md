@@ -17,7 +17,7 @@ The drafts branch (September 30 creative-studio direction, October 1 security dr
 
 ## Open items found, not resolved here (owner decisions)
 
-1. **Requirement ID collision.** `main` defines SEC-020–024 (Option C personal-data protection) and the drafts define SEC-020–027 (security draft additions) with different meanings. Both tables now appear in PRD §10. They need renumbering or consolidation before merge.
+1. **Requirement ID collision (renumbered in a follow-up commit).** `main` defined SEC-020–024 (Option C personal-data protection) and the drafts defined SEC-020–027 (security draft additions) with different meanings. `main`'s IDs keep their numbers because the ADR, threat model, Architecture §27.13 and Option C Build Records cite them. The drafts' rows become SEC-025–032, in the same order, across PRD §10, Test Strategy §17, Architecture §27.14, the doc index, the security review and its Build Record. The PRD requirement index now lists them too. Whether any of the two sets should later be consolidated stays an owner decision.
 2. **Baseline freeze.** The September 28 follow-up addendum froze the planning baseline and routed new ideas to `docs/PARKING_LOT.md`. The drafts resequence product Stages 1, 2, 5 and 8 through dated addenda; the owner should confirm that is intended under the freeze.
 3. **Stage Plan drift.** Stage Plan v2.1 (protected) still describes product Stage 1 as the developer platform and Stage 2 as Monaco/terminal (handoff table), and S05.07 defers Monaco "to Stage 1". Under the drafts' sequence that work is Stage 8.
 4. **Security review predates Option C.** The October 1 review compared the draft against documents without Option C, the threat model or the OpenShell receipt. Its dispositions should be rechecked against Architecture §27.12–27.13 and Test Strategy §8.2.
@@ -27,8 +27,9 @@ The drafts branch (September 30 creative-studio direction, October 1 security dr
 - `python3 -m unittest discover -s .claude/hooks -p 'test_*.py'`: Pass (45 tests).
 - Local link and anchor check over all changed Markdown: Pass (0 broken).
 - `git diff --check`: Pass. No conflict markers remain.
+- After renumbering: each SEC-020–032 is defined once in PRD §10 and listed once in the requirement index.
 - Runtime tests: N/A, no executable behavior changes.
 
 ## Disposition
 
-Merged for review in a draft PR. Not merged to `main`; the four open items above wait on the owner.
+Merged for review in a draft PR. Not merged to `main`; open items 2–4 wait on the owner.

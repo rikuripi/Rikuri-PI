@@ -5,7 +5,7 @@
 | Date / change | 2026-10-01; compare supplied Security Architecture v1.0 and incorporate compatible requirements |
 | Agent / branch / commits | Codex; codex/creative-studio-security-drafts; owner authorized commit/push October 1 |
 | Stage / authority | Documentation only; live Foundation plan and accepted invariants unchanged |
-| Related requirements | SEC-020–027; Architecture §27.14 (numbered §27.12 before the merge with main); future Test Strategy §17 |
+| Related requirements | SEC-025–032; Architecture §27.14 (numbered §27.12 before the merge with main); future Test Strategy §17 |
 | Status | COMPLETE — documentation review; enforcement unproven |
 
 ## 1. Plan and characterization
@@ -21,7 +21,7 @@
 
 ## 2. Build
 
-Pass: coherent comparison record, SEC-020–027, Architecture §27.14 (numbered §27.12 before the merge with main), future acceptance §17 and documentation index completed. Runtime contracts/Module Contracts, migrations and implementation tests: N/A; no application exists.
+Pass: coherent comparison record, SEC-025–032, Architecture §27.14 (numbered §27.12 before the merge with main), future acceptance §17 and documentation index completed. Runtime contracts/Module Contracts, migrations and implementation tests: N/A; no application exists.
 
 ## 3. Debug
 
@@ -39,7 +39,7 @@ No CI execution, commit, approval-policy change or deployment requested. No stag
 
 - Initial status: preserved prior eight document edits and September 30 record plus user workspace file.
 
-- Incremental baseline check: 4 existing files changed only for this task; SEC-020–027 each defined once; September 30 studio section and Pi names retained. Downloads source SHA-256 unchanged.
+- Incremental baseline check: 4 existing files changed only for this task; SEC-025–032 each defined once; September 30 studio section and Pi names retained. Downloads source SHA-256 unchanged.
 - git diff --check: exit 0 before independent review.
 
 - Scrap Sweep: task edit script and entry-baseline snapshot removed from /tmp after verifier use; retained all prior user/session files. No stage gate, guard or runtime code changed.
