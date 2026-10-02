@@ -1818,3 +1818,11 @@ This dated refinement controls product emphasis while retaining the detailed Per
 **Measures:** creator can recover a fragment/source, resume a project, compare and resolve alternatives and export a usable brief; assess time/rework and creator-rated usefulness against simpler chat/document baselines. Measure actual use of suggestions, continuity errors, capture gaps, budget adherence and nuisance. Creative quality and audience impact need human evaluation; verbosity, generation counts and arbitrary numerical aesthetic scores do not prove improvement.
 
 **End of Rikuri Pi Product Requirements Document v1.2**
+
+# 28. October 1 Writer's IDE requirements refinement
+
+The [Writer IDE Specification v0.1](Rikuri_Pi_Writer_IDE_Spec_v0.1.md) is the detailed contract for WIDE-001–012 under STUDIO-001–010. It defines stable sentence/paragraph/unit identity, branch-aware references and recovery, reviewed structural changes, contextual craft questions, optional lessons/flashcards, collaboration agreements, scholarly references and editor-independent portability. Test Strategy §18 links its planned acceptance cases; none is implementation evidence.
+
+Creative projects promise human manuscript authorship: agents advise, teach, research and propose non-prose structures, with short labeled illustrative examples; finished scene/chapter generation and serial ghostwriting are prohibited. Earlier scenario/alternative language means structural possibilities in creative mode. Business-production projects may explicitly permit drafting, without promising legal copyrightability/exclusivity. A policy change cannot occur silently. Roles/action permissions, rights agreements and consent to AI processing are distinct.
+
+Stage 2 S2.C1–C4 delivers the text-first solo slice; Stage 6 supplies governed multi-human/agent agreements; Stage 8 richer voice, scholarly publishing and domain tools; Stage 10 learned inference stays gated. Saved lessons are user-chosen artifacts, not permission for automatic user profiling. Master Build Sequence remains the roadmap; Foundation-0 unchanged.

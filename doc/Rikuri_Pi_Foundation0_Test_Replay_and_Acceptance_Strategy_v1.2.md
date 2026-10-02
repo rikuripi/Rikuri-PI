@@ -439,3 +439,9 @@ October 1, 2026: future acceptance for PRD SEC-020–027 and Architecture §27.1
 | SEC-027 | Evidence correctly links identity/policy/decision/outcome and accessible redacted receipt; secret telemetry and unauthorized reads denied; tampered receipt/stale backend/update detected; interrupted component cannot stay false-green | Existing T00.12/T02.16/T04.18 and T03.16 unchanged; all later adapters before advertisement; learned anomalies remain gated research |
 
 The raw AISecurity matrix, native platform probes and live external policy behavior must be obtained and rerun at their owning gates; descriptions in imported drafts are not test receipts. Runtime and public-release assurance remain Not yet proven.
+
+# 18. Writer IDE acceptance refinement
+
+October 1, 2026: [Writer IDE Specification v0.1 §10](Rikuri_Pi_Writer_IDE_Spec_v0.1.md#10-acceptance-and-delivery-dispositions) defines A01–A11 for WIDE-001–012 refining STUDIO-001–010. §16 scenario generation means non-prose structural alternatives in creative mode; human canon approval does not authorize agent manuscript composition. Allowed short teaching illustrations and denied scene/serial ghostwriting must both be exercised. Business generation is a separately admitted later mode.
+
+Owning stages: Stage 2 S2.C1–C4 identity/anchors, versioning/recovery, text questions, chosen lessons/cards, basic references and portable solo work; Stage 6 S6.C1–C4 multi-human/agent terms and rights/action/processing boundaries; Stage 8 admitted voice, richer scholarly publishing and domain depth. Tests must include stale references/proposals, split/merge/copy lineage, subtree restoration, current revocation, consent and no-cloud fallback, regeneration failures and export omissions. Core fixtures are deterministic without credentials; live adapters need separate receipts. No additional Foundation gates or runtime passing claims. All cases remain Not yet proven.

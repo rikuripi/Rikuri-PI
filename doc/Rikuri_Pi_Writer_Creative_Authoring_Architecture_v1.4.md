@@ -31,7 +31,7 @@ The creative system should also be **timeless by design**. The durable object is
 
 > **Versioned-work principle:** Preserve experimentation without forcing commitment; borrow version-control ideas without imposing version-control complexity.
 
-> **Fresh-eye principle:** Rikuri should help the writer see the work from perspectives the writer is no longer able to access easily after prolonged immersion. It asks useful questions before offering replacement prose.
+> **Fresh-eye principle:** Rikuri should help the writer see the work from perspectives the writer is no longer able to access easily after prolonged immersion. It asks useful questions and teaches craft; creative-mode agents do not compose finished manuscript passages.
 
 > **Closure principle:** Curiosity serves completion. Exploration budgets shrink as a work approaches delivery; late-stage questions are triaged by whether they materially threaten or strengthen the finished work.
 
@@ -1097,7 +1097,7 @@ A writer may intentionally leave a culture, motive, timeline, or mechanism undef
 
 ### 27.5 Questions before generation
 
-When creative intent is unclear, prefer helping the user surface possibilities and tensions over automatically generating finished creative work.
+Creative-mode agents help the user surface possibilities and tensions, explain techniques and offer short labeled illustrations. They must not compose finished scenes, chapters or substantial manuscript prose for incorporation. Business-production generation is separately declared and governed. See the October 1 clarification and linked Writer IDE specification.
 
 ---
 
@@ -1323,3 +1323,13 @@ Science-backed worldbuilding starts with a sourced baseline and a stated questio
 Game and animation packs develop branching narrative, levels, encounter constraints, character/visual references and world state into a versioned production specification. Actual playtesting, simulation and implementation validate their respective claims. External engines and coding ecosystems can consume that handoff. Marketing later adds optional launch/audience/research templates or creator-arranged workflows, product evidence and rights, message alternatives, taglines and asset revisions. Unsupported product claims cannot become verified facts; audience hypotheses remain hypotheses. Editable vectors/layers and supported illustration/design adapters matter more than promising that a raster generator can make precise logo edits.
 
 **MVP boundary:** Stage 2 provides text-based shared objects and linked views, requested critique/alternatives, author-controlled revisions, resume/search/export and production briefs. Image attachments may be preserved as opaque source assets, but rich extraction, editable visual generation, science simulations and game engines are not implied. Advanced world engines build on this base at Stage 8. Advanced Pattern Mirror, structural learned retrieval and longitudinal reflection remain Stage 10 capabilities under CI prerequisites. The complete reflection/abstraction design is preserved in the Collaborative Intelligence document; none is removed to simplify the first studio.
+
+## October 1 — Writer's IDE and learning-through-creation contract
+
+The owner defines Rikuri as a writer's IDE: create, organize, revise, collaborate and learn in one human-authored workspace. The [Writer IDE Specification v0.1](Rikuri_Pi_Writer_IDE_Spec_v0.1.md) specifies WIDE-001–012, object/anchor contracts, agent permissions, recovery, rights agreements, learning records and future acceptance A01–A11. It refines STUDIO-001–010 without replacing this detailed creative architecture.
+
+This dated clarification controls earlier references to replacement prose, alternative-scene exploration and scenario generation: creative agents explore non-prose structural alternatives, critique, research, explain craft and provide short labeled teaching examples; they do not write finished scenes/chapters or substantial manuscript passages for incorporation. Human authors write the work. Marketing/business generation is separately explicit and remains a later pack. Canon approval alone does not waive creative-mode composition limits.
+
+Stable IDs identify sentences, paragraphs and story units independently of changing labels such as C10P4S2. Immutable revisions, split/merge/copy lineage and edition-specific page/line maps preserve references. Shared Versioned Work owns checkpoint/branch/workspace/proposal/merge and scoped deletion/restore; rights and current revocation still govern history. Reader experience and author intent guide optional craft questions. Contextual prompt/voice questions, saved lessons and flashcards support learning without mandatory tutoring or autonomous trait inference. Voice, full scholarly publishing and multi-human collaboration wait for their owning adapters/gates.
+
+Product Stage 2 S2.C1–C4 owns the text-first solo slice; Stage 6 owns multi-human/agent collaboration, Stage 8 richer domains/publishing/voice, and Stage 10 learned longitudinal inference. All runtime claims remain Not yet proven. See [the Build Record](../docs/build-records/2026-10-01-writer-ide-spec.md).
