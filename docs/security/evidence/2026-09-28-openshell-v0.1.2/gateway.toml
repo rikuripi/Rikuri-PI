@@ -1,0 +1,16 @@
+[openshell]
+version = 2
+[openshell.gateway]
+name = "rikuri-containment-test"
+bind_address = "127.0.0.1:28670"
+compute_driver = "docker"
+log_level = "info"
+[openshell.drivers.docker]
+socket_path = "/var/run/docker.sock"
+sandbox_label = "rikuri-containment-test-20260928"
+sandbox_runtime_image = "ghcr.io/nvidia/openshell/sandbox:0.1.2"
+supervisor_image = "ghcr.io/nvidia/openshell/supervisor:0.1.2"
+image_pull_policy = "if_not_present"
+enable_bind_mounts = false
+sandbox_pids_limit = 128
+app_armor_profile = "RuntimeDefault"

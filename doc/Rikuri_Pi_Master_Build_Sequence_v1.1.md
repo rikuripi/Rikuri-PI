@@ -56,7 +56,7 @@ Then reorder every dependent item in the live checklist in the same change. If t
 
 **Live sequence:** Foundation-0 Re-baselined Stage Plan v2.1 and ADR 0000. The earlier 90-Day Build Plan v1.6 is historical. Six gates are estimated from October 2026 to June 2027 with a four-to-eight-week contingency reserve. Dates cannot close unproven gates. Ubuntu is the full execution/security reference; platform-neutral macOS core build/unit/contract tests run continuously, with native macOS envelope and desktop assurance experimental.
 
-1. **Stage 00 — Bootstrap and kernel:** CI/red drill, Engineering Standard/Build Records, IDs/storage/ledger, first transactional crash points, Pi driveability spike, and early Ubuntu namespace/AppArmor admission probe.
+1. **Stage 00 — Bootstrap and kernel:** CI/red drill, Engineering Standard/Build Records, IDs/storage/ledger, first transactional crash points, Pi driveability and harness-placement spike, and early Ubuntu execution-backend admission probe (OpenShell first candidate).
 2. **Stage 01 — Ownership:** real ChatGPT and Markdown/Obsidian import with provenance and lexical retrieval, project resolver, encryption, deletion keys, managed backup/restore. Restore both the pre-forget and post-forget snapshots with current durable revocation state; safely refuse/quarantine without it.
 3. **Stage 02 — Trust and money:** minimal Knowledge Context Compiler with ten expected answer/abstain outcomes, Auto/Private/Local Only admission, hard budget reservation, trusted approvals, and one synthetic non-sensitive cloud access path. F4-lite policy refusal is an intermediate checkpoint.
 4. **Stage 03 — Execution boundary:** Ubuntu filesystem/network envelope, ProjectTrust, untrusted read without execution, descendant containment. Prove the F4 envelope prerequisite; full cloud/local handoff waits for a local runtime.
@@ -77,6 +77,8 @@ Then reorder every dependent item in the live checklist in the same change. If t
 4. **S1.04 supporting execution and handoff:** reuse the admitted Foundation coding/tool path for one real Rikuri change, showing diff, verification, durable result and an external coding-tool handoff. A full Monaco/LSP/DAP/terminal product is not a predecessor of creative authoring.
 
 Compare established capture and tool adapters before adoption with pinned version/license, authority/locality, lifecycle cost and allowed/denied evidence. No dependency is selected by this plan.
+
+Before any Stage 1 or later worker receives a credential or a permitted network destination (for example dependency fetch in the Stage 8 developer pack, formerly Stage 1 items 5/8), that path must pass the Option C broker and permitted-destination qualification deferred from Foundation-0 ([Stage Plan deferral table](Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md#deferral-and-resequencing-table); Test Strategy §8.2). Until then it stays unavailable.
 
 **Stage 1 gate:** supported imported sources survive restart with accurate coverage and provenance; inspection does not execute; one admitted development change and external handoff retain verification and project continuity. Unsupported provider history is visibly incomplete. Full native IDE dogfood is deferred to Stage 8's optional developer pack.
 

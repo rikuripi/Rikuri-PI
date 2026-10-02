@@ -1,4 +1,5 @@
 {
+  "profile": "development",
   "_doc": "Policy for .claude/hooks/guard.py (see AGENTS.md > Deterministic gates). Globs without '/' match the basename; with '/' they match the repo-relative path ('*' crosses '/'). Every example below is replayed by test_guard.py: add one whenever the policy changes. guard.py/test_guard.py are identical to rikurinode's; only this file differs. secret_globs mirror .gitignore's secrets section as far as basename globs can (directories such as secrets/ cannot be expressed), plus the gh and git credential files. protected_globs are the procedure, the gates, the records that decide scope and gate status, their planned homes, and the directories that hold them (so rm -r of the whole directory asks too). funds_patterns here guard GitHub state and history changes (this repo has no money path yet); add money and execution commands when they exist.",
 
   "secret_globs": [".env", ".env.*", "*.env", "*.env.*", ".envrc", ".netrc", ".npmrc", ".pypirc",
@@ -36,8 +37,9 @@
   "funds_patterns": [
     {"regex": "\\bgh\\s+pr\\s+merge\\b",
      "reason": "gh pr merge lands work on a protected branch on GitHub — owner approves"},
-    {"regex": "\\bgh\\s+repo\\s+(delete|archive|unarchive|rename|edit)\\b",
+    {"regex": "\\bgh\\s+repo\\s+(unarchive|rename|edit)\\b",
      "reason": "changes or deletes the GitHub repository itself — owner approves"},
+    {"regex": "\\bgh\\s+repo\\s+(delete|archive)\\b", "reason": "deletes or archives the GitHub repository — irreversible; owner approves", "always_ask": true},
     {"regex": "(?i)\\bgh\\s+api\\b(?!.*\\sgraphql(\\s|$))(?!.*(-X|--method)[\\s=]*GET\\b(?!.*(-X|--method)))(?=.*((-X|--method)[\\s=]*(PUT|POST|PATCH|DELETE)\\b|\\s(-f|--field|--raw-field|--input)))",
      "reason": "a gh api write changes GitHub state directly (branch protection is the S00.01 gate; also rulesets, workflows, secrets, merges, refs) — owner approves"},
     {"regex": "(?i)\\bgh\\s+api\\b.*\\sgraphql(\\s|$).*(mutation|--input|=@|\\$)",
@@ -47,12 +49,16 @@
     {"regex": "\\bgh\\s+(secret|variable)\\s+(set|delete|remove)\\b",
      "reason": "changes GitHub Actions secrets or variables — owner approves"},
     {"regex": "\\bgh\\s+auth\\s+(token\\b|status\\b.*(\\s-t\\b|--show-token\\b))",
-     "reason": "prints a GitHub credential into the transcript (gh auth token, gh auth status --show-token) — owner approves"},
+     "reason": "prints a GitHub credential into the transcript (gh auth token, gh auth status --show-token) — owner approves", "always_ask": true},
     {"regex": "\\bgit\\s+filter-(repo|branch)\\b",
      "reason": "rewrites repository history — owner approves"}
   ],
 
   "examples": [
+    {"tool": "Bash", "input": {"command": "python3 .claude/hooks/guard.py profile development"}, "expect": "ask", "expect_dev": "allow"},
+    {"tool": "Bash", "input": {"command": "python3 .claude/hooks/guard.py profile stable"}, "expect": "allow"},
+    {"tool": "Bash", "input": {"command": "gh repo delete rikuripi/Rikuri-PI --yes"}, "expect": "ask", "expect_dev": "ask"},
+    {"tool": "Bash", "input": {"command": "gh repo archive rikuripi/Rikuri-PI"}, "expect": "ask", "expect_dev": "ask"},
     {"tool": "Read", "input": {"file_path": ".env"}, "expect": "deny"},
     {"tool": "Bash", "input": {"command": "cat config/app.env.local"}, "expect": "deny"},
     {"tool": "Read", "input": {"file_path": "config.local.toml"}, "expect": "deny"},
@@ -61,10 +67,10 @@
     {"tool": "Read", "input": {"file_path": "~/.config/gh/hosts.yml"}, "expect": "deny"},
     {"tool": "Bash", "input": {"command": "cat ~/.git-credentials"}, "expect": "deny"},
     {"tool": "Bash", "input": {"command": "cat ~/vault/owner.kdbx"}, "expect": "deny"},
-    {"tool": "Bash", "input": {"command": "gh auth token"}, "expect": "ask"},
+    {"tool": "Bash", "input": {"command": "gh auth token"}, "expect": "ask", "expect_dev": "ask"},
     {"tool": "Bash", "input": {"command": "gh auth status"}, "expect": "allow"},
-    {"tool": "Bash", "input": {"command": "gh auth status -t"}, "expect": "ask"},
-    {"tool": "Bash", "input": {"command": "gh auth status --show-token"}, "expect": "ask"},
+    {"tool": "Bash", "input": {"command": "gh auth status -t"}, "expect": "ask", "expect_dev": "ask"},
+    {"tool": "Bash", "input": {"command": "gh auth status --show-token"}, "expect": "ask", "expect_dev": "ask"},
     {"tool": "Bash", "input": {"command": "grep -rn 'client_secret' doc"}, "expect": "allow"},
     {"tool": "Read", "input": {"file_path": ".gitignore"}, "expect": "allow"},
     {"tool": "Read", "input": {"file_path": ".claude/settings.local.json"}, "expect": "allow"},

@@ -1,0 +1,8 @@
+{
+  "test_containers_remaining": [],
+  "test_volumes_remaining": [],
+  "gateway_stopped": true,
+  "synthetic_image_removal_exit": 0,
+  "synthetic_image_removal": "Untagged: rikuri-containment-test:20260928\nDeleted: sha256:d60bb9b3b46267a6f5180f9a034ab47ed93bae6915efaea89f66b6cb5e47fdbc\n",
+  "downloaded_base_images": "retained in Docker cache"
+}

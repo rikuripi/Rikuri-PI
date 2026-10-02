@@ -1,0 +1,58 @@
+[
+  {
+    "id": "cd95f92b182df970d54247d7aca12d032421ac344b67021368b2092633a548f6",
+    "name": "/openshell-default--rikuri-offline-test-dbea63ec-dd92-4f5a-a8d4-5f0baac50fce-supervisor",
+    "image": "sha256:d7b5264bb6bc56f4796e6fa3617b8e4a8d785be0b7293542efd8cc250b0fb67a",
+    "state": "running",
+    "network_mode": "host",
+    "privileged": false,
+    "apparmor": "docker-default",
+    "cap_add": null,
+    "cap_drop": [
+      "ALL"
+    ],
+    "security_opt": [
+      "no-new-privileges:true"
+    ],
+    "mount_destinations": [
+      "/.openshell/channel",
+      "/.openshell/supervisor"
+    ]
+  },
+  {
+    "id": "82af04621927a0294eafb4506a4bb4c9fc46c63d0a4735592fda930b0ad1395a",
+    "name": "/openshell-default--rikuri-offline-test-dbea63ec-dd92-4f5a-a8d4-5f0baac50fce",
+    "image": "sha256:d60bb9b3b46267a6f5180f9a034ab47ed93bae6915efaea89f66b6cb5e47fdbc",
+    "state": "running",
+    "network_mode": "none",
+    "privileged": false,
+    "apparmor": "docker-default",
+    "cap_add": null,
+    "cap_drop": [
+      "ALL"
+    ],
+    "security_opt": [
+      "no-new-privileges:true"
+    ],
+    "mount_destinations": [
+      "/.openshell/channel"
+    ]
+  },
+  {
+    "id": "8912be0a64e4e69817bdae478ee1712e6c1c6e416c15611c6cf24b081e0ce3d6",
+    "name": "/rikuri-containment-mock-20260928",
+    "image": "sha256:d60bb9b3b46267a6f5180f9a034ab47ed93bae6915efaea89f66b6cb5e47fdbc",
+    "state": "running",
+    "network_mode": "bridge",
+    "privileged": false,
+    "apparmor": "docker-default",
+    "cap_add": null,
+    "cap_drop": [
+      "ALL"
+    ],
+    "security_opt": [
+      "no-new-privileges"
+    ],
+    "mount_destinations": []
+  }
+]

@@ -10,6 +10,12 @@ Read the [documentation index](doc/README.md). The [Foundation-0 Re-baselined St
 
 Stage 00 starts with repository/bootstrap work, then the Rust kernel and its crash-continuity proof. The stage plan lists the required build items, tests, experiments, and exit evidence. Its unchecked items remain unproven.
 
+## Protecting the user's computer and data
+
+Protecting private information, financial records, personal files/photos/videos, professional and proprietary databases, and secrets is Rikuri Pi's highest product responsibility. Access must be limited to the task, changes recoverable where promised, and protection claims backed by tests and independent review.
+
+The adopted **Option C** direction keeps permissions under Rikuri's control, with AISecurity evaluating policy and qualified enforcement adapters applying it. OpenShell is the first Ubuntu candidate. See the [security threat model](docs/security/THREAT_MODEL.md) and [bounded OpenShell test receipt](docs/security/evidence/2026-09-28-openshell-v0.1.2/README.md). This is a planning decision with initial candidate evidence; production protection remains unproven.
+
 ## Working on macOS and Linux
 
 The Foundation-0 plan uses Ubuntu as its full execution and security reference. Platform-neutral Rust core checks are also required on macOS. Native macOS execution containment is experimental in this plan.
