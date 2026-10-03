@@ -78,6 +78,8 @@ Then reorder every dependent item in the live checklist in the same change. If t
 
 Compare established capture and tool adapters before adoption with pinned version/license, authority/locality, lifecycle cost and allowed/denied evidence. No dependency is selected by this plan.
 
+S1.04 runs with dependencies prepared outside the worker (for example a vendored or pre-fetched crate cache), so it needs no credential or network destination. If it cannot, the broker and destination rows below become Stage 1 exit requirements.
+
 Before any Stage 1 or later worker receives a credential or a permitted network destination (for example dependency fetch in the Stage 8 developer pack, formerly Stage 1 items 5/8), that path must pass the Option C broker and permitted-destination qualification deferred from Foundation-0 ([Stage Plan deferral table](Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md#deferral-and-resequencing-table); Test Strategy §8.2). Until then it stays unavailable.
 
 **Stage 1 gate:** supported imported sources survive restart with accurate coverage and provenance; inspection does not execute; one admitted development change and external handoff retain verification and project continuity. Unsupported provider history is visibly incomplete. Full native IDE dogfood is deferred to Stage 8's optional developer pack.
@@ -92,20 +94,22 @@ Build order:
 2. Freeform move/resize/focus/min/max/close.
 3. Grid/preset arranger that never permanently constrains resizing.
 4. Context Link.
-5. Agent Link.
-6. Prompt Link/broadcast with isolated initial reasoning.
-7. Saved conceptual layouts.
-8. Status roll-up: Working / Blocked / Done / Idle, project-level needs-attention.
-9. Detach/native windows.
-10. Multi-monitor/desktop-space restoration.
-11. Agent-callable Workspace API under policy.
-12. Rikuri Plugin API: editor/agent/tool/window extensions with explicit capabilities.
-13. Plugin lifecycle: provenance/pin/quarantine/verify/update/rollback/remove.
-14. **S2.C1 — durable creative objects:** fragments, scenes, character/world notes, relationships, source cards and author intent over existing governed storage; browse/search/export/restart without a model.
-15. **S2.C2 — connected authoring views:** manuscript, scene/outline board, character/world bible and multiple story branches on the same canvas; selection and edits remain project-consistent.
-16. **S2.C3 — requested exploration:** create, compare, choose and selectively merge alternatives; ordinary critique and supplied-evidence abstraction retain provenance and author-controlled canon. No longitudinal inference or autonomous reflection.
-17. **S2.C4 — resume and production handoff:** recover the current work, open questions and alternatives; export a traceable creative brief/spec to an external coding or production tool.
-18. **S2.C5 — local plugin contract prototype:** explicit capabilities and entitlement boundary; host adapter cannot own canonical data. No public distribution or paid checkout is implied.
+5. **S2.C1 — durable creative objects:** fragments, scenes, character/world notes, relationships, source cards and author intent over existing governed storage; browse/search/export/restart without a model.
+6. **S2.C2 — connected authoring views:** manuscript, scene/outline board, character/world bible and multiple story branches on the same canvas; selection and edits remain project-consistent.
+7. Agent Link.
+8. Prompt Link/broadcast with isolated initial reasoning.
+9. **S2.C3 — requested exploration:** create, compare, choose and selectively merge alternatives; ordinary critique and supplied-evidence abstraction retain provenance and author-controlled canon. No longitudinal inference or autonomous reflection.
+10. Saved conceptual layouts.
+11. Status roll-up: Working / Blocked / Done / Idle, project-level needs-attention.
+12. **S2.C4 — resume and production handoff:** recover the current work, open questions and alternatives; export a traceable creative brief/spec to an external coding or production tool.
+13. Detach/native windows.
+14. Multi-monitor/desktop-space restoration.
+15. Agent-callable Workspace API under policy.
+16. **S2.C5 — local plugin contract prototype:** explicit capabilities and entitlement boundary; host adapter cannot own canonical data. No public distribution or paid checkout is implied.
+17. Rikuri Plugin API: editor/agent/tool/window extensions with explicit capabilities.
+18. Plugin lifecycle: provenance/pin/quarantine/verify/update/rollback/remove.
+
+October 2 order: creative objects need only governed storage and the basic window/Context Link items, so S2.C1–C2 follow item 4. Requested exploration (S2.C3) follows Agent and Prompt Link because it uses their isolated reasoning. Resume (S2.C4) follows saved layouts and status. Detach and multi-monitor polish no longer delay the first creator slice. The S2.C5 local plugin contract prototype precedes the general Plugin API and lifecycle, so the public plugin surface is shaped by a proven host contract. Plugin code is untrusted and runs only inside an admitted Option C profile.
 
 Item 4 includes evidence cards referencing existing source spans/artifacts and visible freshness/coverage. After the existing policy-backed workspace operations are available, add projection-edit comparison/recovery and explicit revision proposals under Architecture §20.3.1. Rich media extraction waits for Stage 8; multi-human membership waits for Stage 6. Source cards and recovery UI never grant canonical write authority.
 
@@ -180,7 +184,7 @@ Before implementing a fleet, pin and evaluate Paperclip as a reference: event-dr
 
 Order: typed/versioned Rikuri Workflow IR -> schema/policy/security validation -> human review gates -> durable DAG/checkpoints/waits/retries/cancellation/recovery -> immutable deployment versions + event history -> Paperclip reference evaluation/ADRs -> Project Lifecycle Kernel (Frame/Shape/Plan/Execute/Verify/Deliver/Learn) -> intent-led team proposal with scope/cost/access/review -> coordinator/COO role -> specialists -> evaluator -> team budgets -> parallel isolation -> Strategy Council -> scenario packets -> Project Graph -> integration/review workflows -> coordinator scorecard.
 
-Agents propose or repair workflows; deterministic infrastructure owns accepted execution. Each workflow records proposer/provenance, exact approved version, capabilities and credential scopes, data classes, outbound destinations, budget envelope, triggers, approvals, modifications, and outcomes. Governance is implemented and tested before autonomous workflow deployment.
+Parallel code-changing workers need branch/worktree isolation, which the September 30 resequencing moved to the Stage 8 developer pack. If Stage 6's selected tasks include parallel code changes, pull forward only that isolation service, under the same ProjectTrust and Option C admission, and record it per §B; otherwise Stage 6 demonstrates uplift on non-coding tasks. Agents propose or repair workflows; deterministic infrastructure owns accepted execution. Each workflow records proposer/provenance, exact approved version, capabilities and credential scopes, data classes, outbound destinations, budget envelope, triggers, approvals, modifications, and outcomes. Governance is implemented and tested before autonomous workflow deployment.
 
 After the existing workflow/policy/governance substrate is verified, implement the minimum shared conversation in this order:
 
@@ -283,3 +287,15 @@ This is the live post-Foundation order, superseding the earlier full-IDE-first a
 | Learned reflection/abstraction, RETAINED | Product 10, research after 4 and 6 | Same | Requested critique differs from learning across episodes; instrument early, infer late | Product owner / CI implementer | Predeclared baseline comparison, counterexamples, revocation, budget and quiet-guidance evidence |
 
 Stage 5 distribution/research, Stage 6 governed parallel and overnight Pi work, and Stage 7 persistent responsibilities reuse their existing authority prerequisites. Initial Stage 2 requested comparisons are sequential; they cannot bypass later fleet governance. Writer phases map to this sequence, rather than becoming a second gate board. See ADR 0000 September 30 clarification.
+
+## October 2, 2026 — sequence check after Option C
+
+The owner asked whether the September 30 order still holds after the September 28 Option C, Foundation-0 credential scope and baseline-freeze addenda. It does, and Option C strengthens the case: the old Stage 1 developer platform (dependency fetch, containers) would have been the first credential- or network-permitted worker, forcing broker and destination qualification immediately after Foundation-0. The first such worker is now expected at Stage 5 (browser and connectors), whose least-authority tests already require it, or the Stage 8 developer pack. Foundation-0 00–05, its gates and S/T IDs are unchanged.
+
+| Item / disposition | Old position | New position | Reason / dependency impact | Owner | Reactivation / acceptance |
+| --- | --- | --- | --- | --- | --- |
+| Stage 2 internal order, RESEQUENCED | S2.C1–C5 after all 13 workspace/plugin items | S2.C1–C2 after item 4; S2.C3 after Agent/Prompt Link; S2.C4 after layouts/status; S2.C5 before the general Plugin API | First creator slice no longer waits on detach, multi-monitor or plugin surface; S2.C IDs unchanged | Product owner / Stage 2 implementer | Stage 2 gate and Test Strategy §16 unchanged |
+| Branch/worktree isolation for parallel coding, CONDITIONAL | Stage 8 developer pack | Pulled into Stage 6 only if its selected tasks include parallel code changes | Stage 6 parallel isolation would otherwise depend on a later stage | Product owner / Stage 6 implementer | ProjectTrust and Option C admission evidence for the pulled service |
+| Option C broker/destination qualification, expected position CLARIFIED | Expected product Stage 1 | Expected Stage 5, or Stage 8 developer pack; Stage 1 if S1.04 cannot use prepared dependencies | Follows the first credential/network-permitted worker | Product owner / security implementer | Test Strategy §8.2 broker and destination rows |
+
+See ADR 0000 October 2 sequence clarification.

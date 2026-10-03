@@ -346,7 +346,7 @@ September 28 clarification: [ADR 0000's Option C addendum](Rikuri_Pi_ADR_0000_Fo
 - [ ] S05.04 Approval card rendered from the Trusted Approval Renderer output; no UI-side narration
 - [ ] S05.05 Settings: execution endpoint, key reference (never key value), local runtime, privacy default
 - [ ] S05.06 `en` + `en-XA` pseudo-locale resource files; no visible English outside resources; stable error codes from core
-- [ ] S05.07 Minimal coding view embeds Monaco only if F10 was uneventful; otherwise deferred to Stage 1 (record disposition)
+- [ ] S05.07 Minimal coding view embeds Monaco only if F10 was uneventful; otherwise deferred to the product Stage 8 developer pack (record disposition)
 - [ ] S05.08 Health board: last-success / Degraded for every required component
 - [ ] S05.09 Threat → control → test → evidence traceability table complete for all Foundation promises
 - [ ] S05.10 Master Build Sequence reordered to match actual Foundation evidence
@@ -410,57 +410,59 @@ Every v1.6 Foundation item that moved is listed here with a disposition, per the
 
 | v1.6 item | Disposition | New ordinal | Reason | Dependency impact | Reactivation / acceptance condition |
 | --- | --- | --- | --- | --- | --- |
-| Claude importer (Week 4–5) | RESEQUENCED | S1.01 (early Stage 1) | Two importers prove the contract; a third adds fixtures, not architecture | None on F2; Stage 1 dogfood wants it | F2 green; Importer contract suite passes for the new parser |
-| Git/project manifest importer, read/untrusted (Week 4–5) | RESEQUENCED | S1.02 (early Stage 1, before repository dogfood) | Needs ProjectTrust from Stage 03 to be meaningful | Stage 04 slice uses a synthetic project instead | Stage 03 F9 green; import cannot promote trust (T03.06 rerun) |
+| Claude importer (Week 4–5) | RESEQUENCED | S1.01 (early Stage 1) | Two importers prove the contract; a third adds fixtures, not architecture | None on F2; Stage 1 capture continuity wants it | F2 green; Importer contract suite passes for the new parser |
+| Git/project manifest importer, read/untrusted (Week 4–5) | RESEQUENCED | S1.02 (early Stage 1, before S1.04 supporting execution) | Needs ProjectTrust from Stage 03 to be meaningful | Stage 04 slice uses a synthetic project instead | Stage 03 F9 green; import cannot promote trust (T03.06 rerun) |
 | `VectorIndex` implementation + retrieval tuning (Week 4–5) | DEFERRED | Stage 1 | FTS5 baseline is mandatory; vectors are a quality experiment | Retrieval floor set by FTS only | Real dogfood retrieval failures that FTS cannot fix; corpus ≥ 40 questions |
 | `KnowledgeService` read-only harness tools (Week 4–5) | RESEQUENCED | S04.14 | Needs a harness to call it | Stage 04 adds it once Pi is wired | F10 vertical slice exercises search through scoped tools |
 | Native macOS execution envelope and desktop parity (all weeks) | DEFERRED | Stage 1+ | Ubuntu is the sole full Foundation assurance target | No native macOS protection claim; platform-neutral core tests remain continuous | Ubuntu Foundation gate green, followed by macOS threat model and native assurance tests |
-| Option C broker and permitted-destination qualification (T03.16 / Test Strategy §8.2 rows; not a v1.6 item) | DEFERRED | First stage that gives a worker a credential or permitted destination; expected product Stage 1 (dependency fetch, container/dev tools) or Stage 5 (connectors) | Owner scope choice, [ADR 0000 September 28 review follow-ups](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-review-follow-ups-and-foundation-0-credential-scope): Foundation-0 workers hold no credential and have no permitted destination | Stage 03 dates unchanged; Foundation-0 cannot demo credentialed or network-permitted workers | Owner: product owner and security implementer. Before enabling the path, its broker/destination rows pass; reversal inside Foundation-0 by a later dated addendum re-estimates Stage 03 |
+| Option C broker and permitted-destination qualification (T03.16 / Test Strategy §8.2 rows; not a v1.6 item) | DEFERRED | First stage that gives a worker a credential or permitted destination; expected product Stage 5 (browser/connectors) or the Stage 8 developer pack (dependency fetch, container/dev tools); Stage 1 only if S1.04 cannot use dependencies prepared outside the worker | Owner scope choice, [ADR 0000 September 28 review follow-ups](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--option-c-review-follow-ups-and-foundation-0-credential-scope): Foundation-0 workers hold no credential and have no permitted destination | Stage 03 dates unchanged; Foundation-0 cannot demo credentialed or network-permitted workers | Owner: product owner and security implementer. Before enabling the path, its broker/destination rows pass; reversal inside Foundation-0 by a later dated addendum re-estimates Stage 03 |
 | Composite execution plan, lead + specialists, vision-specialist fixture (Week 7–8) | DEFERRED | product Stage 4, build item 15 | Single-agent evidence precedes composition | Router in S04.08 is single-role | Registry modality metadata + single-role F10 stable |
 | Local sanitization / minimal-reproduction for frontier reasoning (Week 6) | KEPT | S02.11 | — | — | — |
 | Session-sequence anomaly signals (Week 9) | KEPT | S03.10 | — | — | — |
-| Monaco in Foundation coding view (Week 10) | CONDITIONAL | S05.07 | Only if F10 was uneventful | None | Disposition recorded at Stage 05 start |
+| Monaco in Foundation coding view (Week 10) | CONDITIONAL | S05.07 | Only if F10 was uneventful | Otherwise product Stage 8 developer pack (September 30 resequencing) | Disposition recorded at Stage 05 start |
 | Localization set beyond `en` + pseudo-locale (Week 10) | DEFERRED | Stage 2 | Resource boundary is proven by pseudo-locale alone | None | Stage 2 window contracts green |
 | Full Module Contracts for all 14 crates (Week 1) | RESEQUENCED | per stage | Contracts written when the crate exists | None | Each stage exit lists its crates |
 | Build Records for every change (all weeks) | KEPT, scaled by risk | ongoing | One brief evidence record per coherent change; full risk/test detail for protected-core or irreversible paths | No silent untracked change; routine documentation is brief | Engineering Standard v1.1 remains in force; record has plan, wiring, verification, close-out |
 | Checklist / Build Record / traceability validators as tooling (Bootstrap) | NARROWED | S00.03 | Small scripts, not a new quality product | Required red gate and evidence still run | A later Project Quality Manager is a Stage 6+ item |
 | Speculative PRD/Architecture redesign during Foundation-0 | CONTROLLED | S05.11 retrospective freeze | Avoid spec gravity while allowing corrections tied to evidence | Baseline scope reconciled before Stage 00; changed promises require ADR + tests | Stage 05 ADR records implementation deviations; operational docs update with behavior |
-| S1.1–S9 post-Foundation goals (v1.6 §5) | INTENT KEPT | see next section | Master stage order retained; early Stage 1 importers now explicit | No Foundation gate relies on those importers | Each later stage is re-estimated from the prior gate |
+| S1.1–S9 post-Foundation goals (v1.6 §5) | INTENT KEPT | see next section | Master stage order as resequenced September 30 and checked October 2; early Stage 1 importers now explicit | No Foundation gate relies on those importers | Each later stage is re-estimated from the prior gate |
 
 ## Post-Foundation stages 1–9
 
 September 28 clarification: [Master Build Sequence Stage 6](Rikuri_Pi_Master_Build_Sequence_v1.1.md#stage-6--multi-agent-governance--project-graph) owns the adopted S6.C1–C4 minimum human–AI conversation and its resequencing record from Stage 9. Stage 3 transport and Stage 5 source/contribution controls precede its membership/audience/governance integration; Stage 7 replication is optional. Stage 9 retains enterprise controls and Windows assurance. Capture/classification/source cards follow Architecture §20.6's existing product-stage boundaries. This adds no Foundation gate; S01.08/T01.16 clarify preservation within the existing Markdown/import contract. All new runtime outcomes remain Not yet proven.
 
+October 2 clarification: the rows below follow the Master Build Sequence's [September 30 creative-studio resequencing](Rikuri_Pi_Master_Build_Sequence_v1.1.md#september-30-2026--creative-studio-resequencing) and its [October 2 sequence check](Rikuri_Pi_Master_Build_Sequence_v1.1.md#october-2-2026--sequence-check-after-option-c). Foundation-0 stages, gates and S/T IDs are unchanged; only the post-Foundation handoff summary, the S05.07 fallback and the expected broker stage changed.
+
 The Master Build Sequence v1.1 owns the order, including the September 28 Stage 6 clarification above. Dates are removed; each stage activates only when its predecessor gates are green. Pacing below is a solo-builder estimate for planning conversations, not a commitment.
 
 ```mermaid
 flowchart TD
-  F0["Foundation-0"] --> S1["Stage 1: coding dogfood"]
-  S1 --> S2["Stage 2: workspace"]
+  F0["Foundation-0"] --> S1["Stage 1: capture + supporting execution"]
+  S1 --> S2["Stage 2: creative studio + workspace"]
   S1 --> S3["Stage 3: Link"]
   S1 --> S4["Stage 4: model routing"]
-  S2 --> S5["Stage 5: connectors"]
+  S2 --> S5["Stage 5: creative research + connectors"]
   S4 --> S5
   S5 --> S6["Stage 6: governance"]
   S3 --> S6
   S3 --> S7["Stage 7: mesh"]
-  S6 --> S8["Stage 8: domain packs"]
+  S6 --> S8["Stage 8: domain + developer packs"]
   S7 --> S8
   S8 --> S9["Stage 9: Windows"]
 ```
 
-Stages 2, 3 and 4 each depend only on Stage 1, so they can be sequenced by what dogfood pain says is worst; Stage 5 needs both workspace and routing. Stage 6 now needs Stage 3 Link as well as Stage 5 for its shared human–AI conversation gate; Stage 7 replication is not a prerequisite for that slice.
+Stages 2, 3 and 4 each depend only on Stage 1, so they can be sequenced by what the owner's real use says is worst; Stage 5 needs both workspace and routing. Stage 6 now needs Stage 3 Link as well as Stage 5 for its shared human–AI conversation gate; Stage 7 replication is not a prerequisite for that slice.
 
 | Stage | Gate (from Master Build Sequence) | Key adopt decisions | Solo pacing | Novel-claim experiments to run first |
 | --- | --- | --- | --- | --- |
-| 1 Pi coding dogfood + developer platform | First add S1.01 Claude importer and S1.02 read-only Git manifest importer, then plan → code → diff → test → gate → commit one real Rikuri feature through Rikuri | Monaco, tower-lsp clients, portable-pty, git2 | about 3 months | Dogfood Foundation claims; F2 and F9 preconditions for importers |
-| 2 Sterling Workspace + plugin surface | Chat + Monaco + terminal + tests + agent + logs coexist, link, detach, restore after restart | Tauri multi-window; egui/wgpu only if webview cannot do freeform windows | \~3 months | Context/Agent/Prompt Link protocol; broadcast isolation |
+| 1 Capture continuity + supporting execution | Imported sources survive restart with accurate coverage/provenance; inspection does not execute; one admitted real Rikuri change and external coding-tool handoff keep verification and continuity | Claude/Git importers; existing Foundation coding path with dependencies prepared outside the worker; no IDE components | Re-estimate; narrower than the former \~3 months | F2 and F9 preconditions for importers; FTS-vs-vector retrieval on real owner sources |
+| 2 Creative Studio essentials + Sterling Workspace | A creator starts from fragments, develops two scene paths, links characters/world/sources, chooses or merges with visible conflicts, resumes after restart and exports a production brief; chat, authoring, sources, candidates and logs coexist, link, detach and restore | Tauri multi-window; egui/wgpu only if webview cannot do freeform windows; editor engine only after the Writer IDE conformance suite (WIDE-012) | Re-estimate after Stage 1 | Context/Agent/Prompt Link protocol; canon-versus-candidate merge; human-authored boundary (advice, not composed prose) |
 | 3 Rikuri Link | Leave home network, continue a task, approve a step, reconnect, recover same job; no relay plaintext, no router port | Tailscale first; native rendezvous/E2E relay later | \~2 months (Tailscale path) | Idempotent command delivery over reconnect |
 | 4 Model Lab + routing | New compatible model needs registry/profile data + evaluation, not core code; Auto explains its choice | llama.cpp / vLLM / Ollama behind one runtime trait; stock builds, no LeanKV/TQ dependency | \~3 months | Learned Auto router (evidence-only admission); Fast Decision Model shadow (S4.1) |
-| 5 Browser + connectors + assistant | Common assistant request works from natural language without exposing plumbing or expanding authority | Isolated browser profile per Task Space; MCP as connectivity only | \~3 months | Attention Firewall; connector least-authority tokens |
-| 6 Multi-agent governance + Project Graph | Governed worker/team and durable workflow; S6.C1–C4 adds two humans on LAN/remote clients plus an agent, authorized sharing, replay-safe reconnect and revocation | Paperclip evaluated at pinned revision per mechanism (S6.2 ADRs); reuse admitted Stage 3 Link and Stage 5 source/attention controls | Re-estimate after predecessor gates; former \~4 months excludes the added multi-human slice | Workflow IR; coordinator/evaluator separation; membership/audience changes during pending delivery |
+| 5 Creative research + connectors + distribution | Common assistant request works from natural language without exposing plumbing or expanding authority | Isolated browser profile per Task Space; MCP as connectivity only; first expected Option C broker/destination qualification | \~3 months | Attention Firewall; connector least-authority tokens |
+| 6 Multi-agent governance + Project Graph | Governed worker/team and durable workflow; S6.C1–C4 adds two humans on LAN/remote clients plus an agent, authorized sharing, replay-safe reconnect and revocation | Paperclip evaluated at pinned revision per mechanism (S6.2 ADRs); reuse admitted Stage 3 Link and Stage 5 source/attention controls; pull forward only branch/worktree isolation from the Stage 8 developer pack if parallel code changes are selected | Re-estimate after predecessor gates; former \~4 months excludes the added multi-human slice | Workflow IR; coordinator/evaluator separation; membership/audience changes during pending delivery |
 | 7 Personal Mesh + responsibilities | Replacement / offline / reconnect / concurrent-update converge without silent loss; backup independent of sync | Encrypted event replication; CRDT only where simultaneous text editing is proven necessary | \~3 months | Conflict semantics; hub optionality |
-| 8 Domain packs + Live Companion | Each domain is a projection over common primitives; no independent mini-brain | Whisper-class local transcription; embeddable editors | open | Per-domain, none foundational |
+| 8 Domain packs, developer pack + Live Companion | Each domain is a projection over common primitives; no independent mini-brain. The optional developer pack completes full native feature-to-commit dogfood | Whisper-class local transcription; embeddable editors; Monaco, tower-lsp clients, portable-pty, git2 for the developer pack | open | Per-domain; developer pack re-runs Option C broker/destination rows for dependency fetch and containers |
 | 9 Windows parity + business readiness | OS Capability parity after Ubuntu/macOS stable; enterprise tenancy/admin extends minimum Stage 6 membership/sharing without weakening personal foundations | Windows sandbox primitives (AppContainer / job objects) | open | Tenancy boundary |
 | 10 Collaborative Intelligence / Inquiry & Discovery | Evidence-backed Experience Intelligence and cognitive-recipe learning improve selected human+AI workflows; Inquiry/Discovery surfaces useful questions/connections without promoting speculation to truth | Prefer existing observability, statistics, retrieval, bandit/optimization and verification components behind Rikuri contracts | research/experimental | Begin prototypes only after product Stage 4 Model Lab evidence and product Stage 6 governance are available; productization remains post-Foundation |
 
