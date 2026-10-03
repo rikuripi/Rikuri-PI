@@ -64,3 +64,7 @@ This review was written on a branch that did not yet contain the September 28 Op
 | SEC-027 and parts of §27.14 duplicate SEC-022 and §27.12–27.13 | SEC-027 marked "Refines SEC-022"; §27.14 states that §27.12–27.13 govern overlaps. Deeper consolidation is optional editorial work |
 
 No runtime evidence was produced; every outcome remains Not yet proven.
+
+## October 3 consolidation
+
+At the owner's request the overlapping requirements were merged into Option C. SEC-025 → SEC-021, SEC-026 → SEC-020/023, SEC-027 → SEC-022, SEC-032 → SEC-024; those numbers are retired. SEC-028–031 remain. References to SEC-025–032 in the October 1 sections above are historical; see PRD §10 and ADR 0000 October 3 for the current mapping.

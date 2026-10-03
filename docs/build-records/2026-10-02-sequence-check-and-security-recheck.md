@@ -15,6 +15,7 @@ The owner asked three things after merging `main` into the drafts branch: whethe
 - **Stage Plan v2.1.** The post-Foundation summary, mermaid labels and pacing were updated, along with the S05.07 fallback (now Stage 8 developer pack), the Claude/Git importer rows and the expected broker stage (Stage 5 or Stage 8).
 - **Security recheck.** An independent read-only pass compared the October 1 review, SEC-025–032, Architecture §27.14 and Test Strategy §17 with Option C. It found 6 important and 9 minor issues. The dispositions are applied in PRD §10, Architecture §27.14, Test Strategy §17 and the threat model's acceptance cells, and a dated recheck section was added to the review.
 - **ADR 0000.** An October 2 dated clarification records both outcomes under the baseline freeze.
+- **October 3 consolidation (owner request).** SEC-025/026/027/032 folded into SEC-021, SEC-020/023, SEC-022 and SEC-024; numbers retired; SEC-028–031 kept. PRD §10 and index, Test Strategy §17, Architecture §27.14, the doc index, the threat model, the review and ADR 0000 updated.
 
 ## Verification
 
@@ -24,7 +25,7 @@ The owner asked three things after merging `main` into the drafts branch: whethe
 
 ## Limitations
 
-The recheck is a document comparison; no backend, broker or revocation behavior was exercised. Deeper editorial consolidation of SEC-025–032 into SEC-020–024 is optional and not done. Pacing estimates for Stages 1 and 2 are marked for re-estimation, not re-estimated.
+The recheck is a document comparison; no backend, broker or revocation behavior was exercised. Pacing estimates for Stages 1 and 2 are marked for re-estimation, not re-estimated.
 
 ## Disposition
 
