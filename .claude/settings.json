@@ -12,5 +12,13 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "agentic-sdlc@synced": false,
+    "agent-memory@synced": false,
+    "evermuse@synced": false,
+    "agent-sdk-dev@synced": false,
+    "agent-context-kit@synced": false,
+    "zapier@synced": false
   }
 }
