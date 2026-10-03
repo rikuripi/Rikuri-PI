@@ -163,9 +163,8 @@ storage model, extension model, recovery model, and initial technology
 choices needed to begin development without turning temporary
 implementation choices into permanent constraints.
 
-Rikuri Pi is intended to be a **user-owned Personal Intelligence
-platform**, not a single assistant, chatbot, IDE, or model wrapper. Its
-job is to preserve continuity and help users accomplish work across
+Rikuri Pi is a **user-owned creative studio powered by Personal Intelligence**. Its
+job is to preserve creative continuity and help users accomplish work across
 models, applications, devices, projects, and time. The architecture must
 serve a technical novice with almost no configuration while remaining
 powerful enough for an expert to inspect, override, extend, and
@@ -815,6 +814,43 @@ Output is a `TaskRequirements` record rather than a direct model choice.
 This separation allows routing logic to improve without changing the
 user-facing task model.
 
+## 11.1 Preserved intent and clarification contract
+
+October 2, 2026 — design refinement; all runtime behavior is **Not yet proven**. The Rikuri task/turn controller calls the Capability Planner before routing and again when new evidence materially changes the task. A versioned `TaskRequirements` record preserves the authenticated objective, target/deliverable, constraints, authorized scope/grant references, evidence requirements, success criteria, unresolved decisions, explicit assumptions and user answers. Link revisions to task/run IDs and retain continuity through handoff, resume and compaction; revalidate grants against current policy. Model-generated interpretation is a candidate, not new user authority.
+
+Clarity is assessed from unresolved decisions and consequences, not model self-reported confidence. Ask a focused question when multiple plausible interpretations materially change outcome, target, authority, risk, cost or work: assessment versus applied edits, conflicting accepted requirements, unspecified audience/environment, or undefined success. Present the consequential alternatives in ordinary language; do not demand that the user rewrite the whole request. A clarification answer supplies intent only within the answering actor's authority; retrieved history or tool text cannot answer on the user's behalf or grant permission.
+
+Resolve factual uncertainty through authorized inspection, measurement or retrieval where possible. Resolve minor reversible choices using established preferences and a visible assumption. Continue independent authorized work during a clarification wait; dependent consequential actions wait for an answer. Silence, timeout or an expired question is not approval. Cancellation, unresolved ambiguity and changed assumptions remain visible; new evidence may reopen a settled interpretation. Measure intended-outcome success, correction burden and avoidable interruptions together, rather than rewarding few questions alone.
+
+## 11.2 Evidence-directed task classification and small-model profiles
+
+The owner's Bitcoin-node orchestration experience motivates this contract: constrained local deployments using roughly 2–4B models on 8–16 GB RAM benefited from distinguishing requests for data from explanations and requiring measured data or RAG before factual answers. This is supplied experience, not a benchmark or a guarantee that a particular model fits that hardware. Evaluate exact model/quantization/runtime/context/tool footprint on the admitted machine.
+
+Classify the required evidence, allowing mixed tasks:
+
+| Requested result | Required route and admissible evidence |
+| --- | --- |
+| Current system state or numeric measurement | Authorized read-only instrument/adapter; target identity, observation time, units, source and freshness. Retrieved documentation cannot prove current node state |
+| Project facts, accepted decisions or source-backed explanation | Scoped Knowledge Service/RAG and source inspection; current revision, relevant spans, coverage and conflict status |
+| Explanation of measured behavior | Measurements plus relevant documentation; distinguish observation, supported explanation and hypothesis. Correlation alone does not establish cause |
+| Creative proposal or explicitly hypothetical reasoning | Clearly label invention/assumptions; factual supporting claims still meet their evidence requirements |
+
+The trusted controller initiates required evidence acquisition and checks receipts before admitting factual completion. Small-model profiles may require retrieval or measurement for every factual answer, narrow tool sets, typed outputs, constrained stages and explicit unsupported-claim refusal. Strict prompt instructions reinforce this behavior but do not enforce it: the controller must visibly reject missing, stale, wrong-target, contradictory or irrelevant evidence and prevent an unsupported result from being marked verified. A tool call or citation alone does not prove support; domain verifiers check claims where feasible, and semantic support remains Not yet proven without task-specific evaluation. No universal hallucination-free guarantee is claimed.
+
+If required evidence is unavailable, report what is missing, return only supported portions with limitations, or ask the user for a material intent decision; do not invent readings or silently replace measurements with RAG. Instrumentation itself needs current authority: inspection does not authorize installation, execution in an untrusted project, mutation, cloud disclosure or spending. Retrieval, query text, receipts and answers remain subject to privacy admission, Secret exclusion and revocation. A larger/cloud model fallback requires eligible policy, budget and destination; inability to fit a local model cannot weaken Local Only.
+
+## 11.3 End-to-end harness contract and bounded evolution
+
+“Rikuri harness” names the surrounding intent, execution and assurance infrastructure; the upstream Pi harness remains the default agent-loop substrate (§13). This refinement does not add a parallel home-grown agent runtime. The production path is task/turn controller → preserved intent → policy-admitted evidence/context → Execution Profile → Pi/worker adapter → governed tools → independent verification → authorized durable outcome and ledger. Policy applies before retrieval/assembly and at every action boundary, not only once after context construction. The adapter compiles admitted intent/context with versioned model-family guidance without dropping constraints, reclassifying evidence as instructions or increasing authority. Unsupported adapter capabilities and omitted constraints are visible failures.
+
+The controller records explicit transitions: planning, acquiring evidence, awaiting clarification/approval, executing, verifying, repairing, blocked, failed, cancelled and completed. Bound retries, elapsed time, calls and cost; preserve checkpoints and expose termination reasons. Verification failure permits repair/escalation only within current grants, envelope and reserved budget. Cancellation/revocation stops further effects and preserves honest partial outcomes. Recovery never claims the primary path succeeded, and completion requires the task's outcome evidence rather than worker narration. Exact transition implementation remains owned by the relevant stage; advanced repair follows §16.8 and its policy prerequisites.
+
+Verification is task-specific: coding uses declared tests and artifact/integration evidence; research uses support, freshness and coverage; creative work separates technical checks from creator judgment. A model grader is fallible supporting evidence, not authority or a universal oracle. Durable promotion uses governed services and existing validation/write/read-back contracts. “Commit” does not imply authorization for Git commits, publishing, deployment or canonical truth promotion.
+
+Harness changes follow candidate → sandbox evaluation → regression/security and task comparison → authorized admission → versioned rollout → monitoring/rollback. Record exact model/runtime/profile/compiler/tool identity, sample counts, cost and verified outcomes; preserve the known-good profile. Significant changes use existing developer/owner review and release policy; profile data cannot alter security, budget or approval authority. Model Lab owns measured profile tuning at product Stage 4; learned recipes/user-pattern inference remain product Stage 10 after its prerequisites.
+
+**Scope:** Foundation remains 00–05 with deterministic routing and single-role execution. This contract clarifies existing S02.02/S02.07 and S04.01–03/S04.06/S04.08/S04.14–15 evidence/wiring; T02.15–16 and T04.01–03/T04.10/T04.18 remain unchanged. General intent classification/clarification is realized through product Stage 2 task surfaces; richer connector evidence through Stage 5, measured profile promotion through Stage 4, advanced developer repair through Stage 8, and adaptive learning through Stage 10. No new Foundation gate or runtime completion claim is introduced. Future acceptance is [Test Strategy §19](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#19-harness-intent-and-evidence-contract-acceptance).
+
 # 12. Execution Profile and Router
 
 The long-term routing unit remains an **Execution Profile**:
@@ -1209,7 +1245,7 @@ PRD SEC-013–019 and [Test Strategy §14](Rikuri_Pi_Foundation0_Test_Replay_and
 | Existing stage owner | Scope and prerequisites |
 |---|---|
 | Foundation Stages 02–05 | Existing risk/capability/approval and budget contracts (S02.01/S02.05/S02.08, T02.05–07/T02.11), project/envelope/trust rules (S03.04–09, T03.09–13), handoff (S04.14/S04.15, T04.13/T04.16), and approval-card rendering (S05.04/T05.04). No new preset UI, background scheduler or automatic fix-lock release |
-| Product Stage 1 | Development-scoped grants/settings and the bounded single-worker repair lifecycle fit project trust UI, test runner and coding profiles after Foundation gates. Automatic cycle completion specifically requires prospective owner-approved policy/ADR reconciliation and implementation of the controller/independent evidence contract before admission |
+| Product Stages 1/8 | Stage 1 supporting execution retains existing scoped grants/settings. The advanced single-worker repair lifecycle follows the optional Stage 8 developer pack, project trust UI and test-runner contracts. Automatic cycle completion specifically requires prospective owner-approved policy/ADR reconciliation and implementation of the controller/independent evidence contract before admission |
 | Product Stage 2 | Richer workspace controls, explanations, scope previews and pending-decision visibility on existing window/UI contracts |
 | Product Stage 6 | Durable independent branches, waits/rejoins, scheduling and multi-agent propagation depend on the existing governance/workflow admission. Single-worker continuation does not imply this scheduler exists earlier |
 
@@ -1444,7 +1480,7 @@ The [live Stage Plan](Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md) reta
 | Foundation Stage 01 | S01.03/S01.07/S01.09, T01.06/T01.07: snapshot provenance, searchable originals and ≥20 known-answer questions; no live connectors or semantic topic classifier |
 | Foundation Stage 02 | S02.02, T02.01/T02.15/T02.16: minimal versioned policy/freshness/conflict-aware packet with provenance, typed omissions and execution evidence; preserve the ten required answer/abstain outcomes |
 | Foundation Stage 04 | S04.01/S04.02/S04.14/S04.15, T04.01/T04.06/T04.13/T04.16–18: bootstrap/tool delivery through the existing harness, scoped local lookup, explicit topic-change/crossover inputs, profile/handoff/resume fixtures and visible missing/stale/truncated failures. No separate topic engine, connector service or multi-agent scheduler |
-| Product Stage 1 | Claude/Git imports and code-aware context; richer coding-session capture and topic-retrieval evaluation through the existing developer/harness profiles. Semantic/vector improvements remain evidence-driven experiments |
+| Product Stage 1 | Claude/Git imports, source continuity and topic-retrieval evaluation through admitted profiles; full code-aware developer surfaces follow the optional Stage 8 pack. Semantic/vector improvements remain evidence-driven experiments |
 | Product Stages 2/5 | Workspace context links at Stage 2; incremental/live service connectors, cross-source reconciliation and assistant topic intersections at Stage 5, after its existing dependencies |
 | Product Stages 6/8 | Multi-agent context delivery/isolation at Stage 6; richer media extraction and Live Companion capture at Stage 8. Narrow capabilities enter only at their already authorized earlier stages |
 | Product Stage 10 | Experience consolidation/inference and learned retrieval policies remain future research/productization under the existing Model Lab/governance prerequisites |
@@ -1561,7 +1597,7 @@ Personal contribution controls at Stage 5 support on-request/mention, quiet sugg
 
 The contribution path is conversation event → current policy → Knowledge Service → Context Compiler → audience/Attention Firewall checks → governed conversation post with an idempotent event ID. Revalidate source permission, membership, topic generation and freshness before delivery. An agent's private search result may not be posted just because the agent can read it. Runtime-observed receipts record retrieval and delivery outcomes separately with minimized metadata; user usefulness feedback and false/duplicate interruption rates complement source-recall and latency measures. Evaluate against lexical/manual-request baselines with examples of both helpful contributions and justified silence.
 
-Obsidian supplies editable source notes and browsable projections under §20.3. Notion-style shared objects and mymind-style low-friction capture are reference behaviors; no dependency on either service is selected. Desktop Commander-style file/terminal tools are optional execution adapters to evaluate against the native Stage 1 services and Stage 5 Connector Gateway. Terminal access grants no knowledge or conversation authority. Before adopting a component, record pinned version/license, effective filesystem/process/network scope, model/data destinations, lifecycle/integration cost and allowed/denied failure evidence. No connector is installed or enabled by this design.
+Obsidian supplies editable source notes and browsable projections under §20.3. Notion-style shared objects and mymind-style low-friction capture are reference behaviors; no dependency on either service is selected. Desktop Commander-style file/terminal tools are optional execution adapters to evaluate against admitted supporting execution, the optional Stage 8 developer services and Stage 5 Connector Gateway. Terminal access grants no knowledge or conversation authority. Before adopting a component, record pinned version/license, effective filesystem/process/network scope, model/data destinations, lifecycle/integration cost and allowed/denied failure evidence. No connector is installed or enabled by this design.
 
 # 21. Canonical Data and Storage Architecture
 
@@ -2176,6 +2212,21 @@ Derived material inherits applicable source restrictions: OCR, transcripts, imag
 Optional vendor/product telemetry is off by default, including dependencies. [OpenShell's telemetry controls](https://docs.nvidia.com/openshell/latest/observability/telemetry) must be explicitly configured and then verified for the admitted build. Exercise gateway, supervisor, broker and host-service egress as well as worker traffic; an offline worker does not prove an offline control plane. Explicit diagnostic sharing is scoped, previewable, minimized and secret-free.
 
 Show users which task, data and operations are protected, by which admitted profile, when it was verified, and what is unavailable. Missing/stale evidence or a failed required probe cannot display Healthy/Protected. Restrict dependent operations and explain the consequence in ordinary language. Reliability comparisons require a stated threat model, representative allowed tasks, attack/failure fixtures, exact versions and independent review. The goal is to earn trust through repeatable evidence; no claim of universal protection or comparative superiority follows from this design or its smoke test.
+
+## 27.14 October 1 security contract reconciliation
+
+The Security Architecture v1.0 draft adds useful detail but is not a competing architecture or stage plan. [The review](reviews/2026-10-01-security-draft-review.md) records conflicts and dispositions; PRD SEC-028–031, the refinements folded into SEC-020–024 on October 3, and Test Strategy §17 own new requirement/acceptance traceability. All behavior remains design, not a claim of delivered protection. October 2 recheck: this section refines the Option C layers in §27.12–27.13 and does not replace them; where the two overlap, §27.12–27.13 govern.
+
+- **Decision versus enforcement:** Rikuri governed services own grants, using authenticated actor/device/Pi/run/task identity as attribution only; the AISecurity policy service evaluates and compiles; a qualified enforcement adapter enforces at actual resource boundaries (§27.12). A credential broker is a separate trusted service for granted operations, not the enforcement layer. A downloaded tool manifest, agent message, source label, role name, or backend-native policy proposal/approval feature has no authorization authority. Child grants cannot exceed the parent's current effective rights; expiry/revocation and delegation limits apply at use.
+- **Classifications:** preserve `normal | private | local_only | secret` and distinct execution intents. Public/Confidential may be descriptive labels but do not permit cloud use. Propagate source restrictions to attachments, summaries, embeddings, outputs, copies and logs. Declassification is a separately authorized transformation with provenance and destination checks, never a model judgment. Secret stays outside all model context, including local models; a credential broker may use it through an admitted operation.
+- **Data movement:** enforce operation, payload classification/volume and recipient/destination, not only path or hostname. A worker with plaintext and arbitrary network access can leak via allowed endpoints; such a profile cannot advertise content-level export isolation. Use admitted mediated tools/brokers or refuse profiles whose required guarantees cannot be enforced. Foundation-0 admits no worker credential or permitted destination; `rikurid`'s provider endpoint is the only model route, and a loopback or host-service allowance counts as a permitted destination (ADR 0000 September 28 follow-up decision 4). Copies within Rikuri retain labels; unmanaged plaintext exports, screenshots, privileged host/users and external copies are outside persistent protection/forget guarantees. Ciphertext-copy protection depends on key access and actual crypto evidence, not inode flags or content hashes.
+- **Secret/provider adapters:** scope broker use by service/operation/task, validate redirects/destinations, minimize returned data and protect caches/logs. Distinguish application lease revocation from upstream credential invalidation and existing connection termination; report unsupported guarantees. Provider assurance records are endpoint/account/access-mode-specific, evidence-backed and expiring. TLS, an API-compatible wire format or the word “private” cannot prove retention or training behavior.
+- **Networking:** Tailscale-first Link remains unchanged; no Headscale/doxx.net replacement or adoption is implied. Inspect the actual tailnet rules and test authorized/denied paths; a network policy label is not proof of least privilege. Tailnet membership does not confer application rights or control arbitrary Internet paths. A later NetworkCapability contract binds subject/task/device, destination/protocol/port, permitted data movement, expiry/current revocation and evidence. DNS, redirects, proxies, alternate interfaces, open sessions and controller failure are explicit tests. Required revocation not proven within the maximum revocation latency set by the owning adapter ADR (S03.11) means isolate/stop, not best-effort success; report revocation only after enforcement acknowledgement or a proven fence (§27.12 Failure and revocation).
+- **Policy activation/recovery:** canonical candidate validation, durable write/read-back and atomic promotion must be coordinated with real external enforcement. Keep a restrictive transition barrier until effective policy is verified; failed/partial external activation stops affected work, reports degradation and records reconciliation/rollback. A canonical database commit alone cannot prove firewall/grant activation. Last-good recovery cannot re-enable currently revoked access; current durable revocation dominates historical policy. Activation and revocation meet the same measured latency bound; failure to establish it makes the profile unavailable.
+- **Health/step-up:** keep existing Healthy/Degraded/Critical states and represent unknown/unverified assurance explicitly as unavailable. Evidence specifies platform/profile/backend/version, covered threats and freshness. Strong authentication is separate from approval and permission; it cannot override a hard refusal. Owner recovery must remain possible through a separately designed authenticated procedure, not an agent-controlled disable switch.
+- **Limits:** semantic anomaly systems are supplemental and may restrict authority or ask for review; hard policy remains deterministic. Security telemetry is itself sensitive, scoped and minimized; hashes alone do not prove authenticity. Baseline package/runtime vetting, update/incident discipline and threat-path evidence follow existing engineering/release rules; runtime, backend and kernel changes revalidate at the applicable tier of the Engineering Standard's two-tier rule, with affected profiles unavailable until it passes. Optional vendor telemetry is off by default and control-plane egress is observed (§27.13). Advanced attestation and learned behavior controls wait for their existing dependencies.
+
+No S0–S10 security roadmap is adopted. Foundation provider admission remains Stage 02, Ubuntu network/process proof Stage 03, and encrypted ownership/forget/recovery Stage 01; later secret/network/team controls cannot postpone these prerequisites. The [threat model](../docs/security/THREAT_MODEL.md) is the maintained companion (added September 28); it is a design matrix, not runtime evidence. Before adopting an external component record pinned version/license, threat boundary, integration/lifecycle cost and positive/negative/failure receipts.
 
 # 28. Workspace and Window Architecture
 
@@ -2973,34 +3024,17 @@ repository can be inspected without execution, explicitly promoted, then
 safely edited/tested through Pi under Ubuntu; docs/evidence match
 implementation.
 
-## Stage 1 — Pi coding dogfood + native developer platform
+## Stage 1 — Capture continuity and supporting execution
 
-- Monaco editor Window;
-- terminal/diff/tests/build;
-- LSP language intelligence; DAP baseline where valuable;
-- Git service + project trust UI;
-- formatter/linter/search/container integrations;
-- richer Pi coding profiles and review/test loops;
-- use Rikuri to perform real Rikuri development under the Build
-  Procedure.
+Claude and read-only project imports, source revision/coverage receipts, correctable classification experiments and one admitted development verification/external handoff. The full native developer stack moves to the optional Stage 8 pack.
 
-**Exit:** a normal Rikuri change can be planned, implemented by/with Pi,
-reviewed in Monaco/diff/tests, full-gated, and recorded without leaving
-Rikuri except for external tools intentionally invoked.
+**Exit:** supported sources survive restart with accurate provenance/coverage; project inspection does not execute; a real admitted change and handoff preserve verification. Master Build Sequence S1.01–S1.04 owns order and acceptance.
 
-## Stage 2 — Sterling Workspace substrate
+## Stage 2 — Creative Studio essentials and Sterling Workspace
 
-- first-class Window registry and Workspace API;
-- freeform resize/move + optional grids/presets;
-- Context/Agent/Prompt Links;
-- saved layouts;
-- detach/multi-monitor;
-- Working/Blocked/Done/Idle rollups;
-- Rikuri Plugin API + native Window type registration + capability
-  permissions.
+First-class flexible linked windows, saved/detached layouts and status; shared fragments/scenes/character/world objects; requested alternatives and critique; author-controlled canon/merge; resume/search/export and local plugin contract prototype. No learned cross-episode inference or fleet orchestration.
 
-**Exit:** multiple chat/code/agent/terminal/test windows coexist and
-remain logically linked across layout changes/restarts.
+**Exit:** the Stage 2 creator slice and S2.C1–C5 satisfy Test Strategy §16. Multiple creative views remain linked and recoverable after restart. A full IDE is not a predecessor.
 
 ## Stage 3 — Rikuri Link / remote owner-node control
 
@@ -3050,10 +3084,9 @@ orchestration is a reference pattern, not a dependency. Each role is
 independently replaceable and measured, and the headless runtime remains
 authoritative while desktop/mobile clients attach.
 
-## Stage 5 — Browser/connectors/personal assistant
+## Stage 5 — Creative research, connectors and distribution
 
-Browser/computer worker, email/calendar/contacts, just-in-time
-connectors, research/travel/shopping, Attention Firewall maturity.
+Admitted browser workers, creative-source capture/research, files/cloud storage, Attention Firewall and bounded knowledge-gap suggestions; external studio/plugin distribution adapters follow policy and release review. Email/calendar/travel and general assistance remain optional packs under the same contracts.
 
 ## Stage 6 — Multi-agent governance + Project Graph
 
@@ -3069,8 +3102,7 @@ catalog, durable routines, quiet digests, learned skills.
 
 ## Stage 8 — Rich domains / Live Companion
 
-Writing/study/research/media/meeting/lecture and specialized domain
-packs on common primitives.
+Deep world/character systems, scientific scenarios, game/animation specs, media, marketing and optional developer/other packs extend Stage 2 essentials on common primitives. The full Monaco/terminal/Git/LSP/test/formatter/search/container/DAP/profile/harness/native-dogfood sequence resumes here in its original internal order, as specified by Master Build Sequence.
 
 ## Stage 9 — Windows parity + business/team readiness
 
@@ -3659,3 +3691,28 @@ occurred, such as tests, logs, source verification, screenshots,
 benchmarks, or state queries.
 
 **End of Rikuri Pi Architecture Specification v1.7**
+
+# September 30 — creative studio integration contract
+
+The product surface is now a modular creative studio powered by the existing trusted substrate. PRD STUDIO-001–010 and the live Master Build Sequence define delivery; this section supplements, rather than replaces, §§19–21A, §25 and workspace contracts. Foundation-0 and protected invariants are unchanged.
+
+| Module boundary | Owns | Must not own |
+| --- | --- | --- |
+| Creative domain services | Validated scene/character/world/branch schemas and author-approved promotion requests | Alternate canonical store or model-granted permissions |
+| Studio/window projections | Views, selection, layout and resumable navigation by stable IDs | Private copies that silently diverge from creative objects |
+| Capture adapters | Authorized supported-source import, source revisions and coverage/save receipts | A claim to all provider history or permission from source content |
+| Memory-engine adapters | Governed retrieval and rebuildable indexes/derived episode/candidate projections | Canonical originals, approval policy or autonomous promotion |
+| Reflection/abstraction service | Bounded evidence-to-candidate inquiry and CI lifecycle | Protected-policy mutation, author replacement or unverified causal truth |
+| Pi identity / orchestration | Durable identity, role, grants, task/run links and revocable responsibility | Continuous thinking requirement or authority inherited from a model name |
+| Domain tool adapters | Declared inputs/units/assumptions, typed results, provenance and failure health | Unqualified scientific certification or invented success |
+| Distribution / entitlement adapters | Host-specific entry points and feature availability | Ownership of local data or paywalling recovery/export |
+
+All canonical creative transactions remain Rikuri-owned and governed. Source references, branch ancestry, candidate state, author-approved canon and real-world evidence have distinct types. Free/paid surfaces and external plugins use the same privacy, budgets, authority and revocation path. A plugin may reach only scoped service methods; installation cannot expand rights, and retrieved instructions remain data.
+
+**Capture before memory:** model calls made inside Rikuri can record admitted messages, visible tool results and authorized assets; hidden reasoning or undocumented provider internals are not promised. Native-provider features require explicit adapters: supported exports/APIs first, authorized share/save hooks or extensions next, permitted visible text capture when available. Screenshots/OCR are last-resort evidence for visible content, with timestamps/source/app identity, extraction status and missing coverage. Monitoring is scoped, visible, revocable and cannot promise unseen or deleted history. Save receipts distinguish captured, pending, partial, failed and last successful revision; retries/deduplication cannot overwrite originals. Reconcile source permissions/deletion before retrieval and promotion.
+
+Hindsight, OpenViking and Mem0 are **evaluation candidates**, not selected engines or assumed provider importers. Compare a pinned version/license and deployment against corpus retrieval, episode/provenance, contradiction/revision, structural queries, local operation, export, revocation/forget/rebuild, resource cost and visible failure. Memory is an adapter behind Knowledge Service; the reflection layer consumes authorized normalized evidence through that service and persists candidate proposals through Rikuri transactions. A failing engine leaves originals and lexical retrieval available with observable degraded health. Changing engines must not require reconstructing the creator's archive from a provider.
+
+**Distribution:** a desktop/local studio and host plugins are adapters to one product, not separate data owners. Cloud model/search/host calls can disclose admitted context; “local storage” alone is not a guarantee that all work stays private. Local Only must refuse those calls before HTTP construction and run in its proven no-network envelope. Public hosted access requires its own endpoint/security/release review; a desktop prototype is not public readiness.
+
+**OpenAI-specific policy snapshot, checked September 30, 2026:** current [plugin guidelines](https://developers.openai.com/plugins/plugin-guidelines) distinguish existing paid-account access from prohibited in-plugin digital subscriptions/freemium upsells. Treat entitlement use and permitted informational account links according to that policy; do not add checkout or upgrade promotions to the plugin. [Secure MCP tunnels](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels) are a development mechanism, not the public distribution endpoint. Recheck official [MCP server requirements](https://developers.openai.com/plugins/build/mcp-server) and guidelines before choosing a distribution/business implementation; approval, platform terms and future policy changes remain external dependencies. Rikuri's subscription plan is provisional and cannot override host policy.

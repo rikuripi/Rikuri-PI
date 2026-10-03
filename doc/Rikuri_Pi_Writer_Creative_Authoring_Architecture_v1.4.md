@@ -7,7 +7,7 @@
 
 ## Scope and roadmap alignment
 
-This is a post-Foundation domain architecture under product Stage 8 (Rich domains) in the Master Build Sequence v1.1. Its “Foundation,” phases 1–6, and MVP describe Writer delivery order, not Foundation-0 commitments or platform stage numbers. Shared services may land earlier through their own stage gates. Learned cross-episode Pattern Mirror, cognitive ensembles, and Inquiry/Closure research follow Collaborative Intelligence v0.1 and product Stage 10 prerequisites (product Stage 4 evidence and Stage 6 governance). Ordinary author-requested critique does not require learned user-pattern inference.
+This is Rikuri’s lead post-Foundation creative domain architecture. The September 30 direction brings essential Writer foundation/MVP into product Stage 2 S2.C1–C4; deeper world, scientific, multimedia and interactive packs remain product Stage 8 in the Master Build Sequence v1.1. Its “Foundation,” phases 1–6, and MVP describe Writer delivery order, not Foundation-0 commitments or platform stage numbers. Shared services may land earlier through their own stage gates. Learned cross-episode Pattern Mirror, cognitive ensembles, and Inquiry/Closure research follow Collaborative Intelligence v0.1 and product Stage 10 prerequisites (product Stage 4 evidence and Stage 6 governance). Ordinary author-requested critique does not require learned user-pattern inference.
 
 Canonical creative changes use the governed Knowledge Service and Rikuri-owned transaction path. Generated interpretations, critique, patterns, and story alternatives remain candidates until authorized promotion; fictional canon is author-approved project truth, not an assertion about the external world.
 
@@ -31,7 +31,7 @@ The creative system should also be **timeless by design**. The durable object is
 
 > **Versioned-work principle:** Preserve experimentation without forcing commitment; borrow version-control ideas without imposing version-control complexity.
 
-> **Fresh-eye principle:** Rikuri should help the writer see the work from perspectives the writer is no longer able to access easily after prolonged immersion. It asks useful questions before offering replacement prose.
+> **Fresh-eye principle:** Rikuri should help the writer see the work from perspectives the writer is no longer able to access easily after prolonged immersion. It asks useful questions and teaches craft; creative-mode agents do not compose finished manuscript passages.
 
 > **Closure principle:** Curiosity serves completion. Exploration budgets shrink as a work approaches delivery; late-stage questions are triaged by whether they materially threaten or strengthen the finished work.
 
@@ -1097,7 +1097,7 @@ A writer may intentionally leave a culture, motive, timeline, or mechanism undef
 
 ### 27.5 Questions before generation
 
-When creative intent is unclear, prefer helping the user surface possibilities and tensions over automatically generating finished creative work.
+Creative-mode agents help the user surface possibilities and tensions, explain techniques and offer short labeled illustrations. They must not compose finished scenes, chapters or substantial manuscript prose for incorporation. Business-production generation is separately declared and governed. See the October 1 clarification and linked Writer IDE specification.
 
 ---
 
@@ -1309,3 +1309,27 @@ These are design signals rather than requirements to copy existing products.
 - Ren'Py, official visual novel engine site (2026). https://www.renpy.org/
 - Knight Lab, storytelling tools and projects (accessed 2026). https://knightlab.northwestern.edu/projects/
 - Pew Research Center, *Americans still opt for print books over digital or audio versions* (April 9, 2026). https://www.pewresearch.org/short-reads/2026/04/09/americans-still-opt-for-print-books-over-digital-or-audio-versions-few-are-in-book-clubs/
+
+## September 30 — studio experience and Pi collaborators
+
+The detailed creative architecture above remains controlling. Its depth is a differentiator, offered progressively rather than as a compulsory workflow. The studio accommodates a fragment-first writer, a planned outline and multiple concurrent storylines. Flexible Tauri-linked views share object identity and version history; opening another window never forks the underlying work accidentally. A return view shows the creator's current intent, last decisions, active alternatives, source changes and open questions, without requiring every fragment to be classified first.
+
+StrawberryPi, ChocolatePi, PumpkinPi and ApplePi exemplify the collaborator family. Their flavors need not dictate capability or personality; creators can rename and configure roles. A Pi can serve as a research partner, continuity reader, world designer, character challenger or alternative-scene explorer. Identity and responsibilities are durable; model/tool selections are replaceable. Requested suggestions remain candidates and the creator controls canon. Ensemble disagreement is useful evidence, not a vote deciding literary truth. Avoid settings plumbing in ordinary creative flows: explain intended effects such as “explore wider alternatives” or “check consistency”; expose detailed recipes only on inspection.
+
+A scenario packet links a stable candidate/branch ID, parent revision, creator goal, assumptions, events, affected characters/world rules, opportunities, risks, consequences, sources, unknowns and recipe/run evidence. Two or three alternatives are a useful default when requested and warranted, not a quota for arbitrary filler. Independent generation must preserve shared starting constraints; comparison identifies actual differences. Save a complete validated packet atomically through governed services, or mark partial results recoverable and incomplete. The creator may retain, reject, revisit or selectively merge packets. A merge proposes changes and conflicts across chronology, knowledge, motivations and world rules; it cannot just concatenate prose or quietly rewrite canon.
+
+Science-backed worldbuilding starts with a sourced baseline and a stated question. A black-hole travel scene separates established relativistic effects, chosen parameters and calculation limits from an invented propulsion rule. A Mars scenario distinguishes evidence about human physiology from uncertain long-duration outcomes and invented adaptations. A domain model may explore consequences under explicit assumptions, without presenting a language-model expert persona as a scientific authority. The author can deliberately change physics, biology or social rules, then inspect the downstream constraints that change with them. Contradiction can be intentional; flag it for author interpretation rather than forbid it.
+
+Game and animation packs develop branching narrative, levels, encounter constraints, character/visual references and world state into a versioned production specification. Actual playtesting, simulation and implementation validate their respective claims. External engines and coding ecosystems can consume that handoff. Marketing later adds optional launch/audience/research templates or creator-arranged workflows, product evidence and rights, message alternatives, taglines and asset revisions. Unsupported product claims cannot become verified facts; audience hypotheses remain hypotheses. Editable vectors/layers and supported illustration/design adapters matter more than promising that a raster generator can make precise logo edits.
+
+**MVP boundary:** Stage 2 provides text-based shared objects and linked views, requested critique/alternatives, author-controlled revisions, resume/search/export and production briefs. Image attachments may be preserved as opaque source assets, but rich extraction, editable visual generation, science simulations and game engines are not implied. Advanced world engines build on this base at Stage 8. Advanced Pattern Mirror, structural learned retrieval and longitudinal reflection remain Stage 10 capabilities under CI prerequisites. The complete reflection/abstraction design is preserved in the Collaborative Intelligence document; none is removed to simplify the first studio.
+
+## October 1 — Writer's IDE and learning-through-creation contract
+
+The owner defines Rikuri as a writer's IDE: create, organize, revise, collaborate and learn in one human-authored workspace. The [Writer IDE Specification v0.1](Rikuri_Pi_Writer_IDE_Spec_v0.1.md) specifies WIDE-001–012, object/anchor contracts, agent permissions, recovery, rights agreements, learning records and future acceptance A01–A11. It refines STUDIO-001–010 without replacing this detailed creative architecture.
+
+This dated clarification controls earlier references to replacement prose, alternative-scene exploration and scenario generation: creative agents explore non-prose structural alternatives, critique, research, explain craft and provide short labeled teaching examples; they do not write finished scenes/chapters or substantial manuscript passages for incorporation. Human authors write the work. Marketing/business generation is separately explicit and remains a later pack. Canon approval alone does not waive creative-mode composition limits.
+
+Stable IDs identify sentences, paragraphs and story units independently of changing labels such as C10P4S2. Immutable revisions, split/merge/copy lineage and edition-specific page/line maps preserve references. Shared Versioned Work owns checkpoint/branch/workspace/proposal/merge and scoped deletion/restore; rights and current revocation still govern history. Reader experience and author intent guide optional craft questions. Contextual prompt/voice questions, saved lessons and flashcards support learning without mandatory tutoring or autonomous trait inference. Voice, full scholarly publishing and multi-human collaboration wait for their owning adapters/gates.
+
+Product Stage 2 S2.C1–C4 owns the text-first solo slice; Stage 6 owns multi-human/agent collaboration, Stage 8 richer domains/publishing/voice, and Stage 10 learned longitudinal inference. All runtime claims remain Not yet proven. See [the Build Record](../docs/build-records/2026-10-01-writer-ide-spec.md).
