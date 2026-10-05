@@ -34,6 +34,11 @@ maturity" and look at the tree: what exists decides which gate applies.
    the evidence does not support.
 
 Rules:
+- Never search or read secret files (`.env`, `*.env`, keys, cookies,
+  macaroons) without the owner's permission. For repo-wide searches use
+  `git grep` (tracked files only), never `grep -r` / `rg` over the working
+  tree. The guard asks the owner when a recursive search would reach a secret
+  file (owner, 2026-10-04).
 - Never edit files, push, merge, change GitHub settings, or engage or
   release the fix-lock. If verifying would need one, say so and stop. That
   is the owner's call.
