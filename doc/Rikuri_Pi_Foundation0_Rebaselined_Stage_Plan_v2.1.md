@@ -90,7 +90,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] S00.05 `rikuri-storage`: SQLite bootstrap, migrations, `Repository<T>` trait with optimistic versioning
 - [ ] S00.06 `rikuri-ledger`: append-only referenced-content events, idempotency rows, replay helpers
 - [ ] S00.07 `rikurid` + `rikuri-cli`: `init`, dummy task, `state.show`, `ledger.tail`, `system.health`; versioned JSON envelope with typed errors and documented exit codes
-- [ ] S00.08 `rikuri-testkit`: `FakeModelAdapter`, `FakeTool`, `CrashInjector`, `FixtureClock`, `FixtureIds`
+- [ ] S00.08 `rikuri-testkit`: `FakeModelAdapter`, `FakeTool`, `CrashInjector`, `FixtureClock`, `FixtureIds`. *October 5, 2026 (owner): `FakeModelAdapter` → S02.07 and `FakeTool` → S04.01, built with the interfaces they fake; see the [Stage 00 record](../docs/stage-gates/foundation0/00-bootstrap-kernel.md#skipped--deferred).*
 - [ ] S00.09 Module Contracts for the four crates that exist (domain, storage, ledger, testkit)
 - [ ] S00.10 ADR 0001–0004 (ID format, SQLite current-state model, ledger + idempotency, threat-model assumptions)
 - [ ] S00.11 E1 spike: simplest implementation of the Transactional State Evolution invariant for kernel transactions (see Experiment register); later components extend the crash matrix
@@ -188,7 +188,7 @@ Each receipt says **Pass, Fail, or Not yet proven**, names the exact test/probe 
 - [ ] S02.04 Imported/retrieved/model/tool content defaults to `instruction_authority: none`; Secret class excluded from all model packages
 - [ ] S02.05 `rikuri-budget`: integer microdollar accounting; reserve → call → reconcile → release; parent envelope for retries
 - [ ] S02.06 Price catalog with provenance; stale/unknown price → hard-dollar mode unavailable for that path
-- [ ] S02.07 One tested OpenAI-compatible cloud access path behind `ModelAdapter`, using synthetic non-sensitive fixtures during this stage; reject Local Only before HTTP request construction. Other providers require capability-specific contract tests and may need native adapters later.
+- [ ] S02.07 One tested OpenAI-compatible cloud access path behind `ModelAdapter` (with `rikuri-testkit` `FakeModelAdapter`, resequenced from S00.08), using synthetic non-sensitive fixtures during this stage; reject Local Only before HTTP request construction. Other providers require capability-specific contract tests and may need native adapters later.
 - [ ] S02.08 Trusted Approval Renderer: normalized tool + arguments + risk → deterministic consequence text
 - [ ] S02.09 AISecurity detectors wired as advisory signals only; no LLM is root allow/deny authority
 - [ ] S02.10 Prompt-injection fixture corpus: direct override, role hijack, exfiltration, encoded payload, delimiter injection, misleading explanation, benign lookalikes
@@ -285,7 +285,7 @@ September 28 clarification: [ADR 0000's Option C addendum](Rikuri_Pi_ADR_0000_Fo
 
 **Build**
 
-- [ ] S04.01 `rikuri-exec`: `HarnessAdapter` trait (session/turn/tool/result/cancel lifecycle), `Tool` trait (schema + risk + execute + verify), `ExecutionEnvelope` launch
+- [ ] S04.01 `rikuri-exec`: `HarnessAdapter` trait (session/turn/tool/result/cancel lifecycle), `Tool` trait (with `rikuri-testkit` `FakeTool`, resequenced from S00.08) (schema + risk + execute + verify), `ExecutionEnvelope` launch
 - [ ] S04.02 `adapters/harness-pi`: Pi driven headlessly with Rikuri tools injected; Pi types never cross crate boundaries. Pi is placed as E2 decided (inside the envelope, or with built-in tools and extension loading disabled); its only model provider is the `rikurid`-owned endpoint, and it holds no provider key
 - [ ] S04.03 Harness Profile schema: family / task / runtime / hardware / privacy / project overlays, versioned; `HarnessProfileStore`
 - [ ] S04.04 Runtime-compatibility record separate from agent/profile-compatibility record; status values Optimized / Experimental / Unavailable

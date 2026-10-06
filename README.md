@@ -38,16 +38,18 @@ Keep credentials, private keys, local databases, and backups outside the checkou
 2. Install the two pinned gate tools, checking their published SHA-256 digests:
 
    ```sh
-   curl -sSfL -o /tmp/gitleaks.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
-   echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  /tmp/gitleaks.tgz" | sha256sum -c -
-   tar -xzf /tmp/gitleaks.tgz -C /tmp gitleaks && install -D -m 755 /tmp/gitleaks ~/.local/bin/gitleaks
+   dl="$(mktemp -d)"
+   curl -sSfL -o "$dl/gitleaks.tgz" https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+   echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $dl/gitleaks.tgz" | sha256sum -c -
+   tar -xzf "$dl/gitleaks.tgz" -C "$dl" gitleaks && install -D -m 755 "$dl/gitleaks" ~/.local/bin/gitleaks
 
-   curl -sSfL -o /tmp/cargo-deny.tgz https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
-   echo "9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f  /tmp/cargo-deny.tgz" | sha256sum -c -
-   tar -xzf /tmp/cargo-deny.tgz -C /tmp && install -D -m 755 /tmp/cargo-deny-0.20.2-x86_64-unknown-linux-musl/cargo-deny ~/.cargo/bin/cargo-deny
+   curl -sSfL -o "$dl/cargo-deny.tgz" https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
+   echo "9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f  $dl/cargo-deny.tgz" | sha256sum -c -
+   tar -xzf "$dl/cargo-deny.tgz" -C "$dl" && install -D -m 755 "$dl/cargo-deny-0.20.2-x86_64-unknown-linux-musl/cargo-deny" ~/.cargo/bin/cargo-deny
+   rm -r -- "$dl"
    ```
 
-   `~/.local/bin` and `~/.cargo/bin` must be on `PATH` (rustup adds the second).
+   `~/.local/bin` and `~/.cargo/bin` must be on `PATH` (rustup adds the second). Python 3.11 or newer is needed for the crate-policy check (Ubuntu 24.04 and later ship it).
 3. Turn on the pre-commit hook, which scans the staged change for secrets and checks formatting and types when Rust files change:
 
    ```sh

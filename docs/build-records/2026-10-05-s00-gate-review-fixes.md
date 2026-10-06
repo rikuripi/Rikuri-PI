@@ -54,8 +54,14 @@ Sibling sweep: other scans of history (`--all` audits in the kickoff record) use
 - [x] Every regression test failed before the fix (evidence below) and passes after it.
 - [x] No test changed during the fix: `git diff --stat 9b91f0e -- scripts/quality/tests` is empty; the `#[cfg(test)]` regions of `id.rs` and `wire.rs` are byte-identical to 9b91f0e.
 - [x] Full gate: `RESULT: PASS (13 steps)` locally.
-- [ ] CI on the fix commit — evidence log after push.
+- [x] CI on the fix commit: run 37401144525 at 90fee2c, `RESULT: PASS (13 steps)`, 55 commits scanned with merge diffs.
 - [ ] Independent re-verification of PR #7.
+
+## Fix-lock and owner decisions (2026-10-05)
+
+- Lock engaged 18:44:33 −0700 after the red-test commit 9b91f0e; released 18:55:41 −0700. Approval: the owner answered "Release it now (Recommended)" in the session, after being told the tests were unchanged in 90fee2c and the local gate was green. The guard's `development` profile allows and logs the release without asking, so that answer, recorded here, is the approval.
+- **Guard gap, recorded (owner choice: no guard change now).** The fix-lock checks paths inside the project directory only, so test files in a git worktree elsewhere (this session used one in its scratchpad for kernel work) are not protected while a lock is held. Working rule from now on: no test edits in any worktree while a fix-lock is held; the kernel worktree was idle during this lock. The guard is shared unchanged across the owner's full-tier repositories; a fix is the owner's later decision.
+- **S00.08 resequencing (owner choice).** `FakeModelAdapter` moves to S02.07 and `FakeTool` to S04.01, each built with the interface it fakes; Stage 00's test kit is `FixtureIds`, `FixtureClock` and `CrashInjector`. Recorded in the [Stage 00 record](../stage-gates/foundation0/00-bootstrap-kernel.md) and on the Stage Plan items.
 
 ## Evidence log
 

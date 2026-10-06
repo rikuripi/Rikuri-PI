@@ -60,6 +60,7 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 
 - [x] Kickoff: owner decisions, reference installation evidence — [Build Record](../../build-records/2026-10-05-stage-00-kickoff.md)
 - [ ] S00.01–S00.03 bootstrap: workspace, full gate, CI, secret scan, ratchet, hooks — [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md). T00.01 red/green, T00.02, T00.03 (Ubuntu), T00.11 Pass; T00.01 "blocks" waits for branch protection; `smoke.sh` waits for S00.07; macOS half of T00.03 waits for the first run on `main`.
+- [ ] PR #7 review defects (merge-commit secrets, lint opt-in, contract headings, ratchet, allowlist, `AnyId` deserialization, bounded errors) — [Build Record](../../build-records/2026-10-05-s00-gate-review-fixes.md). Fixed with regression tests committed first; CI run 37401144525 green (13 steps); re-verification pending.
 - [ ] S00.04 `rikuri-domain` — [Build Record](../../build-records/2026-10-05-s00-04-rikuri-domain.md). Built and tested; not complete until a real caller uses it (S00.05–S00.07). ADR 0001 Proposed.
 
 ## Blockers
@@ -70,7 +71,7 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
-| none | | | | | | |
+| S00.08 `FakeModelAdapter`, `FakeTool` | RESEQUENCED | Stage 00 has no `ModelAdapter` (S02.07) or `Tool` (S04.01) interface; a fake of a missing interface would be scaffolding without a real caller (AGENTS.md) | None for Stage 00 gates (no Stage 00 test uses a model or tool). S02.07/T02.13 and S04.01/T04.10 already require fake and live paths to share kernel code; the fakes now ship with them | Henry Chen (decided 2026-10-05) | `FakeModelAdapter` → S02.07; `FakeTool` → S04.01 | Each fake passes the same contract suite as the live implementation of its interface |
 
 ## Evidence
 

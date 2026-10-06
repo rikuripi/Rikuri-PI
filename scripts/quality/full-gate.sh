@@ -29,6 +29,7 @@ tool_versions() {
   command -v cargo-deny >/dev/null || { echo "cargo-deny not installed"; ok=1; }
   command -v python3 >/dev/null || { echo "python3 not installed"; ok=1; }
   [ "$ok" = 0 ] || return 1
+  python3 -c 'import tomllib' 2>/dev/null || { echo "python3 is older than 3.11 (no tomllib)"; return 1; }
   local gl cd
   gl="$(gitleaks version)"
   cd="$(cargo deny --version | awk '{print $2}')"
