@@ -1,0 +1,33 @@
+# Rikuri Pi Foundation-0 workspace (Stage Plan S00.01).
+# Layout follows Architecture §45: crates/ hold the protected core; apps/
+# (rikurid, rikuri-cli) are added when they exist. No empty future crates.
+
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.98"
+publish = false
+
+[workspace.dependencies]
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+thiserror = "2.0.21"
+ulid = "3.0.0"
+proptest = "1.11.0"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+# Panicking shortcuts and debug output are build failures in shipped code.
+# clippy.toml allows unwrap/expect inside tests only.
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+print_stdout = "deny"
+print_stderr = "deny"
