@@ -1,6 +1,6 @@
 //! Risk classes for operations (PRD SEC-003).
 
-use crate::wire::wire_enum;
+use crate::wire_enum;
 
 wire_enum! {
     /// How consequential an operation is. Ordered from least to most.

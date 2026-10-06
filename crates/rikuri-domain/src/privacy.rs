@@ -3,7 +3,7 @@
 //! data; an execution intent is the user's routing choice for a project or
 //! task. "Private" exists in both, with different meanings.
 
-use crate::wire::wire_enum;
+use crate::wire_enum;
 
 wire_enum! {
     /// How restricted a piece of data is. Ordered from least to most

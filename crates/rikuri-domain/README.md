@@ -17,7 +17,7 @@ The kernel's shared vocabulary: stable typed IDs, data privacy classes and execu
 
 ## Must not own
 
-- I/O of any kind: storage, files, network, clocks other than `SystemIdSource`'s ULID timestamps, processes.
+- I/O of any kind: storage, files, network, processes. The only system reads are the wall clock in `SystemClock` and `SystemIdSource`.
 - Policy decisions (admission, approval, budget, envelope assurance) — `rikuri-security`, `rikuri-budget` and later crates decide; this crate only names the values.
 - Transition rules for project trust (Stage 03) and declassification (a separately authorized transformation, later stages).
 - Any model, provider or runtime name.
@@ -33,9 +33,10 @@ None directly. It defines the shapes other crates store.
 ## Public contracts / interfaces
 
 - `ProjectId`, `TaskId`, `RunId`, `EventId`, `ActorId`, `DeletionUnitId`, `ContentId`, `SourceId`, `SourceSpanId`, `SecurityDecisionId`, `CostRecordId`, `AnyId`; text form `<prefix>_<ULID>`, one canonical form per ID.
-- `IdSource` (trait), `SystemIdSource` (monotonic wall-clock ULIDs).
+- `IdSource` (trait), `SystemIdSource` (monotonic wall-clock ULIDs). `IdSource` and `Clock` are the two seams through which tests make IDs and times deterministic.
 - `PrivacyClass`, `ExecutionIntent`, `Origin`, `InstructionAuthority`, `RiskClass`, `ProjectTrust`: `as_str`, `FromStr`, `Display`, serde, all from one table.
 - `Provenance`, `ContentRef`, `SchemaVersion`.
+- `Clock` (trait), `SystemClock`, `Timestamp` (UTC milliseconds).
 
 ## Allowed dependencies
 
