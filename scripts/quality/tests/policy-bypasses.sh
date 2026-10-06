@@ -18,6 +18,8 @@
 # Legitimate configuration still passes: a path dependency on another
 # member, a patch to a member, an unrelated alias, [env] variable or build
 # script output, an empty RUSTC_WRAPPER (Cargo reads empty as unset).
+# Round 3: the rustc-env check must not refuse names no compiler reads
+# (RUSTC_VERSION) or judge untracked files, which CI never sees.
 # Threat model (owner, 2026-10-05): a tripwire for accidental or careless
 # weakening, not for deliberate subversion by someone with commit access.
 # Fixture workspaces are generated here.
@@ -174,4 +176,45 @@ rm -rf -- "$tmp/.cargo" "$tmp/vendor"
 rm -f -- "$tmp/crates/good/src/lib.rs"
 config $'[alias]\nclippy = ["test", "--no-run"]'
 expect fail "an unloadable workspace still names a weakening config" "alias" "$policy" "$tmp"
+rm -rf -- "$tmp/.cargo"
+member crates/good "$lints"
+
+# Round 3: the rustc-env check refused a build script setting RUSTC_VERSION
+# (read by no compiler; the usual way to embed the toolchain version)
+build_script 'RUSTC_VERSION=1.98.1'
+expect pass "a build script that sets RUSTC_VERSION passes" "" "$policy" "$tmp"
+rm -f -- "$tmp/crates/good/build.rs"
+
+# Round 3: refusals first checked by hand in round 1, now pinned
+config $'[target.x86_64-unknown-linux-gnu]\nrustflags = ["-A", "warnings"]'
+expect fail "[target.<triple>] rustflags that allow lints are refused" "weaken lints" "$policy" "$tmp"
+config $'[build]\nrustdocflags = ["--cap-lints", "allow"]'
+expect fail "build.rustdocflags that cap lints are refused" "weaken lints" "$policy" "$tmp"
+config 'not [valid toml'
+expect fail "an unreadable Cargo config is refused" "cannot read Cargo config" "$policy" "$tmp"
+rm -rf -- "$tmp/.cargo"
+expect fail "RUSTDOCFLAGS that allow lints are refused" "RUSTDOCFLAGS " env RUSTDOCFLAGS="-A warnings" "$policy" "$tmp"
+expect fail "CARGO_TARGET_<triple>_RUSTFLAGS that cap lints are refused" "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS" \
+  env CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS="--cap-lints allow" "$policy" "$tmp"
+expect fail "CARGO_ENCODED_RUSTFLAGS that allow lints are refused" "CARGO_ENCODED_RUSTFLAGS" \
+  env CARGO_ENCODED_RUSTFLAGS=$'-A\x1fwarnings' "$policy" "$tmp"
+mkdir -p "$tmp/home"; printf '[build]\nrustflags = ["--cap-lints", "allow"]\n' > "$tmp/home/config.toml"
+expect fail "a CARGO_HOME config that caps lints is refused" "home/config.toml" env CARGO_HOME="$tmp/home" "$policy" "$tmp"
+rm -rf -- "$tmp/home"
+mkdir -p "$tmp/outer/.cargo" "$tmp/outer/ws/crates/a/src"
+printf '[build]\nrustflags = ["-A", "warnings"]\n' > "$tmp/outer/.cargo/config.toml"
+printf '[workspace]\nresolver = "3"\nmembers = ["crates/*"]\n\n[workspace.lints.rust]\nunsafe_code = "forbid"\n' > "$tmp/outer/ws/Cargo.toml"
+printf '[package]\nname = "a"\nversion = "0.1.0"\nedition = "2024"\n\n[lints]\nworkspace = true\n' > "$tmp/outer/ws/crates/a/Cargo.toml"
+printf 'pub fn f() {}\n' > "$tmp/outer/ws/crates/a/src/lib.rs"
+expect fail "a parent directory's Cargo config that allows lints is refused" "outer/.cargo/config.toml" "$policy" "$tmp/outer/ws"
+rm -rf -- "$tmp/outer"
+
+# Round 3: in a git work tree only tracked sources are judged, as CI sees
+# them (the scan read untracked files, so local and CI results differed)
+gt() { git -C "$tmp" -c user.email=policy-test@example.invalid -c user.name=policy-test -c commit.gpgsign=false "$@"; }
+gt init -q -b main; gt add -A; gt commit -q -m fixture
+build_script 'CLIPPY_ARGS=--cap-lints=allow__CLIPPY_HACKERY__'
+expect pass "an untracked build script is not judged (CI does not see it)" "" "$policy" "$tmp"
+gt add crates/good/build.rs; gt commit -q -m tracked
+expect fail "a tracked build script that sets CLIPPY_ARGS is refused" "crates/good/build.rs" "$policy" "$tmp"
 exit "$failed"
