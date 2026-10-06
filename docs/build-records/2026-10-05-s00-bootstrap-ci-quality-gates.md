@@ -34,24 +34,31 @@
 - [x] Workspace: `Cargo.toml` (resolver 3, edition 2024, `publish = false`, workspace lints: `unsafe_code` forbidden; `dbg_macro`, `todo`, `unimplemented`, `unwrap_used`, `expect_used`, `print_stdout`, `print_stderr` denied; `clippy.toml` allows unwrap/expect in tests only), `Cargo.lock` committed, `rust-toolchain.toml` pinned to 1.98.1 with rustfmt and clippy.
 - [x] `deny.toml`: RustSec vulnerabilities, yanked, unmaintained and unsound crates fail; permissive license allowlist; crates.io only; no wildcard versions.
 - [x] `.gitleaks.toml`: default ruleset, `target/` excluded, nothing else allowlisted.
-- [x] `scripts/quality/full-gate.sh` (11 steps, stops at the first failure, prints `RESULT: PASS|FAIL (<step>)`), `ratchet.sh` + `ratchet-baseline.json` (ignored tests, lint suppressions, TODO-class markers; rises fail), `module-contracts.sh` (T00.11), `scrap-sweep.sh` (fails on tracked backup/editor files, `dbg!`, reasonless `#[ignore]`, conflict markers; lists untracked files and stashes), `hooks/pre-commit` (staged secret scan; fmt and `cargo check` when Rust changes).
+- [x] `scripts/quality/full-gate.sh` (12 steps after the Debug fix, stops at the first failure, prints `RESULT: PASS|FAIL (<step>)`), `secret-scan.sh` (HEAD-history scan shared with its self-test), `tests/secret-scan-scope.sh` (the gate's regression test), `ratchet.sh` + `ratchet-baseline.json` (ignored tests, lint suppressions, TODO-class markers; rises fail), `module-contracts.sh` (T00.11), `scrap-sweep.sh` (fails on tracked backup/editor files, `dbg!`, reasonless `#[ignore]`, conflict markers; lists untracked files and stashes), `hooks/pre-commit` (staged secret scan; fmt and `cargo check` when Rust changes).
 - [x] `.github/workflows/ci.yml`: "Full gate (Ubuntu)" on PRs and pushes to `main`; "macOS core (build · unit · contract)" on pushes to `main` only (owner decision 2026-10-05). `permissions: contents: read`; checkout without persisted credentials.
 - [x] README > Running the full gate; AGENTS.md repository-maturity paragraphs updated.
 - [ ] `scripts/quality/smoke.sh` — see Deferred: it needs `rikurid`.
 - [x] Security question: touches no auth/money/execution/private-data path. The gate itself protects against secrets entering history (allowed: ordinary commits pass; denied: planted key fails, T00.02).
 
-## 3. Debug — N/A
+## 3. Debug — secret scan read every ref, not the change under test
+
+- [x] Problem reproduced before fix. T00.01's "removed → green" run (37397462829, PR #8 at 31078aa) went red at `GATE secrets` ("leaks found: 1") although that branch never held a key. Its checkout (`fetch-depth: 0`) fetched every branch, including `drill/t00-02-secret`, and scanned 40 commits where PR #7's earlier run scanned 38. Reproduced locally on `stage-00/bootstrap`: `gitleaks git .` scanned 41 commits (remote-tracking refs included) and found 1 leak; with `--log-opts="--full-history HEAD"`, 39 commits and none.
+- [x] Root-cause **class**: a gate whose input is ambient state (every ref the clone happens to hold) instead of the change under test. Without `--log-opts`, gitleaks runs `git log --all`. Effects: an unrelated PR fails because of another branch, and local results depend on which remote branches were fetched.
+- [x] Sibling cases swept: the pre-commit hook scans only the staged diff; the ratchet and Scrap Sweep read tracked files (`git grep`, `git ls-files`); the guard tests are self-contained; the Module Contract check reads crate directories, which in CI are a clean checkout and locally are reported by the Scrap Sweep if untracked. No other instance. The kickoff record's `--all -m` scan was a deliberate whole-repository audit, not a gate.
+- [x] Tripwire, written and seen failing before the fix: `scripts/quality/tests/secret-scan-scope.sh` builds a throwaway repository with a clean `main` and a side branch holding a run-time-generated fake key. It requires a clean HEAD to pass while the other branch holds the key, and the side branch to fail. Against the old scan it printed `SCOPE FAIL: clean HEAD failed because another branch holds a secret` (exit 1). The fix-lock was then engaged on this record (2026-10-05 18:09 −0700). The fix changed only gate code: `scripts/quality/secret-scan.sh` (one shared scan command for the gate and its test) gained `--log-opts="--full-history HEAD"`, and the full gate runs `scripts/quality/tests/*.sh` as its first step after tool checks.
+- [x] Fix-lock release (owner-approved, 2026-10-05 18:24 −0700). Committing the fix was then refused by the pre-commit secret scan, correctly: the test's source contained a literal PEM header and footer. With the owner's approval the lock was released and only the fixture line changed, so the source builds the armor string at run time (`"RSA " + "PRIVATE KEY"`). The two SCOPE assertions are unchanged. Rechecked: against the fixed scan it passes; against the old scan (the `--log-opts` line removed, in a scratch copy) it still prints `SCOPE FAIL: clean HEAD failed because another branch holds a secret`, exit 1; the staged source scans clean.
+- [x] Remediation justified by evidence: the CI log's fetched-branch list and commit count, plus the local reproduction, point to scan scope. The fix narrows only what is scanned to the commit under test. Secrets on unmerged branches pushed to GitHub are still exposures; a whole-repository audit scan (all refs) is a separate periodic check, not this per-change gate.
 
 ## 4. Verify
 
 - [x] Unit tests: the gate runs the workspace tests (rikuri-domain: 22 unit + 4 property).
 - [ ] Shared contract suite — N/A for tooling.
 - [ ] Running-system probe — the "running system" for this change is CI itself: see the CI runs in the evidence log.
-- [ ] T00.01 red-test drill — evidence log.
-- [ ] T00.02 secret drill — evidence log.
-- [ ] T00.03 clean checkout from README — evidence log.
-- [ ] T00.11 contract check fails on a broken contract — evidence log.
-- [ ] Regression guard: each drill above is a deliberate known violation the gate must catch.
+- [ ] T00.01 red-test drill — red half Pass; green half pending a rerun with the fixed scan (evidence log).
+- [x] T00.02 secret drill — Pass (evidence log).
+- [x] T00.03 clean checkout from README (Ubuntu half) — Pass (evidence log). macOS half: the first macOS run on `main`.
+- [x] T00.11 contract check fails on a broken contract — Pass (evidence log).
+- [x] Regression guard: every gate class was shown failing on a known violation (evidence log), and the scope defect has its own self-test.
 
 ## 5. Close Out
 
@@ -72,5 +79,61 @@
 ## Evidence log
 
 ```text
-filled as runs complete
+# Local full gate, before the Debug fix (f56532b)
+$ scripts/quality/full-gate.sh            → RESULT: PASS (11 steps)
+
+# CI, PR #7 (stage-00/bootstrap at f56532b), run 37397124138, 2026-10-06 01:02–01:03Z
+Full gate (Ubuntu): success — all 11 GATE steps PASS, RESULT: PASS (11 steps)
+macOS core: skipped (pull_request; runs on pushes to main by design)
+
+# Pre-commit hook on real commits
+586d878: staged ~70.9 KB scanned, no leaks; fmt + check passed
+f56532b: staged ~23.6 KB scanned, no leaks
+
+# T00.01 red half — PR #8 (drill/t00-01-red-test at 3da7d98), run 37397240985
+── GATE clippy: PASS
+test t00_01_red_test_drill_must_fail ... FAILED
+assertion `left == right` failed: T00.01 red-test drill: CI must go red
+── GATE test: FAIL
+RESULT: FAIL (test)                       → conclusion: failure        Pass (red as required)
+
+# T00.01 green half, first attempt — PR #8 at 31078aa (test removed), run 37397462829
+── GATE test: PASS ... ── GATE secrets: FAIL, "leaks found: 1", 40 commits scanned
+RESULT: FAIL (secrets)                    → defect, see §3 Debug
+
+# T00.02 — PR #9 (drill/t00-02-secret at 8e13ee9), run 37397273842
+local commit without --no-verify: hook "leaks found: 1", commit refused (exit 1)
+committed with --no-verify (deliberate bypass), pushed
+── GATE test: PASS ── GATE dependencies: PASS
+WRN leaks found: 1
+── GATE secrets: FAIL
+RESULT: FAIL (secrets)                    → conclusion: failure        Pass (red as required)
+CI log 534 lines; 3 key-body canary fragments (24 chars each) found in log: 0
+positive control: same 3 fragments found in the planted file: 3; PEM header lines in log: 0
+                                                                     Pass (key not printed)
+
+# T00.03 Ubuntu half — fresh clone of stage-00/bootstrap, empty HOME (env -i), README only
+step 1: rustup.rs installer, no default toolchain
+step 2: README commands verbatim → /tmp/gitleaks.tgz: OK, /tmp/cargo-deny.tgz: OK
+step 4: rustc 1.98.1 (48a229cea 2026-09-01) installed from rust-toolchain.toml
+RESULT: PASS (11 steps), exit=0                                      Pass
+(the README commands' /tmp residue from this run was removed by name afterwards)
+
+# T00.11 and gate-class negative controls (scratch clone; nothing committed)
+module-contracts: intact exit 0; "## Must not own" renamed exit 1; README missing exit 1
+format: extra misformatted fn → exit 1 (Diff in …/lib.rs)
+clippy: unwrap() in library code → exit 101 (used `unwrap()` on an `Option` value)
+cargo deny: ulid = "*" → exit 2 (error[wildcard])
+ratchet: one #[ignore] test added → exit 1 (RATCHET ignored_tests: 1 > baseline 0)
+scrap: tracked notes.bak + reasonless #[ignore] → exit 1 (both reported)
+
+# Debug: scope defect reproduced, tripwire failing first, fix verified
+$ gitleaks git . (old scope, local)                  → 41 commits scanned, leaks found: 1
+$ scripts/quality/tests/secret-scan-scope.sh (old)   → SCOPE FAIL: clean HEAD failed because another branch holds a secret; exit=1
+$ guard.py fix-lock on <this record>                 → ENGAGED 2026-10-05T18:09:25-0700
+(fix: secret-scan.sh --log-opts="--full-history HEAD"; full gate runs gate self-tests)
+$ scripts/quality/tests/secret-scan-scope.sh (fixed) → SCOPE ok ×2; exit=0
+$ scripts/quality/secret-scan.sh                     → 39 commits scanned, no leaks found
+$ scripts/quality/secret-scan.sh <worktree of origin/drill/t00-02-secret> → leaks found: 1 (still caught)
+$ scripts/quality/full-gate.sh                       → RESULT: PASS (12 steps)
 ```
