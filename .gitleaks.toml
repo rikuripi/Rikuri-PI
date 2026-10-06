@@ -6,10 +6,15 @@
 # Default ruleset. Allowlists are reviewed changes: never allowlist docs/,
 # fixtures or test directories wholesale. A test needing secret-shaped data
 # generates it at run time instead of committing it.
+#
+# No path allowlist of our own. Both scans read only what git tracks, and the
+# build directory target/ is ignored, so an allowlist for it exempted nothing
+# but force-added files, and hid a key committed there and later deleted for
+# all of history (verifier, 2026-10-05; scripts/quality/tests/).
+#
+# Accepted gap (owner, 2026-10-05): `useDefault` keeps gitleaks' built-in
+# allowlist, which skips some paths (for example package-lock.json, go.sum,
+# *.svg, node_modules/). A key placed there is not found.
 
 [extend]
 useDefault = true
-
-[[allowlists]]
-description = "The top-level Rust build directory, never committed. Only the top level: a directory named target elsewhere is scanned."
-paths = ['''^target/''']

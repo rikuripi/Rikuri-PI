@@ -23,10 +23,106 @@ count() {
   printf '%s\n' "$out" | awk 'NF {s += $1} END {print s + 0}'
 }
 
+# rust_attrs: counts Rust attributes in tracked .rs files, prints
+# "<ignored_tests> <lint_suppressions>". Attributes may span lines (rustfmt
+# wraps long ones), so this reads whole files, not lines. Comments and the
+# contents of string and char literals are blanked first, so attribute text
+# in a comment or string neither counts nor ends an attribute early (a ")"
+# in a string once hid an allow; verifier, 2026-10-05). Counted: #[ignore …],
+# #[allow(…)], #![expect(…)], and any #[cfg_attr(…)] whose body holds
+# allow(…)/expect(…) (a suppression) or ignore (an ignored test); names may
+# be raw identifiers (#[r#allow(…)]). Not counted (recorded limitations):
+# attributes a macro generates, and files that are not .rs but are compiled
+# through #[path] or include!.
+rust_attrs() {
+  python3 - <<'PY'
+import re, subprocess, sys
+
+listed = subprocess.run(["git", "ls-files", "-z", "--", "*.rs"], capture_output=True)
+if listed.returncode != 0:
+    sys.stderr.write("RATCHET git ls-files failed\n")
+    sys.exit(1)
+
+IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+PLAIN = re.compile(r"[^/\"'A-Za-z_]+")
+RAW_OPEN = re.compile(r'(#*)"')
+CHAR = re.compile(r"'(?:\\(?:x[0-9a-fA-F]{2}|u\{[0-9a-fA-F_]{1,6}\}|.)|[^\\'\n])'")
+
+def code_only(text):
+    """The source with comments removed and literal contents emptied."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        if text.startswith("//", i):
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+            out.append(" ")
+        elif text.startswith("/*", i):  # block comments nest
+            depth, i = 1, i + 2
+            while i < n and depth:
+                if text.startswith("/*", i):
+                    depth, i = depth + 1, i + 2
+                elif text.startswith("*/", i):
+                    depth, i = depth - 1, i + 2
+                else:
+                    i += 1
+            out.append(" ")
+        elif text[i] == '"':
+            i += 1
+            while i < n and text[i] != '"':
+                i += 2 if text[i] == "\\" else 1
+            i += 1
+            out.append('""')
+        elif text[i] == "'":
+            m = CHAR.match(text, i)
+            if m:
+                out.append("''")
+                i = m.end()
+            else:  # a lifetime or loop label
+                out.append("'")
+                i += 1
+        elif m := IDENT.match(text, i):
+            word, i = m.group(), m.end()
+            raw = RAW_OPEN.match(text, i) if word in ("r", "br", "cr") else None
+            if raw:
+                close = '"' + raw.group(1)
+                end = text.find(close, raw.end())
+                i = n if end < 0 else end + len(close)
+                word += '""'
+            out.append(word)
+        elif m := PLAIN.match(text, i):
+            out.append(m.group())
+            i = m.end()
+        else:  # a "/" that starts no comment, or a non-ASCII character
+            out.append(text[i])
+            i += 1
+    return "".join(out)
+
+# An attribute opener, then the name, which may be a raw identifier (r#allow).
+ATTR = r"#\s*!?\s*\[\s*(?:r#)?"
+ignored = suppressions = 0
+for path in filter(None, listed.stdout.decode().split("\0")):
+    with open(path, encoding="utf-8", errors="replace") as f:
+        code = code_only(f.read())
+    ignored += len(re.findall(ATTR + r"ignore\b", code))
+    suppressions += len(re.findall(ATTR + r"(?:allow|expect)\s*\(", code))
+    for m in re.finditer(ATTR + r"cfg_attr\s*\(", code):
+        depth, i = 1, m.end()
+        while i < len(code) and depth:
+            depth += {"(": 1, ")": -1}.get(code[i], 0)
+            i += 1
+        body = code[m.end():i]
+        if re.search(r"\b(?:allow|expect)\s*\(", body):
+            suppressions += 1
+        if re.search(r"\bignore\b", body):
+            ignored += 1
+print(ignored, suppressions)
+PY
+}
+
 # Each count in its own assignment, so a failed count stops the script.
-ignored_tests="$(count '#\[ignore' '*.rs')"
-# Suppressions: #[allow(…)], #![expect(…)] and #[cfg_attr(…, allow(…))].
-lint_suppressions="$(count '#!?\[(cfg_attr\(.*)?(allow|expect)\(' '*.rs')"
+attrs="$(rust_attrs)"
+ignored_tests="${attrs% *}"
+lint_suppressions="${attrs#* }"
 todo_markers="$(count '\b(TODO|FIXME|XXX|HACK)\b' '*.rs' '*.sh' '*.toml' '*.yml' ':!scripts/quality/ratchet.sh')"
 current="$(cat <<JSON
 {
