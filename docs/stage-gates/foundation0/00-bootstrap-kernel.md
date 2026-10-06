@@ -7,7 +7,7 @@
 | Owner | Henry Chen (product owner); stage implementer per Build Record |
 | Planned start | 2026-10-01 |
 | Planned exit | mid-November 2026 (estimate; dates never close a gate) |
-| Status | NOT STARTED |
+| Status | IN PROGRESS (since 2026-10-05) |
 | Architecture version | v1.7 with ADR 0000 addenda through September 28, 2026 |
 
 The live checklist, item wording and acceptance tests are in the [Stage Plan, Stage 00](../../../doc/Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md#stage-00--bootstrap--kernel). This record does not copy them. It tracks status, Build Records, blockers and evidence against those item IDs.
@@ -15,14 +15,14 @@ The live checklist, item wording and acceptance tests are in the [Stage Plan, St
 ## Reference installation (owner decision, 2026-09-28)
 
 - **Machine:** the owner's current development machine. It also runs the owner's Bitcoin node containers on a rootful Docker engine; Rikuri-PI's sandbox controller uses a dedicated account or a rootless engine (S00.13) and never that engine.
-- **Now:** Ubuntu 24.04.5 LTS; running kernel (`uname -r`) 6.8.0-138-generic. Kernel 6.8.0-142 is installed and takes effect at the next reboot.
+- **On 2026-09-28:** Ubuntu 24.04.5 LTS; running kernel (`uname -r`) 6.8.0-138-generic. Kernel 6.8.0-142 is installed and takes effect at the next reboot.
 - **Principle:** the reference runs the newest stable Ubuntu LTS with that release's standard (GA) kernel. No hardware-enablement (HWE), OEM or mainline kernels. Unless the owner decides otherwise, kernel series changes happen only when the reference adopts a new LTS.
 - **Before S00.13:** upgrade to Ubuntu 26.04 LTS with its standard 7.0 kernel through Ubuntu's supported upgrade path (owner action, a node maintenance event outside this repository). S00.13 runs on it; it is admission evidence, not qualification.
 - **Upgrade path status (2026-09-28):** not yet offered. `do-release-upgrade -c` reports no new LTS, and Ubuntu's `meta-release-lts` lists `resolute` 26.04.1 LTS with `Supported: 0`. S00.01–S00.12 do not depend on it. If it is still unavailable when S00.13 is due, the owner chooses between waiting, a fresh 26.04 install, or running S00.13 on 24.04 as provisional admission evidence that the 26.04 move then repeats. Record the choice here.
 - **Full qualification:** E5/T03.x/Test Strategy §8.2 runs once at Stage 03 on 26.04's 7.0 kernel. Afterwards, kernel security patches in the 7.0 series use the automated tier-1 rerun; everything else follows the Engineering Standard's [two-tier rule](../../../doc/Rikuri_Pi_Engineering_Standard_v1.2.md#security-assurance-and-upstream-maintenance).
 - **Next LTS:** move to the next LTS (expected 28.04) once its first point release is out and Ubuntu enables LTS upgrades. That move is a planned tier-2 full requalification, scheduled between stages, never inside Stage 03.
 - **Not planned:** the 26.04 HWE kernels (which roll to newer series, possibly 7.3 from 26.10, about every six months until the final one). Moving to one is a deliberate owner decision and a tier-2 requalification ([ADR 0000 addendum](../../../doc/Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#september-28-2026--reference-installation-and-requalification-tiers)).
-- [ ] Upgrade done — evidence (`/etc/os-release`, `uname -r`):
+- [x] Upgrade done — evidence (`/etc/os-release`, `uname -r`): 2026-10-05, `Ubuntu 26.04.1 LTS`, running kernel `7.0.0-38-generic`, `linux-generic` 7.0.0-38.38 (GA). [Kickoff Build Record](../../build-records/2026-10-05-stage-00-kickoff.md#reference-installation). The S00.13 account check is still open: the owner account is in `docker` and `lxd`.
 
 ## Goal
 
@@ -36,7 +36,7 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 
 - [ ] T00.01–T00.12 green with linked evidence — evidence:
 - [ ] Owner demo: run `init`, create a sample task, see the same state after a forced restart, and see a deliberately broken change fail CI — evidence:
-- [ ] Receipt format agreed with the owner before the first build change (Stage Plan next actions) — evidence:
+- [x] Receipt format agreed with the owner before the first build change (Stage Plan next actions) — evidence: owner decision 2026-10-05, [kickoff Build Record](../../build-records/2026-10-05-stage-00-kickoff.md#owner-decisions-2026-10-05-in-session); format in [Receipt](#receipt) below.
 
 ## Required engineering gates
 
@@ -58,11 +58,11 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 
 ## Progress
 
-- none yet
+- [x] Kickoff: owner decisions, reference installation evidence — [Build Record](../../build-records/2026-10-05-stage-00-kickoff.md)
 
 ## Blockers
 
-- none
+- **Branch protection on `main` (S00.01, Bootstrap gate, T00.01 "blocks").** GitHub Free refuses protection on this private repository. Owner decision 2026-10-05: upgrade `rikuripi` to GitHub Pro and enable protection (the agent account has write, not admin). Until then CI can report red but cannot block a merge, and kernel code does not merge to `main`.
 
 ## Skipped / Deferred
 
@@ -75,6 +75,34 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 | Claim | Evidence |
 |---|---|
 | — | — |
+
+## Receipt
+
+Format adopted by the owner on 2026-10-05. Filled in when the stage demo can run; until then every claim is Not yet proven.
+
+```text
+Stage 00 receipt — Bootstrap + Kernel      <date>
+Verdict: <COMPLETE | NOT COMPLETE>  (<n> Pass · <n> Fail · <n> Not yet proven)
+
+Try it (≈3 min):  scripts/demo/stage-00.sh
+  You should see: init → sample task → rikurid killed → same task state
+  after restart → a planted bad change failing CI.
+
+What you can check            Result          Proof (test · date · link)
+Task survives forced restart  <result>        T00.07 crash matrix + replay IDs · <date> · <link>
+CLI → store → ledger is real  <result>        T00.09 trace · <date> · <link>
+Broken change is blocked      <result>        T00.01 red-test run · <date> · <link>
+Planted key blocked, unshown  <result>        T00.02 · <date> · <link>
+Core checks pass on macOS     <result>        T00.03 macOS job on main · <date> · <link>
+Pi driveable headlessly       <result>        E2 · <date> · <link>
+Sandbox backend admissible    <result>        S00.13 · <date> · <link>
+
+Limitations: <what is not covered>
+Your decision: <the next owner decision>
+Reproduce one claim: <one command>
+```
+
+Not yet issued.
 
 ## Exit decision
 
