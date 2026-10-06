@@ -6,10 +6,10 @@
 | Date | 2026-10-05 |
 | Author / agent session | Claude Code session for Henry Chen |
 | Branch | `stage-00/bootstrap` |
-| Commits | `dab40d6` (regression tests, red), `cd4e7fb` (fixture amendments, owner-approved), `c5bee23` (regression tests for the verifier's bypasses, red), `ca06400` (round-2 regression tests, red), `309ebb6` (round-3 regression tests, red), fix: fill at close-out |
+| Commits | `dab40d6` (regression tests, red), `cd4e7fb` (fixture amendments, owner-approved), `c5bee23` (regression tests for the verifier's bypasses, red), `ca06400` (round-2 regression tests, red), `309ebb6` (round-3 regression tests, red), `5e8148a` (fix) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md), Bootstrap gate |
 | Related ADR / requirement | S00.02, S00.03, T00.02, T00.11; [first review-fixes record](2026-10-05-s00-gate-review-fixes.md) |
-| Status | VERIFYING |
+| Status | COMPLETE (2026-10-05; CI run 37414127507 green. Session `05c5e1d0…`'s fix-lock awaits the owner's release) |
 
 **Risk note (protected paths):** changes `scripts/quality/*` and `.gitleaks.toml`; F1 and F2 let the required gate pass code that breaks the workspace lint policy.
 
@@ -199,6 +199,18 @@ $ git diff --check → clean
 ```
 
 **Delta check of the round-3 fix (verifier, ~21:30): PASS.** L7–L9 fixed (scratch git fixtures); R3, the single-colon `cargo:rustc-env=CLIPPY_ARGS` form and `RUSTC_BOOTSTRAP` still refused; narrowing confirmed end to end (a build script setting `RUSTFLAGS`, `CARGO_ENCODED_RUSTFLAGS` or `RUSTC_WRAPPER` through `rustc-env` leaves clippy failing, so dropping those names loses nothing); A1–A6 fixed; 25 links resolve; scrap clean. Not yet proven: CI (fix uncommitted at the time), and the literal "2 FAIL, 57 ok" pre-fix run (the fix-lock forbids copying test files).
+
+### Close-out
+
+```text
+$ git diff 309ebb6 5e8148a -- scripts/quality/tests → 0 lines (tests unchanged by the fix)
+$ git push origin stage-00/bootstrap → ea109b0..5e8148a (PR #7, draft)
+CI run 37414127507 (head 5e8148a), 2026-10-06T04:31Z:
+  Full gate (Ubuntu): success — GATE tools … scrap: PASS, 62 commits scanned, RESULT: PASS (13 steps)
+  macOS core: skipped (runs on main only, by design; Stage 00 gate record)
+```
+
+Plan criterion met: every regression test failed on the commit that added it (or, for pinning tests, passed on the code it pins) and passes on `5e8148a` with the test files unchanged since `309ebb6`; the strengthened redaction checks fail against a scan without `--redact`; the full gate passes locally and in CI. Changes reviewed by the `verifier` subagent over three rounds and a delta check (final verdict PASS).
 
 ## Limitations and follow-ups
 
