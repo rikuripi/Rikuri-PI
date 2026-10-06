@@ -9,9 +9,18 @@
 #     --cap-lints, or [env] CLIPPY_ARGS with force (all shown to let clippy
 #     pass code it refuses). The environment forms likewise: RUSTC_WRAPPER,
 #     CARGO_ALIAS_CLIPPY, and CARGO_BUILD_RUSTDOCFLAGS that allow lints.
+# Verification round 2 found more: rustflags that read an @argfile or
+# --force-warn lints (-D warnings does not promote them), a member build
+# script that sets CLIPPY_ARGS through rustc-env, and a test `runner` that
+# makes failing tests pass. The rest of the cases below pin refusals first
+# checked by hand: wrapper and tool keys, path patches, every dependency
+# kind, and a listing failure that still names the configuration.
 # Legitimate configuration still passes: a path dependency on another
-# member, an unrelated alias or [env] variable, an empty RUSTC_WRAPPER
-# (Cargo reads empty as unset). Fixture workspaces are generated here.
+# member, a patch to a member, an unrelated alias, [env] variable or build
+# script output, an empty RUSTC_WRAPPER (Cargo reads empty as unset).
+# Threat model (owner, 2026-10-05): a tripwire for accidental or careless
+# weakening, not for deliberate subversion by someone with commit access.
+# Fixture workspaces are generated here.
 set -euo pipefail
 here="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -81,4 +90,88 @@ expect fail "RUSTC_WRAPPER is refused" "RUSTC_WRAPPER" env RUSTC_WRAPPER="$tmp/w
 expect pass "an empty RUSTC_WRAPPER passes" "" env RUSTC_WRAPPER= "$policy" "$tmp"
 expect fail "CARGO_ALIAS_CLIPPY is refused" "CARGO_ALIAS_CLIPPY" env CARGO_ALIAS_CLIPPY="test --no-run" "$policy" "$tmp"
 expect fail "CARGO_BUILD_RUSTDOCFLAGS that allow lints are refused" "CARGO_BUILD_RUSTDOCFLAGS" env CARGO_BUILD_RUSTDOCFLAGS="-A warnings" "$policy" "$tmp"
+
+# Round 2: rustflags that read flags from a file or force-warn lints
+mkdir -p "$tmp/tools"; printf -- '--cap-lints\nallow\n' > "$tmp/tools/lints.txt"
+config $'[build]\nrustflags = ["@tools/lints.txt"]'
+expect fail "rustflags reading an @argfile are refused" "@tools/lints.txt" "$policy" "$tmp"
+config $'[build]\nrustflags = ["--force-warn", "clippy::unwrap_used"]'
+expect fail "rustflags with --force-warn are refused" "--force-warn" "$policy" "$tmp"
+rm -rf -- "$tmp/.cargo"
+expect fail "RUSTFLAGS reading an @argfile are refused" "RUSTFLAGS" env RUSTFLAGS="@$tmp/tools/lints.txt" "$policy" "$tmp"
+expect fail "CARGO_BUILD_RUSTFLAGS with --force-warn are refused" "CARGO_BUILD_RUSTFLAGS" env CARGO_BUILD_RUSTFLAGS="--force-warn clippy::all" "$policy" "$tmp"
+rm -rf -- "$tmp/tools"
+
+# Round 2: a member build script that sets clippy's or rustc's environment
+build_script() { # build_script <rustc-env assignment>
+  printf 'fn main() {\n    let _ = std::io::Write::write_all(&mut std::io::stdout(), b"cargo::rustc-env=%s\\n");\n}\n' "$1" > "$tmp/crates/good/build.rs"
+}
+build_script 'CLIPPY_ARGS=--cap-lints=allow__CLIPPY_HACKERY__'
+expect fail "a build script that sets CLIPPY_ARGS is refused" "crates/good/build.rs" "$policy" "$tmp"
+build_script 'RUSTC_BOOTSTRAP=1'
+expect fail "a build script that sets RUSTC_BOOTSTRAP is refused" "crates/good/build.rs" "$policy" "$tmp"
+build_script 'APP_BUILD=1'
+expect pass "a build script that sets an unrelated variable passes" "" "$policy" "$tmp"
+rm -f -- "$tmp/crates/good/build.rs"
+
+# Round 2: a test runner replaces how `cargo test` runs the tests
+config $'[target.\'cfg(all())\']\nrunner = "true"'
+expect fail "a config test runner is refused" "runner" "$policy" "$tmp"
+rm -rf -- "$tmp/.cargo"
+expect fail "CARGO_TARGET_<triple>_RUNNER is refused" "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER" \
+  env CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER=true "$policy" "$tmp"
+
+# Refusals first checked by hand: compiler keys, [env], aliases, environment
+for key in rustc rustc-workspace-wrapper rustdoc; do
+  config "$(printf '[build]\n%s = "tools/x"' "$key")"
+  expect fail "a config build.${key} is refused" "build.${key}" "$policy" "$tmp"
+done
+config $'[env]\nRUSTC_BOOTSTRAP = "1"'
+expect fail "[env] RUSTC_BOOTSTRAP is refused" "RUSTC_BOOTSTRAP" "$policy" "$tmp"
+config $'[alias]\nfmt = "check"'
+expect fail "a config [alias] that shadows fmt is refused" "alias" "$policy" "$tmp"
+rm -rf -- "$tmp/.cargo"
+for var in RUSTC RUSTDOC RUSTC_WORKSPACE_WRAPPER CARGO_BUILD_RUSTC CARGO_BUILD_RUSTC_WRAPPER \
+    CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER CARGO_BUILD_RUSTDOC CLIPPY_ARGS CARGO_ALIAS_FMT CARGO_ALIAS_DENY; do
+  expect fail "${var} is refused" "${var} " env "${var}=$tmp/x" "$policy" "$tmp"
+done
+expect fail "CARGO_ENCODED_RUSTDOCFLAGS that allow lints are refused" "CARGO_ENCODED_RUSTDOCFLAGS" \
+  env CARGO_ENCODED_RUSTDOCFLAGS=$'-A\x1fwarnings' "$policy" "$tmp"
+
+# Every dependency kind that can name an excluded crate
+member crates/sneaky ''
+workspace $'exclude = ["crates/sneaky"]\n\n[workspace.dependencies]\nsneaky = { path = "crates/sneaky" }'
+member crates/good "$lints" $'[dependencies]\nsneaky.workspace = true'
+expect fail "an excluded crate inherited from [workspace.dependencies] is refused" "crates/sneaky" "$policy" "$tmp"
+workspace 'exclude = ["crates/sneaky"]'
+for table in dev-dependencies build-dependencies "target.'cfg(unix)'.dependencies"; do
+  member crates/good "$lints" "$(printf '[%s]\nsneaky = { path = "../sneaky" }' "$table")"
+  expect fail "an excluded crate in [${table}] is refused" "crates/sneaky" "$policy" "$tmp"
+done
+member crates/good "$lints" $'[dependencies]\nrenamed = { package = "sneaky", path = "../sneaky" }'
+expect fail "an excluded crate under another name is refused" "crates/sneaky" "$policy" "$tmp"
+rm -rf -- "$tmp/crates/sneaky" "$tmp/Cargo.lock"
+member crates/good "$lints"
+
+# Path patches and overrides
+mkdir -p "$tmp/vendor/foo/src"
+printf '[package]\nname = "foo"\nversion = "0.1.0"\nedition = "2024"\n' > "$tmp/vendor/foo/Cargo.toml"
+printf 'pub fn f() {}\n' > "$tmp/vendor/foo/src/lib.rs"
+workspace $'\n[patch.crates-io]\nfoo = { path = "vendor/foo" }'
+expect fail "a [patch] to a crate outside the workspace is refused" "vendor/foo" "$policy" "$tmp"
+workspace $'\n[patch.crates-io]\nfoo = { path = "crates/good" }'
+expect pass "a [patch] to a member passes" "" "$policy" "$tmp"
+workspace $'\n[replace]\n"foo:0.1.0" = { path = "vendor/foo" }'
+expect fail "a [replace] to a crate outside the workspace is refused" "vendor/foo" "$policy" "$tmp"
+workspace
+config $'[patch.crates-io]\nfoo = { path = "vendor/foo" }'
+expect fail "a config [patch] to a crate outside the workspace is refused" "vendor/foo" "$policy" "$tmp"
+config $'paths = ["vendor/foo"]'
+expect fail "a config paths override is refused" "paths override" "$policy" "$tmp"
+rm -rf -- "$tmp/.cargo" "$tmp/vendor"
+
+# A workspace Cargo cannot load still has its configuration named
+rm -f -- "$tmp/crates/good/src/lib.rs"
+config $'[alias]\nclippy = ["test", "--no-run"]'
+expect fail "an unloadable workspace still names a weakening config" "alias" "$policy" "$tmp"
 exit "$failed"

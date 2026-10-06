@@ -62,6 +62,18 @@ fn g() {}
 #[cfg_attr(all(), allow(dead_code))]
 fn h() {}
 RS
+check 'raw-identifier attribute names count (verification round 2)' 1 4 <<'RS'
+#![r#allow(dead_code)]
+#[r#allow(clippy::unwrap_used)]
+pub fn f() {}
+#[r#expect(dead_code)]
+fn g() {}
+#[r#cfg_attr(all(), allow(dead_code))]
+fn h() {}
+#[r#ignore]
+#[test]
+fn t() {}
+RS
 check 'attribute text inside comments and strings does not count' 0 0 <<'RS'
 // #[allow(clippy::unwrap_used)] in a line comment
 /// Doc text: #[ignore] and #[cfg_attr(test, allow(dead_code))]
