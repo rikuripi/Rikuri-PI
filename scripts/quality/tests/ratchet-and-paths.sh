@@ -2,7 +2,8 @@
 # Regression tests (PR #7 review, 2026-10-05):
 # 1. The ratchet's suppression count missed `#[cfg_attr(…, allow(…))]`.
 # 2. The secret-scan allowlist `(^|/)target/` exempted a directory named
-#    `target` at any depth; only the top-level Rust build directory is exempt.
+#    `target` at any depth. (A later change removed the top-level exemption
+#    too; see secret-scan-target-history.sh.)
 set -euo pipefail
 here="$(cd "$(dirname "$0")/.." && pwd)"
 
