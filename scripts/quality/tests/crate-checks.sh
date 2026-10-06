@@ -5,7 +5,9 @@
 #    must refuse such a crate and accept one that opts in.
 # 2. module-contracts.sh matched heading prefixes, so "## Healthiness"
 #    counted as "## Health". Headings must match exactly.
-# Fixture crates are generated here; none are committed.
+# Fixture crates are generated here; none are committed. Both checks ask
+# Cargo for the workspace members (second review, F1), so the fixture is a
+# workspace Cargo can load: a root manifest, and a target in every crate.
 set -euo pipefail
 here="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -15,9 +17,11 @@ trap cleanup EXIT
 
 crate() { # crate <name> <lints-table> <health-heading>
   mkdir -p "$tmp/crates/$1/src"
-  printf '[package]\nname = "%s"\nversion = "0.1.0"\n%s\n' "$1" "$2" > "$tmp/crates/$1/Cargo.toml"
+  printf '[package]\nname = "%s"\nversion = "0.1.0"\nedition = "2024"\n%s\n' "$1" "$2" > "$tmp/crates/$1/Cargo.toml"
+  printf 'pub fn f() {}\n' > "$tmp/crates/$1/src/lib.rs"
   printf '# %s\n\n## Owns\n\n## Must not own\n\n%s\n' "$1" "$3" > "$tmp/crates/$1/README.md"
 }
+printf '[workspace]\nresolver = "3"\nmembers = ["crates/*"]\n\n[workspace.lints.rust]\nunsafe_code = "forbid"\n' > "$tmp/Cargo.toml"
 
 failed=0
 expect() { # expect <pass|fail> <label> <command...>

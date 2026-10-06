@@ -4,6 +4,9 @@
 # `git log -p` shows no diff for merge commits unless asked, so the scan
 # passed a HEAD whose tree held a key. The scan must fail, and its output
 # must show the finding with the value redacted, never the value.
+# Second review: "never the value" checked one slice of the key that
+# gitleaks does not print even unredacted, so it could not fail. Every line
+# of the key is checked now (as in redaction-and-ignored-files.sh).
 set -euo pipefail
 scan="$(cd "$(dirname "$0")/.." && pwd)/secret-scan.sh"
 
@@ -20,12 +23,14 @@ g switch -q main
 echo main > "$tmp/config.txt"; g commit -q -am main
 g merge -q side >/dev/null 2>&1 || true   # conflicts by design
 
-body="$(python3 - "$tmp/config.txt" <<'PY'
+body="$(python3 - "$tmp/config.txt" "$tmp/lines" <<'PY'
 import base64, os, sys, textwrap
 body = base64.b64encode(os.urandom(1190)).decode()
 armor = "RSA " + "PRIVATE KEY"  # split so this source is not itself key-shaped
-open(sys.argv[1], "w").write("-----BEGIN " + armor + "-----\n" + "\n".join(textwrap.wrap(body, 64)) + "\n-----END " + armor + "-----\n")
-print(body[320:350])  # inside one 64-character line
+lines = textwrap.wrap(body, 64)
+open(sys.argv[1], "w").write("-----BEGIN " + armor + "-----\n" + "\n".join(lines) + "\n-----END " + armor + "-----\n")
+open(sys.argv[2], "w").write("\n".join(l[:20] for l in lines) + "\n")
+print(body[320:350])  # inside one 64-character line: proves the key is in HEAD
 PY
 )"
 g add config.txt
@@ -40,10 +45,10 @@ if out="$("$scan" "$tmp" 2>&1)"; then
 else
   echo "MERGE ok: a key introduced in a merge commit fails the scan"
 fi
-if printf '%s' "$out" | grep -q -F "$body"; then
-  echo "MERGE FAIL: the scan printed the key"; failed=1
+if printf '%s' "$out" | grep -q -F -f "$tmp/lines"; then
+  echo "MERGE FAIL: the scan printed part of the key"; failed=1
 else
-  echo "MERGE ok: the key is not printed"
+  echo "MERGE ok: no line of the key is printed"
 fi
 if printf '%s' "$out" | grep -q 'REDACTED'; then
   echo "MERGE ok: the finding is shown, redacted"

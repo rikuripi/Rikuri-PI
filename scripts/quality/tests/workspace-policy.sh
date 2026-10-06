@@ -25,6 +25,9 @@ member() { # member <dir> <lints-table> <write-readme:yes|no>
 }
 printf '[workspace]\nresolver = "3"\nmembers = ["crates/*", "tools/*"]\n\n[workspace.lints.rust]\nunsafe_code = "forbid"\n' > "$tmp/Cargo.toml"
 member crates/good $'[lints]\nworkspace = true' yes
+# A compliant member under tools/ too: Cargo refuses a workspace whose member
+# glob matches nothing, so the fixture must be a workspace Cargo can load.
+member tools/ok $'[lints]\nworkspace = true' yes
 
 failed=0
 expect() { # expect <pass|fail> <label> <must-mention> <command...>
