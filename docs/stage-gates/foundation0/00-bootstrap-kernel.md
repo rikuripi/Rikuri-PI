@@ -68,7 +68,7 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
-| macOS half of T00.03; exit item "platform-neutral macOS core suite green" | DEFERRED within Stage 00 | Owner cost decision 2026-10-05: no macOS CI job for now | Stage 00 cannot close while Not yet proven. Core crates stay platform-neutral so adding the job needs no rework | Henry Chen | Before the Stage 00 exit decision | Owner enables the macOS job and it runs the platform-neutral build/unit/contract suite green |
+| none | | | | | | |
 
 ## Evidence
 
@@ -89,9 +89,11 @@ Try it (≈3 min):  scripts/demo/stage-00.sh
   after restart → a planted bad change failing CI.
 
 What you can check            Result          Proof (test · date · link)
-Task survives forced restart  <result>        T00.07 · <date> · <link>
-Broken change is blocked      <result>        T00.01 · <date> · <link>
+Task survives forced restart  <result>        T00.07 crash matrix + replay IDs · <date> · <link>
+CLI → store → ledger is real  <result>        T00.09 trace · <date> · <link>
+Broken change is blocked      <result>        T00.01 red-test run · <date> · <link>
 Planted key blocked, unshown  <result>        T00.02 · <date> · <link>
+Core checks pass on macOS     <result>        T00.03 macOS job on main · <date> · <link>
 Pi driveable headlessly       <result>        E2 · <date> · <link>
 Sandbox backend admissible    <result>        S00.13 · <date> · <link>
 
