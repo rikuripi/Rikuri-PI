@@ -364,4 +364,32 @@ mod tests {
             previous = next;
         }
     }
+
+    /// Regression (found building the ledger, 2026-10-05): `AnyId` could be
+    /// deserialized only from `'static` text, so reading it from a stored
+    /// row did not compile.
+    #[test]
+    fn any_id_deserializes_from_runtime_text() {
+        let id: AnyId = EventId::generate(&Fixed(7)).unwrap().into();
+        let text: String = serde_json::to_string(&vec![id]).unwrap();
+        let parsed: Vec<AnyId> = serde_json::from_str(&text).unwrap();
+        assert_eq!(parsed, vec![id]);
+        let bad = String::from("[\"nope_01ARZ3NDEKTSV4RRFFQ69G5FAV\"]");
+        assert!(serde_json::from_str::<Vec<AnyId>>(&bad).is_err());
+    }
+
+    /// Regression (PR #7 review, 2026-10-05): a rejected ID echoed the whole
+    /// untrusted input into the error, so a 1 MiB input made a 1 MiB error.
+    #[test]
+    fn errors_do_not_echo_unbounded_input() {
+        let huge = format!("task_{}", "A".repeat(1 << 20));
+        for err in [
+            huge.parse::<TaskId>().unwrap_err(),
+            huge.parse::<AnyId>().unwrap_err(),
+            "x".repeat(1 << 20).parse::<TaskId>().unwrap_err(),
+        ] {
+            let shown = err.to_string();
+            assert!(shown.len() < 200, "error is {} bytes", shown.len());
+        }
+    }
 }
