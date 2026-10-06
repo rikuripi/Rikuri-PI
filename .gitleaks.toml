@@ -1,0 +1,15 @@
+# gitleaks configuration: Stage Plan S00.02 secret scan.
+# Used by scripts/quality/hooks/pre-commit (staged change) and
+# scripts/quality/full-gate.sh (history of the checked-out branch, locally and
+# in CI). Findings print with the value redacted.
+#
+# Default ruleset. Allowlists are reviewed changes: never allowlist docs/,
+# fixtures or test directories wholesale. A test needing secret-shaped data
+# generates it at run time instead of committing it.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Rust build output, never committed"
+paths = ['''(^|/)target/''']

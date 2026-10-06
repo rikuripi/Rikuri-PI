@@ -1,6 +1,6 @@
 # Rikuri Pi
 
-Rikuri Pi is a planned Personal Intelligence Platform. This repository currently contains the project planning baseline, Git hygiene, and the AI-session guard described in AGENTS.md. No Foundation-0 implementation or acceptance gate has passed yet.
+Rikuri Pi is a planned Personal Intelligence Platform. This repository contains the project planning baseline, Git hygiene, the AI-session guard described in AGENTS.md, and the start of Foundation-0 Stage 00: a Rust workspace with its first crate (`rikuri-domain`) and the repository's full quality gate. No Foundation-0 acceptance gate has passed yet.
 
 For repository work, follow [AGENTS.md](AGENTS.md), which adapts the build procedure to Rikuri Pi’s SDLC and current repository maturity.
 
@@ -29,3 +29,37 @@ git status
 ```
 
 Keep credentials, private keys, local databases, and backups outside the checkout where possible. The [`.gitignore`](.gitignore) covers common accidental additions on macOS and Linux, but it cannot protect a file already tracked by Git or replace the secret scan required in Stage 00. Commit `Cargo.lock` when the Rust workspace is created; it is deliberately not ignored.
+
+## Running the full gate
+
+`scripts/quality/full-gate.sh` is the repository's required gate. CI runs the same script on every pull request and every push to `main`, so a local pass and a CI pass mean the same thing. On a clean Ubuntu machine:
+
+1. Install [rustup](https://rustup.rs) and `curl`. The pinned toolchain in `rust-toolchain.toml` (with rustfmt and clippy) installs itself the first time `cargo` runs in the checkout. Python 3 (Ubuntu's default `python3`) runs the guard tests and the ratchet.
+2. Install the two pinned gate tools, checking their published SHA-256 digests:
+
+   ```sh
+   curl -sSfL -o /tmp/gitleaks.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+   echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  /tmp/gitleaks.tgz" | sha256sum -c -
+   tar -xzf /tmp/gitleaks.tgz -C /tmp gitleaks && install -D -m 755 /tmp/gitleaks ~/.local/bin/gitleaks
+
+   curl -sSfL -o /tmp/cargo-deny.tgz https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
+   echo "9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f  /tmp/cargo-deny.tgz" | sha256sum -c -
+   tar -xzf /tmp/cargo-deny.tgz -C /tmp && install -D -m 755 /tmp/cargo-deny-0.20.2-x86_64-unknown-linux-musl/cargo-deny ~/.cargo/bin/cargo-deny
+   ```
+
+   `~/.local/bin` and `~/.cargo/bin` must be on `PATH` (rustup adds the second).
+3. Turn on the pre-commit hook, which scans the staged change for secrets and checks formatting and types when Rust files change:
+
+   ```sh
+   git config core.hooksPath scripts/quality/hooks
+   ```
+
+4. Run the gate from the repository root:
+
+   ```sh
+   scripts/quality/full-gate.sh
+   ```
+
+   It prints each step and stops at the first failure. A passing run ends with `RESULT: PASS (11 steps)`. The steps are: pinned tool versions, AI-session guard tests, `cargo fmt --check`, build, clippy with warnings as errors, unit, contract and property tests, `cargo deny` (advisories, licenses, sources), gitleaks over the branch's history with values redacted, the debt ratchet, the Module Contract check, and the Scrap Sweep. The sweep lists untracked files and stashes without failing; each needs a disposition before a change is closed out.
+
+The macOS job in CI builds and tests the same workspace on every merge to `main`. Every crate stays platform-neutral; Ubuntu remains the only full execution and security reference.

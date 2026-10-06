@@ -1,0 +1,39 @@
+# cargo-deny policy: Stage Plan S00.01 "Adopt: cargo-deny — license + advisory
+# gate". Run by scripts/quality/full-gate.sh locally and in CI.
+
+[advisories]
+# Every RustSec vulnerability fails the gate. An entry in `ignore` needs a
+# reason, an owner and a removal date in the Build Record that adds it.
+yanked = "deny"
+unmaintained = "all"
+unsound = "all"
+ignore = []
+
+[licenses]
+# Permissive licenses only. Adding one is a reviewed change.
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "Unicode-3.0",
+    "Zlib",
+]
+confidence-threshold = 0.93
+
+[licenses.private]
+# Workspace crates are unpublished (publish = false) and carry no license.
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

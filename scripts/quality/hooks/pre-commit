@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Pre-commit gate (Engineering Standard, Phase 0): secret scan of the staged
+# change, then format and typecheck when Rust files are staged.
+# Install once per clone: git config core.hooksPath scripts/quality/hooks
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+fail() { echo "pre-commit: $1" >&2; exit 1; }
+
+command -v gitleaks >/dev/null || fail "gitleaks not installed (README > Running the full gate)"
+gitleaks git --pre-commit --staged --config .gitleaks.toml --redact --no-banner --exit-code 1 \
+  || fail "possible secret in the staged change (value redacted above); remove it, do not allowlist it"
+
+if git diff --cached --name-only | grep -qE '(\.rs|Cargo\.toml|Cargo\.lock|rust-toolchain\.toml)$'; then
+  cargo fmt --all --check || fail "formatting differs; run: cargo fmt --all"
+  cargo check --workspace --all-targets --locked --quiet || fail "cargo check failed"
+fi
