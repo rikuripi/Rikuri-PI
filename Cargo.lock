@@ -427,6 +427,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "rikuri-ledger"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "proptest",
+ "rikuri-domain",
+ "rikuri-storage",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "ulid",
+]
+
+[[package]]
 name = "rikuri-storage"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,23 @@
+[package]
+name = "rikuri-ledger"
+version = "0.1.0"
+description = "Rikuri Pi append-only referenced-content event ledger, idempotency records and replay helpers"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+blake3.workspace = true
+rikuri-domain.workspace = true
+rikuri-storage.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+tempfile.workspace = true
+ulid.workspace = true
+
+[lints]
+workspace = true
