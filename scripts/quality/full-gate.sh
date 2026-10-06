@@ -58,6 +58,7 @@ step dependencies cargo deny --locked check
 step secrets scripts/quality/secret-scan.sh
 step ratchet scripts/quality/ratchet.sh
 step contracts scripts/quality/module-contracts.sh
+step crate-policy scripts/quality/crate-policy.sh
 step scrap scripts/quality/scrap-sweep.sh
 
 echo "RESULT: PASS (${steps} steps)"

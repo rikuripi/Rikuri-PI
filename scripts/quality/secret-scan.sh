@@ -13,5 +13,11 @@
 set -euo pipefail
 repo="${1:-$(git rev-parse --show-toplevel)}"
 config="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)/.gitleaks.toml"
-exec gitleaks git "$repo" --config "$config" --redact --no-banner --exit-code 1 \
-  --log-opts="--full-history HEAD"
+#
+# -m: also scan each merge commit's own diff. Without it `git log -p` shows
+# nothing for merges, so a key written while resolving a conflict passed
+# (PR #7 review; regression test in scripts/quality/tests/).
+# --verbose: print each finding (rule, file, line, commit) with the value
+# redacted, so a red scan says where to look without saying what it found.
+exec gitleaks git "$repo" --config "$config" --redact --verbose --no-banner --exit-code 1 \
+  --log-opts="--full-history -m HEAD"

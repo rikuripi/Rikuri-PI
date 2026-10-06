@@ -6,7 +6,7 @@
 | Date | 2026-10-05 |
 | Author / agent session | Claude Code session for Henry Chen |
 | Branch | `stage-00/bootstrap` |
-| Commits | fill at close-out |
+| Commits | 586d878 (crate and workspace); 9b91f0e and the review-fix commit for two defects found later ([review-fixes record](2026-10-05-s00-gate-review-fixes.md)) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md) |
 | Related ADR / requirement | S00.04, S00.09 (contract), S00.10 (ADR 0001); Architecture §4, §8, §19.1, §21.3, §27.6, §45.1; PRD §10.1, SEC-003, SEC-023 |
 | Status | IN PROGRESS |
@@ -35,7 +35,7 @@
 
 - [x] Smallest coherent implementation completed: `src/{id,privacy,authority,risk,trust,deletion,schema,wire}.rs`, `tests/id_properties.rs`.
 - [x] Inputs crossing trust boundaries validated: every `FromStr`/serde path validates (closed enums, canonical IDs, provenance authority, schema version ≥ 1).
-- [x] New code is typed and cohesive; largest file `id.rs` ≈ 330 lines.
+- [x] New code is typed and cohesive; largest file `id.rs`, 367 lines at 586d878 and 410 after the review fixes (about half of it tests), below the 800-line review threshold.
 - [x] Old/replaced implementation removed: N/A, new.
 - [x] Module Contract: [`crates/rikuri-domain/README.md`](../../crates/rikuri-domain/README.md).
 - [x] Security question: touches instruction authority and privacy classification as types. Allowed path: `user_live` → `current_user`; denied: every other origin, and any stored record claiming more. Tested both ways (`authority::tests`).
@@ -56,7 +56,7 @@
 
 ## 5. Close Out
 
-- [ ] Full required gate green — local `RESULT: PASS (11 steps)`; CI run recorded in the bootstrap Build Record.
+- [x] Full required gate green — local and CI at 5908a8c (12 steps; bootstrap record); after the review fixes, 13 steps (review-fixes record).
 - [ ] Scrap Sweep complete; deleted artifacts listed:
 - [x] No unexplained skipped/disabled tests or new unowned debt: ratchet baseline 0/0/0.
 - [x] Documentation updated: Module Contract, ADR 0001.
@@ -76,5 +76,23 @@ Execution-evidence fields (run/outcome/profile identity): N/A, no execution path
 ## Evidence log
 
 ```text
-filled at close-out
+$ cargo test -p rikuri-domain   (586d878)
+test result: ok. 22 passed (unit)
+test result: ok. 4 passed (property tests)
+
+# Regression guard: deliberately broken rules in a scratch copy (builder)
+Origin::UserAuthored mapped to current_user → only_a_live_user_command_has_authority FAILED
+PrivacyClass::combine using min           → combining_never_lowers_restriction FAILED
+
+# Independent verifier (PR #7 review) mutations, same method
+tool_output mapped to current_user        → only_a_live_user_command_has_authority FAILED
+deserialization authority check disabled  → stored_records_cannot_raise_authority FAILED
+canonical-form check removed              → non_canonical_and_malformed_text_is_rejected FAILED
+35+ hostile ID/provenance inputs (case, Crockford aliases, overflow, whitespace, Unicode look-alikes,
+NUL, 1 MiB): all refused, none panicked; maximum ULID 7ZZZ… accepted
+
+# Defects found after 586d878 (fixed under the review-fixes record, tests first)
+AnyId could not be deserialized from runtime text (E0597) → hand-written Deserialize
+rejected IDs echoed unbounded input (1 MiB error)        → bounded to 64 escaped bytes
+$ cargo test -p rikuri-domain   (after the fix) → 24 unit + 4 property passed
 ```

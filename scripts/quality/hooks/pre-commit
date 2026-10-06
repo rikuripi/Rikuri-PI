@@ -7,8 +7,8 @@ cd "$(git rev-parse --show-toplevel)"
 fail() { echo "pre-commit: $1" >&2; exit 1; }
 
 command -v gitleaks >/dev/null || fail "gitleaks not installed (README > Running the full gate)"
-gitleaks git --pre-commit --staged --config .gitleaks.toml --redact --no-banner --exit-code 1 \
-  || fail "possible secret in the staged change (value redacted above); remove it, do not allowlist it"
+gitleaks git --pre-commit --staged --config .gitleaks.toml --redact --verbose --no-banner --exit-code 1 \
+  || fail "possible secret in the staged change (finding above, value redacted); remove it, do not allowlist it"
 
 if git diff --cached --name-only | grep -qE '(\.rs|Cargo\.toml|Cargo\.lock|rust-toolchain\.toml)$'; then
   cargo fmt --all --check || fail "formatting differs; run: cargo fmt --all"

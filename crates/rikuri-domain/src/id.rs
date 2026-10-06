@@ -15,24 +15,27 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use ulid::Ulid;
 
-/// Why an ID string or ID generation was rejected.
+use crate::wire::bounded;
+
+/// Why an ID string or ID generation was rejected. Rejected input is held
+/// bounded and escaped (at most 64 bytes plus its length), never in full.
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum IdError {
-    #[error("ID {0:?} has no `<prefix>_<ulid>` separator")]
+    #[error("ID \"{0}\" has no `<prefix>_<ulid>` separator")]
     Malformed(String),
-    #[error("ID {value:?} has prefix {found:?}, expected {expected:?}")]
+    #[error("ID \"{value}\" has prefix \"{found}\", expected \"{expected}\"")]
     WrongKind {
         value: String,
         expected: &'static str,
         found: String,
     },
-    #[error("ID {0:?} has an unregistered prefix")]
+    #[error("ID \"{0}\" has an unregistered prefix")]
     UnknownPrefix(String),
-    #[error("ID {0:?} does not contain a valid ULID")]
+    #[error("ID \"{0}\" does not contain a valid ULID")]
     InvalidUlid(String),
-    #[error("ID {0:?} is not in canonical form (uppercase ULID)")]
+    #[error("ID \"{0}\" is not in canonical form (uppercase ULID)")]
     NonCanonical(String),
-    #[error("ID {0:?} uses the nil ULID, which is never issued")]
+    #[error("ID \"{0}\" uses the nil ULID, which is never issued")]
     Nil(String),
     #[error("ID source unavailable: {0}")]
     SourceUnavailable(String),
@@ -71,18 +74,19 @@ impl IdSource for SystemIdSource {
 
 /// Splits `<prefix>_<ulid>` and validates the ULID part. Returns the prefix.
 fn parse_parts(value: &str) -> Result<(&str, Ulid), IdError> {
+    let shown = || bounded(value);
     let (prefix, encoded) = value
         .rsplit_once('_')
-        .ok_or_else(|| IdError::Malformed(value.to_owned()))?;
+        .ok_or_else(|| IdError::Malformed(shown()))?;
     if prefix.is_empty() || !prefix.bytes().all(|b| b.is_ascii_lowercase()) {
-        return Err(IdError::Malformed(value.to_owned()));
+        return Err(IdError::Malformed(shown()));
     }
-    let ulid = Ulid::from_string(encoded).map_err(|_| IdError::InvalidUlid(value.to_owned()))?;
+    let ulid = Ulid::from_string(encoded).map_err(|_| IdError::InvalidUlid(shown()))?;
     if ulid.to_string() != encoded {
-        return Err(IdError::NonCanonical(value.to_owned()));
+        return Err(IdError::NonCanonical(shown()));
     }
     if ulid == Ulid::nil() {
-        return Err(IdError::Nil(value.to_owned()));
+        return Err(IdError::Nil(shown()));
     }
     Ok((prefix, ulid))
 }
@@ -131,9 +135,9 @@ macro_rules! define_ids {
                     let (prefix, ulid) = parse_parts(value)?;
                     if prefix != $prefix {
                         return Err(IdError::WrongKind {
-                            value: value.to_owned(),
+                            value: bounded(value),
                             expected: $prefix,
-                            found: prefix.to_owned(),
+                            found: bounded(prefix),
                         });
                     }
                     Ok(Self(ulid))
@@ -191,8 +195,12 @@ define_ids! {
 /// An ID of any registered kind, for fields such as an event's subject list
 /// that may reference several kinds. It keeps its prefix, so it never loses
 /// what it refers to.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-#[serde(try_from = "String", into = "String")]
+///
+/// `Deserialize` is written by hand: the prefix is held as `&'static str`,
+/// and a derived impl would accept only `'static` input, so an `AnyId` could
+/// not be read from a stored row (regression test below).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
+#[serde(into = "String")]
 pub struct AnyId {
     prefix: &'static str,
     ulid: Ulid,
@@ -225,8 +233,15 @@ impl FromStr for AnyId {
             .iter()
             .copied()
             .find(|p| *p == prefix)
-            .ok_or_else(|| IdError::UnknownPrefix(value.to_owned()))?;
+            .ok_or_else(|| IdError::UnknownPrefix(bounded(value)))?;
         Ok(AnyId { prefix, ulid })
+    }
+}
+
+impl<'de> Deserialize<'de> for AnyId {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let text = <std::borrow::Cow<'de, str>>::deserialize(d)?;
+        text.parse().map_err(serde::de::Error::custom)
     }
 }
 

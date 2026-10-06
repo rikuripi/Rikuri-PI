@@ -7,12 +7,40 @@
 
 use thiserror::Error;
 
+/// At most this many bytes of rejected input appear in an error message.
+pub(crate) const SHOWN_BYTES: usize = 64;
+
+/// Rejected input as an error shows it: escaped, and cut at
+/// [`SHOWN_BYTES`] with the full length noted, so hostile input cannot
+/// inflate error messages, logs or responses.
+pub(crate) fn bounded(value: &str) -> String {
+    let mut out = String::new();
+    for c in value.escape_debug() {
+        if out.len() + c.len_utf8() > SHOWN_BYTES {
+            out.push_str(&format!("… ({} bytes)", value.len()));
+            return out;
+        }
+        out.push(c);
+    }
+    out
+}
+
 /// A wire string that names no variant of the expected enum.
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
-#[error("unknown {type_name} value {value:?}")]
+#[error("unknown {type_name} value \"{value}\"")]
 pub struct UnknownVariant {
     pub type_name: &'static str,
+    /// The rejected input, bounded and escaped.
     pub value: String,
+}
+
+impl UnknownVariant {
+    pub fn new(type_name: &'static str, value: &str) -> UnknownVariant {
+        UnknownVariant {
+            type_name,
+            value: bounded(value),
+        }
+    }
 }
 
 /// Defines a closed enum with stable wire names.
@@ -53,10 +81,7 @@ macro_rules! wire_enum {
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 match s {
                     $($wire => Ok($name::$variant),)+
-                    _ => Err($crate::wire::UnknownVariant {
-                        type_name: stringify!($name),
-                        value: s.to_owned(),
-                    }),
+                    _ => Err($crate::wire::UnknownVariant::new(stringify!($name), s)),
                 }
             }
         }

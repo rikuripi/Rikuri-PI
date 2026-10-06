@@ -6,7 +6,7 @@
 | Date | 2026-10-05 |
 | Author / agent session | Claude Code session for Henry Chen |
 | Branch | `stage-00/bootstrap` |
-| Commits | 586d878 (workspace + first crate), f56532b (gates), 62272c4 (secret-scan scope fix) |
+| Commits | 586d878 (workspace + first crate), f56532b (gates), 62272c4 (secret-scan scope fix), 5908a8c (drill evidence); merges 56d3d95 and 7b80a59 bring in the kickoff branch and `main`. Review defects: [separate record](2026-10-05-s00-gate-review-fixes.md) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md), Bootstrap gate |
 | Related ADR / requirement | S00.01, S00.02, S00.03, T00.01, T00.02, T00.03, T00.11; Engineering Standard Phase 0; Test Strategy §3.3 |
 | Status | IN PROGRESS |
@@ -46,7 +46,7 @@
 - [x] Root-cause **class**: a gate whose input is ambient state (every ref the clone happens to hold) instead of the change under test. Without `--log-opts`, gitleaks runs `git log --all`. Effects: an unrelated PR fails because of another branch, and local results depend on which remote branches were fetched.
 - [x] Sibling cases swept: the pre-commit hook scans only the staged diff; the ratchet and Scrap Sweep read tracked files (`git grep`, `git ls-files`); the guard tests are self-contained; the Module Contract check reads crate directories, which in CI are a clean checkout and locally are reported by the Scrap Sweep if untracked. No other instance. The kickoff record's `--all -m` scan was a deliberate whole-repository audit, not a gate.
 - [x] Tripwire, written and seen failing before the fix: `scripts/quality/tests/secret-scan-scope.sh` builds a throwaway repository with a clean `main` and a side branch holding a run-time-generated fake key. It requires a clean HEAD to pass while the other branch holds the key, and the side branch to fail. Against the old scan it printed `SCOPE FAIL: clean HEAD failed because another branch holds a secret` (exit 1). The fix-lock was then engaged on this record (2026-10-05 18:09 −0700). The fix changed only gate code: `scripts/quality/secret-scan.sh` (one shared scan command for the gate and its test) gained `--log-opts="--full-history HEAD"`, and the full gate runs `scripts/quality/tests/*.sh` as its first step after tool checks.
-- [x] Fix-lock release (owner-approved, 2026-10-05 18:24 −0700). Committing the fix was then refused by the pre-commit secret scan, correctly: the test's source contained a literal PEM header and footer. With the owner's approval the lock was released and only the fixture line changed, so the source builds the armor string at run time (`"RSA " + "PRIVATE KEY"`). The two SCOPE assertions are unchanged. Rechecked: against the fixed scan it passes; against the old scan (the `--log-opts` line removed, in a scratch copy) it still prints `SCOPE FAIL: clean HEAD failed because another branch holds a secret`, exit 1; the staged source scans clean.
+- [x] Fix-lock release, 2026-10-05 18:24 −0700. Approval: the owner answered "Release the lock (Recommended)" to the session's question, which named the change (only how the test builds its fake key; assertions unchanged). That approval lives in the conversation, not in a file. The guard itself did not ask: under the `development` profile it allows and logs this action (`.claude/state/guard-relaxed.log`, 18:24:07), and the release records this session as `released_by`. Limitation found by review: the test was first committed only after the release, so git cannot show that only the fixture line changed; `guard-relaxed.log` shows a single Edit to it at 18:24:13, consistent with the claim but not proof. Later defect batches commit their failing tests before the fix ([review-fixes record](2026-10-05-s00-gate-review-fixes.md)). Committing the fix was then refused by the pre-commit secret scan, correctly: the test's source contained a literal PEM header and footer. With the owner's approval the lock was released and only the fixture line changed, so the source builds the armor string at run time (`"RSA " + "PRIVATE KEY"`). The two SCOPE assertions are unchanged. Rechecked: against the fixed scan it passes; against the old scan (the `--log-opts` line removed, in a scratch copy) it still prints `SCOPE FAIL: clean HEAD failed because another branch holds a secret`, exit 1; the staged source scans clean.
 - [x] Remediation justified by evidence: the CI log's fetched-branch list and commit count, plus the local reproduction, point to scan scope. The fix narrows only what is scanned to the commit under test. Secrets on unmerged branches pushed to GitHub are still exposures; a whole-repository audit scan (all refs) is a separate periodic check, not this per-change gate.
 
 ## 4. Verify
@@ -56,13 +56,13 @@
 - [ ] Running-system probe — the "running system" for this change is CI itself: see the CI runs in the evidence log.
 - [ ] T00.01 red-test drill — red Pass, removed → green Pass (evidence log). "Blocks" (a red PR cannot merge) is Not yet proven until branch protection exists.
 - [x] T00.02 secret drill — Pass (evidence log).
-- [x] T00.03 clean checkout from README (Ubuntu half) — Pass (evidence log). macOS half: the first macOS run on `main`.
+- [x] T00.03 clean checkout from README (Ubuntu half) — Pass at f56532b (11 steps, evidence log) and, by the independent verifier, at 5908a8c (12 steps). The builder's own rerun at 5908a8c is void: its harness rewrote `/tmp/` paths but missed `-C /tmp`, so `install` looked in the wrong place; the README was not at fault, but its fixed `/tmp` paths are fragile (follow-up: use a `mktemp -d` directory). macOS half: Not yet proven until the first macOS run on `main`.
 - [x] T00.11 contract check fails on a broken contract — Pass (evidence log).
 - [x] Regression guard: every gate class was shown failing on a known violation (evidence log), and the scope defect has its own self-test.
 
 ## 5. Close Out
 
-- [x] Full required gate green locally and in CI (`RESULT: PASS (12 steps)` both; evidence log).
+- [x] Full required gate green locally and in CI at 5908a8c: local `RESULT: PASS (12 steps)`; PR #7's own run 37399244521 `RESULT: PASS (12 steps)`, 42 commits scanned. PR #7 also had a red run, 37397893651 at 56d3d95 (`RESULT: FAIL (secrets)`, 41 commits scanned): the same scope defect as §3, before its fix. The review defects that followed are fixed under their own record.
 - [x] Scrap Sweep complete; deleted artifacts listed: drill PRs #8/#9 closed unmerged; local drill branches deleted; `/tmp` residue of the T00.03 run removed by name; scratch clones live only in the session scratchpad. Remote branches `drill/t00-01-red-test` and `drill/t00-02-secret` remain because the guard reserves deleting remote branches for the owner (owner action). The planted block also stays reachable through GitHub's `refs/pull/9/head`; it is random bytes, not a key.
 - [x] No unexplained skipped tests or new unowned debt (baseline 0/0/0).
 - [x] Documentation updated in the same change.
@@ -136,7 +136,7 @@ $ scripts/quality/tests/secret-scan-scope.sh (fixed) → SCOPE ok ×2; exit=0
 $ scripts/quality/secret-scan.sh                     → 39 commits scanned, no leaks found
 $ scripts/quality/secret-scan.sh <worktree of origin/drill/t00-02-secret> → leaks found: 1 (still caught)
 $ scripts/quality/full-gate.sh                       → RESULT: PASS (12 steps)
-$ guard.py fix-lock off (owner-approved)             → released 2026-10-05T18:24:08-0700
+$ guard.py fix-lock off (owner approved in conversation) → released 2026-10-05T18:24:08-0700
 (test fixture only: PEM armor built at run time; assertions unchanged)
 test vs fixed scan → SCOPE ok ×2, exit 0; vs old scan (scratch copy) → SCOPE FAIL …, exit 1
 staged source of the test → gitleaks: no leaks found

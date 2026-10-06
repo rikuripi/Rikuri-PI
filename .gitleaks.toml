@@ -11,5 +11,5 @@
 useDefault = true
 
 [[allowlists]]
-description = "Rust build output, never committed"
-paths = ['''(^|/)target/''']
+description = "The top-level Rust build directory, never committed. Only the top level: a directory named target elsewhere is scanned."
+paths = ['''^target/''']

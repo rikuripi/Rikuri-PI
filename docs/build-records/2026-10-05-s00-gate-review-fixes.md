@@ -39,6 +39,24 @@ Not fixed here, recorded: the ratchet's `|| true` would count a `git grep` error
 
 Sibling sweep: other scans of history (`--all` audits in the kickoff record) used `-m`; the pre-commit hook scans the staged diff, which includes conflict resolutions, so it is not affected by #1. Other places that parse untrusted text into errors: `UnknownVariant` (closed enums; same bounded echo applied), `ProvenanceError` (enum values only).
 
+## 2. Build (fix, under the fix-lock engaged 2026-10-05 after commit 9b91f0e)
+
+- `scripts/quality/secret-scan.sh`: `--log-opts="--full-history -m HEAD"` (merge diffs scanned) and `--verbose` (each finding printed with its value redacted). The pre-commit hook also prints findings (`--verbose`).
+- `.gitleaks.toml`: allowlist only `^target/`.
+- `scripts/quality/crate-policy.sh` (new, full-gate step `crate-policy`): every `crates/*` and `apps/*` manifest must have `[lints]` exactly `workspace = true`, parsed with Python's `tomllib`.
+- `scripts/quality/module-contracts.sh`: takes an optional root; a heading counts when its name ends at whitespace or the line end, so the template's `## Health / last-success signal` counts and `## Healthiness` does not. (A first attempt required the exact line and failed the real contract in the full gate; corrected before commit.)
+- `scripts/quality/ratchet.sh`: takes an optional root; counts `#[cfg_attr(…, allow(…))]`; a `git grep` failure (exit ≥ 2) stops the ratchet instead of counting as zero.
+- `rikuri-domain`: `AnyId` has a hand-written `Deserialize` that accepts borrowed or owned text; rejected input in `IdError` and `UnknownVariant` is escaped and cut at 64 bytes with its length noted (`wire::bounded`).
+- README step list updated (13 steps).
+
+## 4. Verify
+
+- [x] Every regression test failed before the fix (evidence below) and passes after it.
+- [x] No test changed during the fix: `git diff --stat 9b91f0e -- scripts/quality/tests` is empty; the `#[cfg(test)]` regions of `id.rs` and `wire.rs` are byte-identical to 9b91f0e.
+- [x] Full gate: `RESULT: PASS (13 steps)` locally.
+- [ ] CI on the fix commit — evidence log after push.
+- [ ] Independent re-verification of PR #7.
+
 ## Evidence log
 
 ```text
@@ -63,4 +81,20 @@ error[E0597]: `bad` does not live long enough
 $ (scratch copy without the E0597 test) cargo test -p rikuri-domain --lib errors_do_not_echo
 id::tests::errors_do_not_echo_unbounded_input --- FAILED
 error is 1048616 bytes
+
+# After the fix (test files unchanged since 9b91f0e)
+$ for t in scripts/quality/tests/*.sh; do $t; done
+CRATES ok ×5 (opt-in accepted; missing [lints] refused; lint override refused; exact headings accepted; "## Healthiness" refused)
+PATHS ok: a cfg_attr allow() suppression raises the ratchet
+PATHS ok: a key under docs/target/ fails the scan
+MERGE ok: a key introduced in a merge commit fails the scan
+MERGE ok: the key is not printed
+MERGE ok: the finding is shown, redacted
+SCOPE ok ×2
+all exit 0
+$ cargo test -p rikuri-domain → 24 unit + 4 property passed
+$ scripts/quality/full-gate.sh (first attempt) → GATE contracts: FAIL (exact-line heading rule rejected the template heading) — corrected
+$ scripts/quality/full-gate.sh → RESULT: PASS (13 steps); secrets: 53 commits scanned (merge diffs included)
+$ git diff --stat 9b91f0e -- scripts/quality/tests → (empty)
+$ diff of the #[cfg(test)] regions of id.rs and wire.rs against 9b91f0e → identical
 ```
