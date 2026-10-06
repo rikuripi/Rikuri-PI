@@ -60,6 +60,6 @@ Keep credentials, private keys, local databases, and backups outside the checkou
    scripts/quality/full-gate.sh
    ```
 
-   It prints each step and stops at the first failure. A passing run ends with `RESULT: PASS (11 steps)`. The steps are: pinned tool versions, AI-session guard tests, `cargo fmt --check`, build, clippy with warnings as errors, unit, contract and property tests, `cargo deny` (advisories, licenses, sources), gitleaks over the branch's history with values redacted, the debt ratchet, the Module Contract check, and the Scrap Sweep. The sweep lists untracked files and stashes without failing; each needs a disposition before a change is closed out.
+   It prints each step and stops at the first failure. A passing run ends with `RESULT: PASS (12 steps)`. The steps are: pinned tool versions, the gate's own regression tests (`scripts/quality/tests/`), AI-session guard tests, `cargo fmt --check`, build, clippy with warnings as errors, unit, contract and property tests, `cargo deny` (advisories, licenses, sources), gitleaks over the branch's history with values redacted, the debt ratchet, the Module Contract check, and the Scrap Sweep. The sweep lists untracked files and stashes without failing; each needs a disposition before a change is closed out.
 
 The macOS job in CI builds and tests the same workspace on every merge to `main`. Every crate stays platform-neutral; Ubuntu remains the only full execution and security reference.

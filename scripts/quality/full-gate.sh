@@ -38,14 +38,24 @@ tool_versions() {
   return "$ok"
 }
 
+run_selftests() { # the gate's own regression tests (scripts/quality/tests)
+  local t rc=0
+  for t in scripts/quality/tests/*.sh; do
+    echo "self-test ${t}"
+    "$t" || rc=1
+  done
+  return "$rc"
+}
+
 step tools tool_versions
+step gate-selftests run_selftests
 step guard python3 -m unittest discover -s .claude/hooks -p 'test_*.py' -q
 step format cargo fmt --all --check
 step build cargo build --workspace --all-targets --locked
 step clippy cargo clippy --workspace --all-targets --locked -- -D warnings
 step test cargo test --workspace --locked
 step dependencies cargo deny --locked check
-step secrets gitleaks git . --config .gitleaks.toml --redact --no-banner --exit-code 1
+step secrets scripts/quality/secret-scan.sh
 step ratchet scripts/quality/ratchet.sh
 step contracts scripts/quality/module-contracts.sh
 step scrap scripts/quality/scrap-sweep.sh
