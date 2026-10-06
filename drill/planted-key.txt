@@ -1,0 +1,30 @@
+T00.02 secret drill: the block below is random bytes in PEM armor, generated for this drill.
+It is not, and never was, a usable key. Throwaway branch drill/t00-02-secret; never merge.
+
+-----BEGIN RSA PRIVATE KEY-----
+paJ3OqxIcFnZ3ZLcsC4nmyWsP/uLc9sF+QZYOFG0hPUkGcE0dm5bNNfle46cWogZ
+uKup4eplVHkOc3WRXWuyAgMsacYvJTxB3tKrlzrrWkq+Xh5CXEMTuX9jIk529ZWq
+xF0cd/YlAXs6SbkxBbEcf2jKq8AhOm608LRSj1wwr87Mqjd1XWw89zv3bUI/hYTm
+2GyMCYdoOhw5Ddp0N86mLRnpLpJkqwQkm5bvEDiUL0Hx1UrTUbswLV7g1WvKnuPV
+RY4Z8krw6gYWLOVBtZg3NwWhdKxTv6J3/BZ5MPtTMB1j5MduuDZ4EVqFODF0v1Nk
+06OUJpfhc70m3vONio12LgM6M5KfiTi2pClFVGJYlknWSJ5jZldtDOlf29gGp7q2
+3yskvTPKemHfgKAkR1tkg2tjsV63Yr0fs9QC6BdNJGqcpQbqguFYvIZ778Kwy3Fa
+VIH/oCM2klHuma3Prah6VqgAOf2EL1afKMgKu1IQibWDbAQ3BnYig1QAN+8YC556
+gSHydum3kecySuUeZQCRiWuQGU5wawy/gzxMardzrVv3JizRqPiDUK5Q+GzOGCaj
+M4ch0yGqgRRxyYBkn48EhHGrwRUERnvhlJ6/AnfcUxdG8s8i8cC2Bx/Ywd2PgBLq
+rtf8wfmMe6MjWrl3hxuioORqC8GsBB6srxN8t5dS+LJkxcydeJo1pT3X5MaSkmil
+hq7PKxNyOx6RTHYpZhKiwHlVDUuyK+iAZ8lfUD7OYcdE0pJQa68YI6ID/fz5U/8h
+4RAP25lD/x3B02iB0QhE6AqmW42RF+GlxlyZYQl74OajA+8bnoDWo2wKW6eKxlh0
+q6Q+41QRjgRN6BLK7/s1G8IZ8fxaHWXm+yJJFw4hBCzKQtbhw8BIY3w3VPpt7KMg
+PtU0r224C/BQkCOUWUpI3Sqze/7yC32/y0qm06r+YBLfAPQAc9f9eX2ykIzngunh
+tDc8Q80ld0DM/jEd9wB6LZPDUgp+s3x8qVd3sa3jOiXrnCB8Ic2geoPJO2a0Zszi
+/WKn0Puk5COo4TEAvTVhnJA0eDtTpn06LmGKuYsw8aLuibupxda3EVx1V/LApjbn
+9nvnFV61bpSt+9RSMERe863rvqmZ3Ft8RPpkcfMeFmg7aS0qoQBUgflsyxCzRbHN
+ksgibrf63+Xtkf2YIx2psERbRmCmEU1JHAByblCuWQvDJm4IA/8z7YLJvIo7H6O0
+a7HcPJFNUUOVfpg2Ck6BsDfIgA/86cnqcc2dFV9NyckmSdNPI3cwlJYA6FvGjKhM
+Mq/ll+zjSD9Y2tgP9i8/PfB4x/XydKfIM4Sjz+fOK+opGQogjnHGrk3YpNZtt3vv
+rnFBxGVMjd5ZnhxALP1ZkqgjvPmnpOyErVwU9I/A+0tS70JANzTcW1qJKMJKXuoD
+HGrWkCvj+jH6ZQpJ+UDdaw+Xj4yrBdDySAlKFIkmoVjhWr2sBfMW/aX3xNFVWiiu
+aX5L+DGmHoicAeAugvFniW5o31A+D9/fxwpa5m3k/ZIWkVh4l+VpSJOuAJ/AmFPp
+0KX+sNysl4A0qgAgD6EuWfLO7ib/O7V5wIUE/t1MJLivnWlFO4I=
+-----END RSA PRIVATE KEY-----
