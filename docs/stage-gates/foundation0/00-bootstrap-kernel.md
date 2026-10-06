@@ -59,6 +59,8 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 ## Progress
 
 - [x] Kickoff: owner decisions, reference installation evidence — [Build Record](../../build-records/2026-10-05-stage-00-kickoff.md)
+- [ ] S00.01–S00.03 bootstrap: workspace, full gate, CI, secret scan, ratchet, hooks — [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md). T00.01 red/green, T00.02, T00.03 (Ubuntu), T00.11 Pass; T00.01 "blocks" waits for branch protection; `smoke.sh` waits for S00.07; macOS half of T00.03 waits for the first run on `main`.
+- [ ] S00.04 `rikuri-domain` — [Build Record](../../build-records/2026-10-05-s00-04-rikuri-domain.md). Built and tested; not complete until a real caller uses it (S00.05–S00.07). ADR 0001 Proposed.
 
 ## Blockers
 
@@ -74,7 +76,10 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 
 | Claim | Evidence |
 |---|---|
-| — | — |
+| T00.01 planted failing test turns CI red; removed → green | Red: run 37397240985 (`RESULT: FAIL (test)`). Green: run 37399044114 (`RESULT: PASS (12 steps)`). [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md#evidence-log). Blocking a merge: Not yet proven (no branch protection) |
+| T00.02 planted key blocks CI without printing it | Run 37397273842 (`RESULT: FAIL (secrets)`); 0 of 3 key-body canaries in the 534-line log, 3 of 3 in the planted file. [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md#evidence-log) |
+| T00.03 clean Ubuntu checkout runs the full gate from README alone | Fresh clone, empty HOME, README commands verbatim → `RESULT: PASS (11 steps)` (before the self-test step was added). macOS half: Not yet proven |
+| T00.11 Module Contract check | Passes intact; fails on a renamed required section and on a missing contract (scratch clone). [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md#evidence-log) |
 
 ## Receipt
 

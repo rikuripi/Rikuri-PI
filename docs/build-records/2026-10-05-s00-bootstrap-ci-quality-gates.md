@@ -6,7 +6,7 @@
 | Date | 2026-10-05 |
 | Author / agent session | Claude Code session for Henry Chen |
 | Branch | `stage-00/bootstrap` |
-| Commits | fill at close-out |
+| Commits | 586d878 (workspace + first crate), f56532b (gates), 62272c4 (secret-scan scope fix) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md), Bootstrap gate |
 | Related ADR / requirement | S00.01, S00.02, S00.03, T00.01, T00.02, T00.03, T00.11; Engineering Standard Phase 0; Test Strategy §3.3 |
 | Status | IN PROGRESS |
@@ -54,7 +54,7 @@
 - [x] Unit tests: the gate runs the workspace tests (rikuri-domain: 22 unit + 4 property).
 - [ ] Shared contract suite — N/A for tooling.
 - [ ] Running-system probe — the "running system" for this change is CI itself: see the CI runs in the evidence log.
-- [ ] T00.01 red-test drill — red half Pass; green half pending a rerun with the fixed scan (evidence log).
+- [ ] T00.01 red-test drill — red Pass, removed → green Pass (evidence log). "Blocks" (a red PR cannot merge) is Not yet proven until branch protection exists.
 - [x] T00.02 secret drill — Pass (evidence log).
 - [x] T00.03 clean checkout from README (Ubuntu half) — Pass (evidence log). macOS half: the first macOS run on `main`.
 - [x] T00.11 contract check fails on a broken contract — Pass (evidence log).
@@ -62,12 +62,12 @@
 
 ## 5. Close Out
 
-- [ ] Full required gate green locally and in CI.
-- [ ] Scrap Sweep complete; deleted artifacts listed.
+- [x] Full required gate green locally and in CI (`RESULT: PASS (12 steps)` both; evidence log).
+- [x] Scrap Sweep complete; deleted artifacts listed: drill PRs #8/#9 closed unmerged; local drill branches deleted; `/tmp` residue of the T00.03 run removed by name; scratch clones live only in the session scratchpad. Remote branches `drill/t00-01-red-test` and `drill/t00-02-secret` remain because the guard reserves deleting remote branches for the owner (owner action). The planted block also stays reachable through GitHub's `refs/pull/9/head`; it is random bytes, not a key.
 - [x] No unexplained skipped tests or new unowned debt (baseline 0/0/0).
 - [x] Documentation updated in the same change.
-- [ ] Stage Gate Record updated with this change/evidence.
-- [ ] Commit message explains WHY; Build Record committed with change.
+- [x] Stage Gate Record updated with this change/evidence.
+- [x] Commit messages explain why; this record is committed with the change.
 
 ## Skipped / Deferred / Resequenced
 
@@ -136,4 +136,15 @@ $ scripts/quality/tests/secret-scan-scope.sh (fixed) → SCOPE ok ×2; exit=0
 $ scripts/quality/secret-scan.sh                     → 39 commits scanned, no leaks found
 $ scripts/quality/secret-scan.sh <worktree of origin/drill/t00-02-secret> → leaks found: 1 (still caught)
 $ scripts/quality/full-gate.sh                       → RESULT: PASS (12 steps)
+$ guard.py fix-lock off (owner-approved)             → released 2026-10-05T18:24:08-0700
+(test fixture only: PEM armor built at run time; assertions unchanged)
+test vs fixed scan → SCOPE ok ×2, exit 0; vs old scan (scratch copy) → SCOPE FAIL …, exit 1
+staged source of the test → gitleaks: no leaks found
+
+# T00.01 green half — PR #8 at 811581c (test removed + fixed scan), run 37399044114
+(drill/t00-02-secret, with its planted key, still on GitHub during this run)
+── GATE gate-selftests: PASS (SCOPE ok ×2)
+── GATE test: PASS
+41 commits scanned → ── GATE secrets: PASS
+RESULT: PASS (12 steps)                   → conclusion: success        Pass (green as required)
 ```
