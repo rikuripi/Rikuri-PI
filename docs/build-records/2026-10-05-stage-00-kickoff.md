@@ -1,6 +1,6 @@
 # Build Record — Stage 00 kickoff: owner decisions and reference installation
 
-**Date:** October 5, 2026 · **Risk:** low, records only (brief record; touches protected Stage Gate Record and Stage Plan status lines) · **Branch:** `stage-00/kickoff` · **Status:** IN PROGRESS (awaiting independent verification)
+**Date:** October 5, 2026 · **Risk:** low, records only (brief record; touches protected Stage Gate Record and Stage Plan status lines) · **Branch:** `stage-00/kickoff` · **Status:** COMPLETE (verified 2026-10-05)
 
 ## Scope
 
@@ -72,7 +72,9 @@ None. The macOS job arrives with the CI workflow in the bootstrap change.
 
 First `verifier` run on commit c6f4e81: **FAIL**, scope consistency (the macOS deferral conflicted with accepted commitments without reconciliation). All reproducible facts, links, guard tests and the Stage Plan invariance check passed. It also reported: no acceptance line; status set COMPLETE before verification; the gitleaks commit count overstated what the recorded command scanned; the py3.9 job was `cancelled`, not failed; "§4.2" does not exist; additional groups; no upgrade date. All are corrected above. The owner re-decided macOS (main-only).
 
-Second `verifier` run on 6d531e4: **NOT YET PROVEN**. Main-only macOS satisfies the "continuous" commitments (ADR 0000 line 27, Engineering Standard line 28, Architecture §26.2/§46, PRD MACH-005); no source requires macOS before merge. Open items: the record did not address the Engineering Standard's "every merge has a green CI run" reading, and the cost figure was neither measured nor attributed. Both are addressed in the decision table above; the commit message of 6d531e4 says "all groups", which overstated the list (non-privileged groups now named). A third verification follows.
+Second `verifier` run on 6d531e4: **NOT YET PROVEN**. Main-only macOS satisfies the "continuous" commitments (ADR 0000 line 27, Engineering Standard line 28, Architecture §26.2/§46, PRD MACH-005); no source requires macOS before merge. Open items: the record did not address the Engineering Standard's "every merge has a green CI run" reading, and the cost figure was neither measured nor attributed. Both are addressed in the decision table above; the commit message of 6d531e4 says "all groups", which overstated the list (non-privileged groups now named).
+
+Third `verifier` run on df6a5eb: **PASS**. Non-blocking notes it recorded: the df6a5eb commit message says the record "states the reading the owner accepted", while the record attributes the consequence to the owner and gives the Engineering Standard reading as the agent's; PRD MACH-005's acceptance ("core tests stay green on macOS") is met by fixing a post-merge macOS break as a stop-the-line item rather than preventing it; the macOS billing multiple is an outside GitHub fact not reproduced here; the measured macOS duration is pending the first run on `main`.
 
 ## Evidence log
 
