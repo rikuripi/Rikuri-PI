@@ -47,7 +47,7 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 - [ ] E1 and E2 outcomes and the S00.13 admission probe recorded, each with a Build Record and probe output.
 - [ ] Platform-neutral macOS core suite green.
 - [ ] Module Contracts for domain, storage, ledger and testkit.
-- [ ] ADR 0001–0004 accepted.
+- [ ] ADR 0001–0004 accepted. ADR 0001 accepted 2026-10-07; 0002–0004 to come.
 - [ ] Required Build Records complete.
 - [ ] Required CI/full-gate green; smoke/running-system probe passed.
 - [ ] Relevant contract/property/replay/security suites green.
@@ -62,7 +62,7 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 - [ ] S00.01–S00.03 bootstrap: workspace, full gate, CI, secret scan, ratchet, hooks — [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md). T00.01 red/green, T00.02, T00.03 (Ubuntu), T00.11 Pass; T00.01 "blocks" Pass (2026-10-06, drill PR #10, after protection was enabled); `smoke.sh` waits for S00.07; macOS half of T00.03 now runs on the owner's Mac as a self-hosted runner ([owner decision 2026-10-06](../../build-records/2026-10-06-macos-self-hosted-runner.md)): Pass — first green run on `main`, run 37567919632 at `e2a7d53` (24 unit + 4 property tests), after the first attempt (run 37564819464) failed and was fixed in PR #11.
 - [ ] PR #7 review defects (merge-commit secrets, lint opt-in, contract headings, ratchet, allowlist, `AnyId` deserialization, bounded errors) — [Build Record](../../build-records/2026-10-05-s00-gate-review-fixes.md). Fixed with regression tests committed first; CI run 37401144525 green (13 steps). Re-verified: the second review found more in the same classes (next line); the whole of PR #7 was verified at `e42901a` on 2026-10-06, PASS.
 - [ ] Second PR #7 review defects (lint policy for every workspace member, lint-capping build flags, wrapped suppressions, force-added ignored files, a redaction check that could not fail) — [Build Record](../../build-records/2026-10-05-s00-gate-review-fixes-2.md). Regression tests committed first (fixtures corrected with owner approval), then three verifier rounds that found more bypasses and false positives, each closed tests-first. Owner threat model: the gate is a tripwire for accidental or careless weakening; accepted gaps are listed in the record. Fix `5e8148a`; CI run 37414127507 green (13 steps).
-- [ ] S00.04 `rikuri-domain` — [Build Record](../../build-records/2026-10-05-s00-04-rikuri-domain.md). Built and tested; not complete until a real caller uses it (S00.05–S00.07). ADR 0001 Proposed.
+- [ ] S00.04 `rikuri-domain` — [Build Record](../../build-records/2026-10-05-s00-04-rikuri-domain.md). Built and tested; not complete until a real caller uses it (S00.05–S00.07). ADR 0001 Accepted 2026-10-07.
 
 ## Blockers
 
@@ -77,7 +77,7 @@ Found by the `verifier` subagent at `e42901a` (verdict PASS, none blocks the mer
 - **T00.03 (Ubuntu) re-run from the current README** (install commands changed in `ea109b0`; the gate is now 13 steps). Before the Stage 00 exit.
 - **`claude-guard.yml`** (predates PR #7): actions pinned by tag, not SHA; no `permissions:` block; its comment saying Stage 00 CI "does not exist yet" is stale. Next change to that workflow.
 - Smaller, with the next `rikuri-domain` change: an overflowing ID (`8ZZZ…`) gets the message "not in canonical form"; proptest uses a random seed per run; `IdError` has public `String` fields (as `UnknownVariant`).
-- Owner housekeeping: delete the remote branches `drill/t00-01-red-test` and `drill/t00-02-secret`; clear the stale fix-lock `.claude/state/fix-locks/14531436-….json`; accept ADR 0001; the `stage-00/kernel` worktree with uncommitted work in another session's `/tmp` scratchpad.
+- Owner housekeeping (decisions 2026-10-07): stale fix-lock `14531436-…` released; ADR 0001 accepted; the `stage-00/kernel` worktree (3 unpushed commits and ~2,260 lines of uncommitted work) moved out of `/tmp` to `/home/junc/Rikuri-PI-worktrees/stage-00-kernel`, nothing committed or changed (copy verified identical, `target/` left behind, `git worktree repair`). Still open: deleting the merged and drill branches on GitHub, which the guard reserves for the owner to run by hand.
 
 ## Skipped / Deferred
 
