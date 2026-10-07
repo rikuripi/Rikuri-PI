@@ -54,7 +54,7 @@
 - [x] Unit tests: the gate runs the workspace tests (rikuri-domain: 22 unit + 4 property).
 - [ ] Shared contract suite — N/A for tooling.
 - [ ] Running-system probe — the "running system" for this change is CI itself: see the CI runs in the evidence log.
-- [ ] T00.01 red-test drill — red Pass, removed → green Pass (evidence log). "Blocks" (a red PR cannot merge) is Not yet proven until branch protection exists.
+- [x] T00.01 red-test drill — red Pass, removed → green Pass (evidence log). "Blocks" Pass (2026-10-06, after the owner enabled protection): drill PR #10's red run left GitHub reporting it BLOCKED, and the same PR with the test removed reported CLEAN; closed unmerged (evidence log).
 - [x] T00.02 secret drill — Pass (evidence log).
 - [x] T00.03 clean checkout from README (Ubuntu half) — Pass at f56532b (11 steps, evidence log) and, by the independent verifier, at 5908a8c (12 steps). The builder's own rerun at 5908a8c is void: its harness rewrote `/tmp/` paths but missed `-C /tmp`, so `install` looked in the wrong place; the README was not at fault, but its fixed `/tmp` paths are fragile (follow-up: use a `mktemp -d` directory). macOS half: Not yet proven until the first macOS run on `main`.
 - [x] T00.11 contract check fails on a broken contract — Pass (evidence log).
@@ -74,7 +74,7 @@
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
 | `scripts/quality/smoke.sh` (part of S00.03) | RESEQUENCED within Stage 00 | Smoke must check a content marker in `state.show` (T00.10), which needs `rikurid`; a smoke script with nothing to probe would only check liveness | S00.03 stays open until it lands; T00.10 unchanged | Stage 00 implementer | With S00.07 | `smoke.sh` starts `rikurid`, runs `state.show`, and fails without the expected content marker |
-| Branch protection on `main` (part of S00.01; T00.01 "blocks") | BLOCKED on owner action | GitHub Free refuses protection on this private repository; the owner chose GitHub Pro (kickoff Build Record) and holds admin | Bootstrap gate and T00.01's blocking half stay Not yet proven; kernel code does not merge to `main` until protection exists | Henry Chen | Stage 00, before kernel code merges | Protection on `main` requires the "Full gate (Ubuntu)" check and a PR, disallows force-push and deletion; a red drill PR reports not mergeable |
+| Branch protection on `main` (part of S00.01; T00.01 "blocks") | RESOLVED 2026-10-06: the owner upgraded `rikuripi` to GitHub Pro and created ruleset 24616501 "Protect main"; acceptance condition met (evidence log, T00.01 blocks). Was: BLOCKED on owner action | GitHub Free refuses protection on this private repository; the owner chose GitHub Pro (kickoff Build Record) and holds admin | Bootstrap gate and T00.01's blocking half stay Not yet proven; kernel code does not merge to `main` until protection exists | Henry Chen | Stage 00, before kernel code merges | Protection on `main` requires the "Full gate (Ubuntu)" check and a PR, disallows force-push and deletion; a red drill PR reports not mergeable |
 
 ## Evidence log
 
@@ -148,3 +148,27 @@ staged source of the test → gitleaks: no leaks found
 41 commits scanned → ── GATE secrets: PASS
 RESULT: PASS (12 steps)                   → conclusion: success        Pass (green as required)
 ```
+
+### T00.01 "blocks" (2026-10-06, after the owner enabled protection)
+
+The owner upgraded `rikuripi` to GitHub Pro and created ruleset 24616501 "Protect main" (2026-10-06 16:45), replacing ruleset 24550762, which targeted no branch. Owner choices: branches must be up to date before merging; no required approvals (the kickoff decision that the agent merges once CI and the `verifier` are green stands); no bypass. The guard-policy workflow is not a required check because it is path-filtered (the full gate runs the same guard tests); macOS stays post-merge (kickoff decision).
+
+```text
+$ gh api repos/rikuripi/Rikuri-PI/rules/branches/main      (ruleset 24616501, enforcement active, target ~DEFAULT_BRANCH)
+deletion · non_fast_forward · pull_request (required_approving_review_count 0)
+required_status_checks: "Full gate (Ubuntu)" (integration_id 15368, GitHub Actions), strict_required_status_checks_policy true
+current_user_can_bypass (agent account hchengit): never
+
+# Red: drill PR #10 (drill/t00-01-blocks at 665e316: stage-00/bootstrap + crates/rikuri-domain/tests/red_drill.rs), run 37548496990
+test t00_01_blocks_drill_must_fail ... FAILED
+── GATE test: FAIL → RESULT: FAIL (test)
+$ gh pr view 10 --json mergeable,mergeStateStatus,reviewDecision
+mergeable MERGEABLE (no conflicts) · reviewDecision "" (none required) · mergeStateStatus BLOCKED     Pass (red PR cannot merge)
+
+# Control: PR #10 at 1c424eb (planted test removed), run 37548667310
+RESULT: PASS (13 steps) → mergeStateStatus CLEAN     (the block came from the red required check alone)
+
+$ gh pr close 10 --delete-branch    → closed unmerged (mergedAt null); remote branch deleted; origin/main unchanged at e1c6d11
+```
+
+No merge or push to `main` was attempted: GitHub's own merge state is the evidence, and a failed refusal would have put a failing test on `main`. The pre-commit hook also refused the first drill commit for formatting (`pre-commit: formatting differs`), so the drill failed at the test step as intended.

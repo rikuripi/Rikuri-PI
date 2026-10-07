@@ -59,14 +59,14 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 ## Progress
 
 - [x] Kickoff: owner decisions, reference installation evidence — [Build Record](../../build-records/2026-10-05-stage-00-kickoff.md)
-- [ ] S00.01–S00.03 bootstrap: workspace, full gate, CI, secret scan, ratchet, hooks — [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md). T00.01 red/green, T00.02, T00.03 (Ubuntu), T00.11 Pass; T00.01 "blocks" waits for branch protection; `smoke.sh` waits for S00.07; macOS half of T00.03 waits for the first run on `main`.
+- [ ] S00.01–S00.03 bootstrap: workspace, full gate, CI, secret scan, ratchet, hooks — [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md). T00.01 red/green, T00.02, T00.03 (Ubuntu), T00.11 Pass; T00.01 "blocks" Pass (2026-10-06, drill PR #10, after protection was enabled); `smoke.sh` waits for S00.07; macOS half of T00.03 waits for the first run on `main`.
 - [ ] PR #7 review defects (merge-commit secrets, lint opt-in, contract headings, ratchet, allowlist, `AnyId` deserialization, bounded errors) — [Build Record](../../build-records/2026-10-05-s00-gate-review-fixes.md). Fixed with regression tests committed first; CI run 37401144525 green (13 steps); re-verification pending.
 - [ ] Second PR #7 review defects (lint policy for every workspace member, lint-capping build flags, wrapped suppressions, force-added ignored files, a redaction check that could not fail) — [Build Record](../../build-records/2026-10-05-s00-gate-review-fixes-2.md). Regression tests committed first (fixtures corrected with owner approval), then three verifier rounds that found more bypasses and false positives, each closed tests-first. Owner threat model: the gate is a tripwire for accidental or careless weakening; accepted gaps are listed in the record. Fix `5e8148a`; CI run 37414127507 green (13 steps).
 - [ ] S00.04 `rikuri-domain` — [Build Record](../../build-records/2026-10-05-s00-04-rikuri-domain.md). Built and tested; not complete until a real caller uses it (S00.05–S00.07). ADR 0001 Proposed.
 
 ## Blockers
 
-- **Branch protection on `main` (S00.01, Bootstrap gate, T00.01 "blocks").** GitHub Free refuses protection on this private repository. Owner decision 2026-10-05: upgrade `rikuripi` to GitHub Pro and enable protection (the agent account has write, not admin). Until then CI can report red but cannot block a merge, and kernel code does not merge to `main`.
+- ~~**Branch protection on `main` (S00.01, Bootstrap gate, T00.01 "blocks").**~~ RESOLVED 2026-10-06: the owner upgraded `rikuripi` to GitHub Pro and created ruleset 24616501 "Protect main" (PR required, no approvals, required check `Full gate (Ubuntu)` on an up-to-date branch, no force-push or deletion, no bypass). T00.01 "blocks" Pass ([Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md#t0001-blocks-2026-10-06-after-the-owner-enabled-protection)). Kernel code may now merge to `main` once CI and the `verifier` are green (kickoff decision).
 
 ## Skipped / Deferred
 
@@ -78,7 +78,7 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 
 | Claim | Evidence |
 |---|---|
-| T00.01 planted failing test turns CI red; removed → green | Red: run 37397240985 (`RESULT: FAIL (test)`). Green: run 37399044114 (`RESULT: PASS (12 steps)`). [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md#evidence-log). Blocking a merge: Not yet proven (no branch protection) |
+| T00.01 planted failing test turns CI red; removed → green | Red: run 37397240985 (`RESULT: FAIL (test)`). Green: run 37399044114 (`RESULT: PASS (12 steps)`). [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md#evidence-log). Blocking a merge: Pass, 2026-10-06 — drill PR #10 red (run 37548496990) → GitHub `mergeStateStatus` BLOCKED; test removed (run 37548667310) → CLEAN; closed unmerged |
 | T00.02 planted key blocks CI without printing it | Run 37397273842 (`RESULT: FAIL (secrets)`); 0 of 3 key-body canaries in the 534-line log, 3 of 3 in the planted file. [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md#evidence-log) |
 | T00.03 clean Ubuntu checkout runs the full gate from README alone | Fresh clone, empty HOME, README commands verbatim → `RESULT: PASS (11 steps)` (before the self-test step was added). macOS half: Not yet proven |
 | T00.11 Module Contract check | Passes intact; fails on a renamed required section and on a missing contract (scratch clone). [Build Record](../../build-records/2026-10-05-s00-bootstrap-ci-quality-gates.md#evidence-log) |
