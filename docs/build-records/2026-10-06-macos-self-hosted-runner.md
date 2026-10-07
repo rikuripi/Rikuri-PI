@@ -73,3 +73,11 @@ PR #7 merged at 03:01:45 UTC as `9ea01c1`. Its push run 37564819464: `Full gate 
 **Cause:** the cache action manages `~/.cargo/bin` as cache contents and, in its cleanup, deletes binaries there that `cargo install` did not record, which on this machine are `rustup` and the `cargo`/`rustc` proxies. On GitHub's machines, discarded after every job, that is harmless; on a runner that keeps its files it removed the toolchain after the first green run. **Class:** a setting that is safe on ephemeral runners and destructive on a persistent one; sibling check: the Ubuntu job runs on GitHub's machines (unaffected), and no other workflow uses the self-hosted runner.
 
 **Fix:** the macOS job's cache step sets `cache-bin: false`, so the toolchain stays installed for the runner user; the toolchain step now fails with a clear message (`rustup is not installed for the runner user … README > macOS runner`) instead of a bare `command not found`; README says why. The owner reinstalls Rust for `rikurici`. **Tripwire:** a recurrence fails the job loudly at its first step and names the cause; proof needs two consecutive green runs on the Mac, since the failure appeared only on the second.
+
+```text
+# Fix commit 00e4fdd on fix/macos-runner-cargo-bin (PR #11); two dispatched runs back to back
+run 37567420543  macOS job 112618218980  Henrys-MacBook-Air  03:35:07→03:35:35Z  success
+run 37567512663  macOS job 112618504735  Henrys-MacBook-Air  03:36:15→03:36:34Z  success
+each: rust-cache with cache-bin: false (no "Cleaning cargo/bin"); rustc 1.98.1; 24 unit + 4 property tests passed;
+      the new "rustup is not installed" check did not fire; Full gate (Ubuntu) success in the same runs
+```
