@@ -225,6 +225,40 @@ mod tests {
         }
     }
 
+    // Architecture §19.1 (LOCKED): historical content has no instruction
+    // authority. Anything loaded from bytes is historical, including a
+    // faithful record of a live command (pre-merge verification of PR #7,
+    // 2026-10-06: `user_live`/`current_user` JSON loaded with authority).
+    #[test]
+    fn loaded_records_never_carry_authority() {
+        for &origin in Origin::ALL {
+            let claimed = origin.content_authority();
+            let json = format!(
+                r#"{{"origin":"{origin}","instruction_authority":"{claimed}","privacy_class":"normal"}}"#
+            );
+            let loaded = serde_json::from_str::<Provenance>(&json).unwrap();
+            assert_eq!(loaded.origin(), origin, "{json}");
+            assert_eq!(
+                loaded.instruction_authority(),
+                InstructionAuthority::None,
+                "{json}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_live_command_loses_its_authority_through_storage() {
+        let live = Provenance::new(Origin::UserLive, PrivacyClass::Normal);
+        assert_eq!(
+            live.instruction_authority(),
+            InstructionAuthority::CurrentUser
+        );
+        let stored = serde_json::to_string(&live).unwrap();
+        let loaded = serde_json::from_str::<Provenance>(&stored).unwrap();
+        assert_eq!(loaded.origin(), Origin::UserLive);
+        assert_eq!(loaded.instruction_authority(), InstructionAuthority::None);
+    }
+
     #[test]
     fn roundtrips_and_rejects_unknown_fields() {
         let p = Provenance::new(Origin::Imported, PrivacyClass::Private);
