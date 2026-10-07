@@ -54,4 +54,11 @@ HOOK ok: a staged nested Rust file is refused
 HOOK FAIL: … with GIT_LITERAL_PATHSPECS=1 set (the hook passed a misformatted Rust file)
 HOOK FAIL: … with GIT_GLOB_PATHSPECS=1 set (the hook passed a misformatted Rust file)
 HOOK FAIL: … with GIT_NOGLOB_PATHSPECS=1 set (the hook passed a misformatted Rust file)
+
+# After clearing the pathspec variables for the one git call (fix-lock engaged after 93c6222; tests unchanged since)
+$ scripts/quality/tests/pre-commit-large-change.sh        (2 runs)
+HOOK ok ×6 (alone · among 4,000 files · nested · GIT_LITERAL_PATHSPECS · GIT_GLOB_PATHSPECS · GIT_NOGLOB_PATHSPECS), exit=0
+$ scripts/quality/full-gate.sh → RESULT: PASS (13 steps)
 ```
+
+The fix-lock was released again after this commit, by the owner's decision, so the verifier can run the tests from a `/tmp` export; that the tests did not change during the fix is shown by `git diff 93c6222 <fix commit> -- scripts/quality/tests` (empty).
