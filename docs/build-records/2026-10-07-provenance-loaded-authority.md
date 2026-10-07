@@ -22,6 +22,19 @@
 - [x] Blast radius: `crates/rikuri-domain/src/authority.rs` (deserialization path and docs), the crate's Module Contract README; no caller exists yet.
 - [x] **I will know this works when** new regression tests, committed red before the fix, show that every consistent stored record loads with authority `none` (including `user_live`/`current_user`) and that a live command's provenance does not keep its authority through serialize → deserialize; the existing refusal of inconsistent claims (`stored_records_cannot_raise_authority`) still passes; the tests are unchanged by the fix; the full gate passes locally and in CI.
 
+## Wire semantics (verifier on PR #13, 2026-10-07)
+
+The verifier passed PR #13 at `a75e8a0` (no load path yields authority: 18 origin × authority combinations, nested types, `serde_json::Value`, `toml`) but found that a loaded record, authority `none` in memory, serialized as `"instruction_authority":"current_user"` (the capture-time value chosen in §2 below). Any reader of the bytes other than this type's own `Deserialize` (ledger tools, the S00.07 JSON envelope, UIs, exports, S02.02 context packets) would see historical content labelled `current_user`, against §19.1 on the wire. Not exploitable yet: nothing serializes `Provenance`.
+
+**Owner decision (2026-10-07, in session):** write the real authority. Serialization writes the value's actual authority (a loaded record `none`, a live command `current_user`); deserialization accepts the authority the origin implies or `none`, still refuses any raise, then grants `none`. The fix-lock was released to update one over-strict expectation in `stored_records_cannot_raise_authority` (it refused `user_live`/`none`, a lowered authority) and to add `the_wire_carries_the_real_authority`; re-engaged after the tests commit.
+
+```text
+# Failing before the wire fix (tests updated; code as at a75e8a0)
+test authority::tests::the_wire_carries_the_real_authority ... FAILED   left: "current_user"  right: "none"
+test authority::tests::stored_records_cannot_raise_authority ... FAILED  {"origin":"user_live","instruction_authority":"none",…} refused
+test result: FAILED. 5 passed; 2 failed
+```
+
 ## Risk and negative evidence
 
 - Allowed: `Provenance::new(Origin::UserLive, …)` still yields `CurrentUser` (live boundary); every other origin `none`.

@@ -227,7 +227,9 @@ mod tests {
                     r#"{{"origin":"{origin}","instruction_authority":"{claimed}","privacy_class":"normal"}}"#
                 );
                 let parsed = serde_json::from_str::<Provenance>(&json);
-                if claimed == origin.content_authority() {
+                // A record may state the authority its origin implies, or
+                // `none` (a loaded record's real authority); never a raise.
+                if claimed == origin.content_authority() || claimed == InstructionAuthority::None {
                     assert!(parsed.is_ok(), "{json}");
                 } else {
                     assert!(parsed.is_err(), "accepted {json}");
@@ -268,6 +270,24 @@ mod tests {
         let loaded = serde_json::from_str::<Provenance>(&stored).unwrap();
         assert_eq!(loaded.origin(), Origin::UserLive);
         assert_eq!(loaded.instruction_authority(), InstructionAuthority::None);
+    }
+
+    // Readers of the bytes (ledger tools, the JSON interface, context
+    // packets) must never see historical content labelled `current_user`
+    // (verifier, PR #13, 2026-10-07): the wire carries the real authority.
+    #[test]
+    fn the_wire_carries_the_real_authority() {
+        let live = Provenance::new(Origin::UserLive, PrivacyClass::Normal);
+        let field =
+            |p: &Provenance| serde_json::to_value(p).unwrap()["instruction_authority"].clone();
+        assert_eq!(field(&live), "current_user");
+        let loaded: Provenance =
+            serde_json::from_str(&serde_json::to_string(&live).unwrap()).unwrap();
+        assert_eq!(field(&loaded), "none");
+        let saved = serde_json::to_string(&loaded).unwrap();
+        let reloaded: Provenance = serde_json::from_str(&saved).unwrap();
+        assert_eq!(reloaded, loaded);
+        assert_eq!(serde_json::to_string(&reloaded).unwrap(), saved);
     }
 
     #[test]
