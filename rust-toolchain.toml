@@ -1,0 +1,6 @@
+# Pinned so local runs and CI gate identically; a floating `stable` adds lint
+# classes one side cannot reproduce. Bump deliberately, in its own change.
+[toolchain]
+channel = "1.98.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

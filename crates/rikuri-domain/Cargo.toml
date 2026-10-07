@@ -1,0 +1,19 @@
+[package]
+name = "rikuri-domain"
+version = "0.1.0"
+description = "Rikuri Pi pure domain types: stable IDs, privacy, authority, risk, trust, deletion units, schema versions"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+ulid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true
