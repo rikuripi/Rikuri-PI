@@ -33,4 +33,11 @@ exit=1   (3 of 3 runs)
 # Sibling tests rewritten to here-strings (same assertions)
 redaction-and-ignored-files.sh: REDACT ok x2, IGNORED ok · secret-scan-merge.sh: MERGE ok x3
 against a scratch copy of the scan without --redact (not committed): REDACT FAIL x2, MERGE FAIL x2 — leaks still caught
+
+# After the fix (fix-lock engaged after 417c5ed; tests unchanged since then)
+$ scripts/quality/tests/pre-commit-large-change.sh        (3 runs)
+HOOK ok: a misformatted Rust file staged alone is refused
+HOOK ok: a misformatted Rust file among 4,000 staged files is refused
+exit=0   (3 of 3 runs)
+scratch repo, only notes.txt staged → hook exit 0 (no Rust staged, cargo not run)
 ```
