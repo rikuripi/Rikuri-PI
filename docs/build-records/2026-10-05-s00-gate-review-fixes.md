@@ -6,12 +6,12 @@
 | Date | 2026-10-05 |
 | Author / agent session | Claude Code session for Henry Chen |
 | Branch | `stage-00/bootstrap` |
-| Commits | fill at close-out |
+| Commits | `9b91f0e` (regression tests, red), `90fee2c` (fix), `ea109b0` (fix-lock release, S00.08 resequencing, guard gap) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md), Bootstrap gate and S00.04 |
 | Related ADR / requirement | S00.02, S00.03, S00.04, T00.02, T00.11; ADR 0001; [bootstrap record](2026-10-05-s00-bootstrap-ci-quality-gates.md); [domain record](2026-10-05-s00-04-rikuri-domain.md) |
-| Status | IN PROGRESS |
+| Status | COMPLETE (closed out 2026-10-06; re-verification below) |
 
-**Risk note (protected paths):** changes `scripts/quality/*` and `.gitleaks.toml`, the gate itself. Two of the defects let the required gate pass work it must block.
+**Risk note (protected paths):** changes `scripts/quality/*` and `.gitleaks.toml`, the gate itself. Two of the defects let the required gate pass work it must block. `ea109b0` also edits the Stage Plan (S00.08 item wording, after the owner chose the resequencing) and the Stage 00 gate record, both protected; those edits record owner decisions and change no acceptance criterion.
 
 ## 1. Plan
 
@@ -55,7 +55,7 @@ Sibling sweep: other scans of history (`--all` audits in the kickoff record) use
 - [x] No test changed during the fix: `git diff --stat 9b91f0e -- scripts/quality/tests` is empty; the `#[cfg(test)]` regions of `id.rs` and `wire.rs` are byte-identical to 9b91f0e.
 - [x] Full gate: `RESULT: PASS (13 steps)` locally.
 - [x] CI on the fix commit: run 37401144525 at 90fee2c, `RESULT: PASS (13 steps)`, 55 commits scanned with merge diffs.
-- [ ] Independent re-verification of PR #7.
+- [x] Independent re-verification of PR #7. The second independent review re-checked these fixes and found further defects in the same classes; they were fixed tests-first under the [second review-fixes record](2026-10-05-s00-gate-review-fixes-2.md). The whole of PR #7 was then verified at head `e42901a` on 2026-10-06: PASS, no merge blockers (`verifier` subagent; follow-ups in the [Stage 00 record](../stage-gates/foundation0/00-bootstrap-kernel.md)).
 
 ## Fix-lock and owner decisions (2026-10-05)
 

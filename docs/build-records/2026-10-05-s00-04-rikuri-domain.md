@@ -11,6 +11,8 @@
 | Related ADR / requirement | S00.04, S00.09 (contract), S00.10 (ADR 0001); Architecture §4, §8, §19.1, §21.3, §27.6, §45.1; PRD §10.1, SEC-003, SEC-023 |
 | Status | IN PROGRESS |
 
+**Risk note (protected path, REVIEW.md):** creates `docs/architecture/adr/0001-stable-id-format.md`; ADRs are protected. Status Proposed until the owner accepts it (the Stage 00 exit requires ADR 0001–0004 accepted).
+
 ## 1. Plan
 
 - [x] One-sentence statement of change: add `crates/rikuri-domain`, the pure-type crate every kernel crate will use, with the vocabulary S00.04 lists and nothing else.
@@ -57,18 +59,19 @@
 ## 5. Close Out
 
 - [x] Full required gate green — local and CI at 5908a8c (12 steps; bootstrap record); after the review fixes, 13 steps (review-fixes record).
-- [ ] Scrap Sweep complete; deleted artifacts listed:
+- [x] Scrap Sweep complete; deleted artifacts listed: none to delete (`SCRAP clean` in the full gate at 5908a8c and at every later head, last e42901a).
 - [x] No unexplained skipped/disabled tests or new unowned debt: ratchet baseline 0/0/0.
 - [x] Documentation updated: Module Contract, ADR 0001.
 - [x] Traceability: threat/control/test links in the Module Contract.
-- [ ] Stage Gate Record updated with this change/evidence.
-- [ ] Commit message explains WHY; Build Record committed with change.
+- [x] Stage Gate Record updated with this change/evidence (S00.04 progress line, 5908a8c).
+- [x] Commit message explains WHY; Build Record committed with change (586d878; the review fixes in 90fee2c).
 
 ## Skipped / Deferred / Resequenced
 
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
 | Real caller for `rikuri-domain` types | RESEQUENCED within Stage 00 | A pure-type crate is used by the storage, ledger and daemon crates that follow | S00.04 is not complete until a real caller exists; S00.05–S00.07 must use these types rather than redefine them | Stage 00 implementer | S00.05–S00.07 | `rikurid` stores and emits these IDs/enums through the T00.09 vertical slice |
+| `Provenance` derives its authority from its own `origin` field (pre-merge verification of PR #7, 2026-10-06): JSON claiming `"origin":"user_live"` deserializes with `CurrentUser` authority, so stored bytes read back later could carry authority they should not | DEFERRED, owned | No caller exists yet, so nothing can exploit it today; the fix belongs with the first code that stores or loads `Provenance` | S00.05 storage and S00.06 ledger must not deserialize `Provenance` from untrusted or stored bytes until this is resolved | Henry Chen | Before S00.05/S00.06 merge to `main` | Either the Module Contract states that `Provenance` is never deserialized from untrusted input and the storage/ledger code honours it, or the type separates stored origin from granted authority; a regression test shows stored `user_live` JSON cannot yield `CurrentUser` authority |
 | ADR 0001 acceptance | Owner decision pending | The Stage 00 exit requires ADR 0001–0004 accepted | None before data exists; reversal path in the ADR | Henry Chen | Stage 00 exit | Owner marks ADR 0001 Accepted |
 
 Execution-evidence fields (run/outcome/profile identity): N/A, no execution path.

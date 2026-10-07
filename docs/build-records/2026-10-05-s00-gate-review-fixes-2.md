@@ -9,7 +9,7 @@
 | Commits | `dab40d6` (regression tests, red), `cd4e7fb` (fixture amendments, owner-approved), `c5bee23` (regression tests for the verifier's bypasses, red), `ca06400` (round-2 regression tests, red), `309ebb6` (round-3 regression tests, red), `5e8148a` (fix) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md), Bootstrap gate |
 | Related ADR / requirement | S00.02, S00.03, T00.02, T00.11; [first review-fixes record](2026-10-05-s00-gate-review-fixes.md) |
-| Status | COMPLETE (2026-10-05; CI run 37414127507 green. Session `05c5e1d0…`'s fix-lock awaits the owner's release) |
+| Status | COMPLETE (2026-10-05; CI run 37414127507 green. Session `05c5e1d0…`'s fix-lock released by the owner 2026-10-06T16:29:04) |
 
 **Risk note (protected paths):** changes `scripts/quality/*` and `.gitleaks.toml`; F1 and F2 let the required gate pass code that breaks the workspace lint policy.
 
