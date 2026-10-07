@@ -1,6 +1,6 @@
 # ADR-0001: Stable ID format
 
-Status: Proposed
+Status: Accepted (2026-10-07, Henry Chen, product owner; proposed 2026-10-05)
 Date: 2026-10-05
 Owners: Henry Chen (product owner, accepts); Stage 00 implementer
 Related requirements/tests: Stage Plan S00.04, S00.10, T00.12; Architecture §4 invariant 2, §8, §22, §46 ("IDs: PROVISIONAL — ULID unless ADR changes"); PRD §19.2; Writer IDE §3
