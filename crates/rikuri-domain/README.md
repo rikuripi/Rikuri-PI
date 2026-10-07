@@ -11,6 +11,7 @@ The kernel's shared vocabulary: stable typed IDs, data privacy classes and execu
 - The ID format and the registry of ID prefixes ([ADR 0001](../../docs/architecture/adr/0001-stable-id-format.md)); `IdSource` as the only way to issue IDs.
 - The wire names of `PrivacyClass`, `ExecutionIntent`, `Origin`, `InstructionAuthority`, `RiskClass` and `ProjectTrust`.
 - The rule that content authority derives from origin: only `user_live` content carries `current_user`; no `Provenance` value can hold `trusted_policy`, and deserialization refuses a raised authority.
+- The rule that authority never comes from bytes (Architecture §19.1, LOCKED): a deserialized `Provenance` is historical and always has `instruction_authority: none`, even a faithful record of a live command. Only `Provenance::new(Origin::UserLive, …)` carries `current_user`; callers must make that call only at the authenticated command boundary, and must decide authority with `instruction_authority()`, never from `origin()`.
 - The privacy combination rule: derived material takes the strictest input class; unclassified content is `local_only`.
 - `ContentRef`: events and records point at content through a content ID and its deletion unit, never by embedding it.
 
@@ -65,6 +66,7 @@ last_attempt / last_success / last_error / consecutive_failures / work_completed
 ## Threat / control links
 
 - Threat: imported or model text claims instruction authority. Control: authority derived from origin; raised authority refused on deserialization. Test: `authority::tests::stored_records_cannot_raise_authority`.
+- Threat: stored or supplied bytes, including a record of a past live command, act as the current user's command. Control: deserialization always grants `none`. Tests: `authority::tests::loaded_records_never_carry_authority`, `authority::tests::a_live_command_loses_its_authority_through_storage`.
 - Threat: derived data loses its source restriction. Control: `PrivacyClass::combine` takes the strictest class. Test: `privacy::tests::combining_never_lowers_restriction`.
 - Threat: two text forms of one ID fork an idempotency key or reference. Control: canonical-only parsing. Test: `tests/id_properties.rs`.
 

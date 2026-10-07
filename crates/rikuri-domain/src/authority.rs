@@ -6,6 +6,11 @@
 //! including text the user wrote in the past, carries `none`. `trusted_policy`
 //! authority comes from Rikuri's policy service (Stage 02), never from content
 //! provenance, so a `Provenance` value cannot hold it.
+//!
+//! Authority never comes from bytes. A `Provenance` loaded from storage or
+//! supplied by anyone is historical, so it carries `none` whatever its origin
+//! (§19.1, LOCKED): only `Provenance::new(Origin::UserLive, …)`, called by the
+//! kernel at the authenticated command boundary, carries `current_user`.
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -69,8 +74,10 @@ pub struct ProvenanceError {
 
 /// Where a content segment came from, what authority it carries and how
 /// private it is. Fields are private: authority is computed from origin on
-/// construction and validated on deserialization, so no caller and no stored
-/// record can raise it.
+/// live construction, and a deserialized value always has `none`, so no
+/// caller and no stored record can raise it. Decide authority with
+/// `instruction_authority()`, never from `origin()`: a loaded `user_live`
+/// record keeps its origin for audit but has no authority.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(try_from = "ProvenanceRecord", into = "ProvenanceRecord")]
 pub struct Provenance {
@@ -130,8 +137,10 @@ impl Provenance {
     }
 }
 
-/// The serialized form. Deserialization goes through `TryFrom`, which
-/// refuses any authority other than the one the origin implies.
+/// The serialized form. `instruction_authority` records the authority at
+/// capture, which the origin determines. Deserialization goes through
+/// `TryFrom`, which refuses any other value (a tampered record stays
+/// visible) and then grants `none`: a loaded record is historical.
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ProvenanceRecord {
@@ -158,7 +167,7 @@ impl TryFrom<ProvenanceRecord> for Provenance {
         }
         Ok(Provenance {
             origin: r.origin,
-            instruction_authority: r.instruction_authority,
+            instruction_authority: InstructionAuthority::None,
             privacy_class: r.privacy_class,
             source_id: r.source_id,
             source_span_id: r.source_span_id,
@@ -171,7 +180,9 @@ impl From<Provenance> for ProvenanceRecord {
     fn from(p: Provenance) -> Self {
         ProvenanceRecord {
             origin: p.origin,
-            instruction_authority: p.instruction_authority,
+            // Authority at capture, so a loaded record (authority `none`)
+            // saves and loads again unchanged.
+            instruction_authority: p.origin.content_authority(),
             privacy_class: p.privacy_class,
             source_id: p.source_id,
             source_span_id: p.source_span_id,

@@ -39,3 +39,25 @@ test authority::tests::loaded_records_never_carry_authority ... FAILED          
 test authority::tests::stored_records_cannot_raise_authority ... ok   (inconsistent claims refused, unchanged)
 test result: FAILED. 4 passed; 2 failed
 ```
+
+## 2. Build (fix-lock engaged after `c77c8a9`)
+
+- `TryFrom<ProvenanceRecord>` validates as before (the recorded authority must be the one the origin implies, so a tampered record is refused) and then grants `none`.
+- `From<Provenance> for ProvenanceRecord` writes the authority *at capture*, `origin.content_authority()`, not the in-memory value. Otherwise a loaded `user_live` record (authority `none`) would save as `user_live`/`none`, which the unchanged validation refuses, and a stored command could not be loaded twice. Serialized bytes for live-constructed values are unchanged.
+- Doc comments and the Module Contract (`crates/rikuri-domain/README.md`): authority never comes from bytes; decide with `instruction_authority()`, never from `origin()`; `Provenance::new(Origin::UserLive, …)` only at the authenticated boundary; threat/control/test line added.
+- The [S00.04 record](2026-10-05-s00-04-rikuri-domain.md)'s deferral row and the Stage 00 follow-up bullet are marked resolved.
+
+```text
+# After the fix (tests unchanged since c77c8a9: the diff touches docs comments, TryFrom and From only)
+$ cargo test -p rikuri-domain
+authority::tests: a_live_command_loses_its_authority_through_storage ok · loaded_records_never_carry_authority ok
+                  stored_records_cannot_raise_authority ok · only_a_live_user_command_has_authority ok · 2 more ok
+test result: ok. 26 passed (unit) · 4 passed (properties)
+
+# Scratch consumer crate (path dependency, pinned toolchain; not committed)
+stored once : {"origin":"user_live","instruction_authority":"current_user","privacy_class":"normal"}
+stored twice: (same bytes: true) · loaded authority: none / none · loaded twice equal: true
+imported/current_user        -> refused: provenance with origin imported cannot carry instruction authority current_user
+user_live/none               -> refused (not written by this code; a hand-edited record)
+user_live/trusted_policy     -> refused
+```
