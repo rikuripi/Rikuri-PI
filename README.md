@@ -85,4 +85,4 @@ Setup (about 15 minutes, once):
 
 When the Mac is asleep, offline, or the runner user is logged out, the job waits as **Queued** on the commit, and GitHub fails it after 24 hours, so a missed run shows up rather than passing silently. To retire the runner, remove it under Settings → Actions → Runners and change `runs-on` back to `macos-15`.
 
-The Rust toolchain stays installed for the runner user: the job's cache step uses `cache-bin: false`, because on a machine that keeps its files the cache action's cleanup otherwise deletes `rustup` and `cargo` from `~/.cargo/bin` (it did on 2026-10-06). If a run fails with "rustup is not installed for the runner user", reinstall Rust for that user (step 2).
+The Rust toolchain stays installed for the runner user: the job's cache step uses `cache-bin: false`, because on a machine that keeps its files the cache action's cleanup otherwise deletes `rustup` from `~/.cargo/bin` and leaves `cargo`, `rustc` and the other proxy links pointing at nothing (it did on 2026-10-06). If a run fails with "rustup is not installed for the runner user", reinstall Rust for that user (step 2).

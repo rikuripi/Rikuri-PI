@@ -74,9 +74,10 @@ jobs:
           }
           rustup toolchain install && rustc --version
       # This runner keeps its files between jobs. With cache-bin (the default),
-      # the cache action's cleanup deleted rustup and cargo from ~/.cargo/bin
-      # after the first green run, so every later job failed (2026-10-06,
-      # run 37564819464). The toolchain stays installed on the Mac instead.
+      # the cache action's cleanup deleted rustup, the only regular file in
+      # ~/.cargo/bin, leaving the cargo and rustc proxy links dangling, after
+      # the first green run, so every later job failed (2026-10-06, run
+      # 37564819464). The toolchain stays installed on the Mac instead.
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           cache-bin: false
