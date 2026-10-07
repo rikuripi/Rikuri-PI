@@ -6,10 +6,10 @@
 | Date | 2026-10-07 |
 | Author / agent session | Claude Code session for Henry Chen |
 | Branch | `fix/provenance-loaded-authority` |
-| Commits | fill at close-out |
+| Commits | `c77c8a9` (regression tests, red), `a75e8a0` (fix), `9304937` (wire tests, red), `de7140a` (wire fix), this close-out; PR #13 |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md), S00.04 |
 | Related ADR / requirement | S00.04; Architecture §19.1 (LOCKED), §27.4, §4 invariant 7; PRD SEC-003; [S00.04 record](2026-10-05-s00-04-rikuri-domain.md) deferral "`Provenance` derives its authority from its own `origin` field" |
-| Status | IN PROGRESS |
+| Status | COMPLETE (2026-10-07; verifier PASS at `de7140a`; merged with PR #13) |
 
 **Risk note (protected core: instruction authority).** This changes how `rikuri-domain` grants instruction authority, a security boundary. Expanded risk and negative-test evidence below.
 
@@ -38,8 +38,8 @@ test result: FAILED. 5 passed; 2 failed
 ## Risk and negative evidence
 
 - Allowed: `Provenance::new(Origin::UserLive, …)` still yields `CurrentUser` (live boundary); every other origin `none`.
-- Denied: any bytes, including a faithful serialization of a live command, load with `none`; a record whose authority disagrees with its origin is still refused, so tampering stays visible rather than silently downgraded.
-- Consequence by design: a live `Provenance` no longer round-trips equal through storage (authority drops to `none`). Audit keeps the recorded origin and the authority field as written.
+- Denied: any bytes, including a faithful serialization of a live command, load with `none`; a record claiming more authority than its origin allows (`trusted_policy` on any origin, `current_user` on any origin but `user_live`) is refused, so a raise stays visible. A lowered authority (`none`) is accepted, since it grants nothing (after the wire fix; *corrected at close-out*).
+- Consequence by design: a live `Provenance` no longer round-trips equal through storage (authority drops to `none`). The record keeps its origin for audit; its authority field holds the value's real authority, so re-saving a loaded record writes `none` (*corrected at close-out*: this line first said the field is kept as written).
 - Not covered: `Provenance::new` is public, so trusted in-process code can still create live authority; keeping that call at the authenticated boundary is the kernel's job (S00.07 and later), recorded in the Module Contract.
 
 ## Evidence log
@@ -55,7 +55,7 @@ test result: FAILED. 4 passed; 2 failed
 
 ## 2. Build (fix-lock engaged after `c77c8a9`)
 
-- `TryFrom<ProvenanceRecord>` validates as before (the recorded authority must be the one the origin implies, so a tampered record is refused) and then grants `none`.
+- *Superseded by the wire fix below:* `TryFrom<ProvenanceRecord>` first validated as before (the recorded authority had to be the one the origin implies) and then granted `none`.
 - *Superseded by the wire fix below:* `From<Provenance> for ProvenanceRecord` first wrote the authority *at capture*, `origin.content_authority()`, so that a loaded `user_live` record would not save as `user_live`/`none`, which the then-strict validation refused. The verifier showed this labels historical content `current_user` on the wire.
 - Wire fix (after `9304937`, fix-lock re-engaged): serialization writes the value's real authority (`p.instruction_authority`); validation accepts the authority the origin implies or `none` and refuses any raise; a loaded record still gets `none`. Bytes for live-constructed values are unchanged.
 - Doc comments and the Module Contract (`crates/rikuri-domain/README.md`): authority never comes from bytes; decide with `instruction_authority()`, never from `origin()`; `Provenance::new(Origin::UserLive, …)` only at the authenticated boundary; threat/control/test line added.
@@ -83,3 +83,10 @@ authority::tests: the_wire_carries_the_real_authority ok · stored_records_canno
                   loaded_records_never_carry_authority ok · a_live_command_loses_its_authority_through_storage ok · 3 more ok
 test result: ok. 27 passed (unit) · 4 passed (properties)
 ```
+
+## Close-out (2026-10-07)
+
+- [x] Verifier: PASS at `a75e8a0` (no load path yields authority; raised the wire finding) and PASS at `de7140a` after the wire fix (the 11 raises refused, the 7 legitimate combinations load with `none`; `to_value` shows the real authority; live bytes unchanged; the test region identical to `9304937`). CI run 37570780758 at `de7140a`: `RESULT: PASS (13 steps)`.
+- [x] Module Contract, doc comments, the S00.04 deferral row and the Stage 00 follow-up updated; three lines here corrected at close-out (marked).
+- [x] Scrap: scratch consumer crates under the session scratchpad removed; nothing task-created in the repository.
+- Fix-lock on this record: release is the owner's.
