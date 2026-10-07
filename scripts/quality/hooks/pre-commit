@@ -10,7 +10,16 @@ command -v gitleaks >/dev/null || fail "gitleaks not installed (README > Running
 gitleaks git --pre-commit --staged --config .gitleaks.toml --redact --verbose --no-banner --exit-code 1 \
   || fail "possible secret in the staged change (finding above, value redacted); remove it, do not allowlist it"
 
-if git diff --cached --name-only | grep -qE '(\.rs|Cargo\.toml|Cargo\.lock|rust-toolchain\.toml)$'; then
+# Git selects the staged Rust paths itself (a pathspec `*` also matches `/`).
+# Not `git diff | grep -q`: under pipefail, grep stopping at its first match
+# killed git with SIGPIPE on a large change, and the checks below were
+# skipped without a word (pre-merge verification of PR #7). Git's pathspec
+# variables would change what these patterns match (literal: nothing; glob:
+# no nested files), so they are cleared for this one call.
+staged_rust="$(env -u GIT_LITERAL_PATHSPECS -u GIT_GLOB_PATHSPECS -u GIT_NOGLOB_PATHSPECS \
+  -u GIT_ICASE_PATHSPECS git diff --cached --name-only -- '*.rs' '*Cargo.toml' '*Cargo.lock' '*rust-toolchain.toml')" \
+  || fail "cannot list the staged files"
+if [ -n "$staged_rust" ]; then
   cargo fmt --all --check || fail "formatting differs; run: cargo fmt --all"
   cargo check --workspace --all-targets --locked --quiet || fail "cargo check failed"
 fi
