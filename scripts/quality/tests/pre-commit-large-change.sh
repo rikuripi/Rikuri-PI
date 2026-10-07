@@ -23,13 +23,14 @@ fixture() { # fixture <dir>: a workspace whose one crate is misformatted
 }
 
 failed=0
-check() { # check <label> <repo>
-  if (cd "$2" && "$here/hooks/pre-commit") > "$tmp/out" 2>&1; then
-    echo "HOOK FAIL: $1 (the hook passed a misformatted Rust file)"; tail -5 "$tmp/out" | sed 's/^/  /'; failed=1
+check() { # check <label> <repo> [VAR=value ...]
+  local label="$1" repo="$2"; shift 2
+  if (cd "$repo" && env "$@" "$here/hooks/pre-commit") > "$tmp/out" 2>&1; then
+    echo "HOOK FAIL: $label (the hook passed a misformatted Rust file)"; tail -5 "$tmp/out" | sed 's/^/  /'; failed=1
   elif grep -q "formatting differs" "$tmp/out"; then
-    echo "HOOK ok: $1"
+    echo "HOOK ok: $label"
   else
-    echo "HOOK FAIL: $1 (refused, but not for formatting)"; tail -5 "$tmp/out" | sed 's/^/  /'; failed=1
+    echo "HOOK FAIL: $label (refused, but not for formatting)"; tail -5 "$tmp/out" | sed 's/^/  /'; failed=1
   fi
 }
 
@@ -47,4 +48,19 @@ for i in range(4000):
 PY
 git -C "$tmp/large" add -A
 check "a misformatted Rust file among 4,000 staged files is refused" "$tmp/large"
+
+# Verifier on PR #17: git's pathspec environment variables change what a
+# pathspec matches, so a hook that selects Rust paths by pathspec could
+# skip its checks silently. Only a nested Rust file is staged here, so no
+# top-level Cargo.toml can trigger the checks by itself.
+fixture "$tmp/nested"
+printf 'pub fn f() -> u8 {\n    1\n}\n' > "$tmp/nested/crates/a/src/lib.rs"
+git -C "$tmp/nested" add -A
+git -C "$tmp/nested" -c user.email=hook-test@example.invalid -c user.name=hook-test -c commit.gpgsign=false commit -q -m base
+printf 'pub fn f( ) -> u8 {1}\n' > "$tmp/nested/crates/a/src/lib.rs"
+git -C "$tmp/nested" add crates/a/src/lib.rs
+check "a staged nested Rust file is refused" "$tmp/nested"
+check "… with GIT_LITERAL_PATHSPECS=1 set" "$tmp/nested" GIT_LITERAL_PATHSPECS=1
+check "… with GIT_GLOB_PATHSPECS=1 set" "$tmp/nested" GIT_GLOB_PATHSPECS=1
+check "… with GIT_NOGLOB_PATHSPECS=1 set" "$tmp/nested" GIT_NOGLOB_PATHSPECS=1
 exit "$failed"

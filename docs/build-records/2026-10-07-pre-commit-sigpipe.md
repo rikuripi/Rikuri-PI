@@ -41,3 +41,17 @@ HOOK ok: a misformatted Rust file among 4,000 staged files is refused
 exit=0   (3 of 3 runs)
 scratch repo, only notes.txt staged → hook exit 0 (no Rust staged, cargo not run)
 ```
+
+## Verification round 1 (verifier, 2026-10-07): environment variables
+
+The verifier could not run the tests: with the fix-lock engaged, the guard refuses writing any path containing `tests/`, even a `/tmp` export, and it stopped there. Reading the change, it found that git's pathspec environment variables alter what the new pathspec matches: `GIT_LITERAL_PATHSPECS=1` makes `*.rs` literal (nothing matches) and `GIT_GLOB_PATHSPECS=1` stops `*` matching `/` (nested files missed), so the hook could again skip its checks silently. Also noted, both acceptable: a rename `a.rs` → `a.txt` now runs cargo (more correct: removing a Rust file can break the build), and names git prints quoted are now caught.
+
+**Owner decision (2026-10-07):** release the lock, add test cases first, fix, and release again before verification so the verifier can run the tests.
+
+```text
+# New cases (only a nested Rust file staged, so no top-level Cargo.toml triggers the checks), against the first fix
+HOOK ok: a staged nested Rust file is refused
+HOOK FAIL: … with GIT_LITERAL_PATHSPECS=1 set (the hook passed a misformatted Rust file)
+HOOK FAIL: … with GIT_GLOB_PATHSPECS=1 set (the hook passed a misformatted Rust file)
+HOOK FAIL: … with GIT_NOGLOB_PATHSPECS=1 set (the hook passed a misformatted Rust file)
+```
