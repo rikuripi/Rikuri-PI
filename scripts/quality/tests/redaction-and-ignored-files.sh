@@ -26,12 +26,14 @@ open(sys.argv[2], "w").write("\n".join(l[:20] for l in lines) + "\n")
 PY
 g add key.txt; g commit -q -m key
 out="$("$here/secret-scan.sh" "$tmp" 2>&1)" && { echo "REDACT FAIL: the planted key passed the scan"; failed=1; }
-if printf '%s' "$out" | grep -q -F -f "$tmp/lines"; then
+# Here-strings, not `printf | grep -q`: under pipefail a SIGPIPE on printf
+# would make a leak read as "not printed" (pre-commit SIGPIPE sweep).
+if grep -q -F -f "$tmp/lines" <<<"$out"; then
   echo "REDACT FAIL: part of the key appears in the scan output"; failed=1
 else
   echo "REDACT ok: no line of the key appears in the scan output"
 fi
-printf '%s' "$out" | grep -q 'Secret:.*REDACTED' && echo "REDACT ok: the finding is shown with the secret redacted" \
+grep -q 'Secret:.*REDACTED' <<<"$out" && echo "REDACT ok: the finding is shown with the secret redacted" \
   || { echo "REDACT FAIL: no redacted finding shown"; failed=1; }
 
 printf 'target/\n' > "$tmp/.gitignore"

@@ -45,12 +45,14 @@ if out="$("$scan" "$tmp" 2>&1)"; then
 else
   echo "MERGE ok: a key introduced in a merge commit fails the scan"
 fi
-if printf '%s' "$out" | grep -q -F -f "$tmp/lines"; then
+# Here-strings, not `printf | grep -q`: under pipefail a SIGPIPE on printf
+# would make a leak read as "not printed" (pre-commit SIGPIPE sweep).
+if grep -q -F -f "$tmp/lines" <<<"$out"; then
   echo "MERGE FAIL: the scan printed part of the key"; failed=1
 else
   echo "MERGE ok: no line of the key is printed"
 fi
-if printf '%s' "$out" | grep -q 'REDACTED'; then
+if grep -q 'REDACTED' <<<"$out"; then
   echo "MERGE ok: the finding is shown, redacted"
 else
   echo "MERGE FAIL: the finding is not shown (expected a REDACTED finding)"; failed=1
