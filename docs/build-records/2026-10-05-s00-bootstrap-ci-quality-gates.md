@@ -56,7 +56,7 @@
 - [ ] Running-system probe — the "running system" for this change is CI itself: see the CI runs in the evidence log.
 - [x] T00.01 red-test drill — red Pass, removed → green Pass (evidence log). "Blocks" Pass (2026-10-06, after the owner enabled protection): drill PR #10's red run left GitHub reporting it BLOCKED, and the same PR with the test removed reported CLEAN; closed unmerged (evidence log).
 - [x] T00.02 secret drill — Pass for the Stage Plan wording: the planted key blocks CI (run 37397273842 failed) and the 534-line log holds none of the key (evidence log). Criterion 3's "shows the finding redacted" was **not** shown by that run, which predates `--verbose` and printed no finding at all; the redacted finding is proven by the gate self-tests (`REDACT ok`, `MERGE ok`, green in CI run 37549907918), not by re-running the drill (corrected 2026-10-06 after the pre-merge verification).
-- [x] T00.03 clean checkout from README (Ubuntu half) — Pass at f56532b (11 steps, evidence log) and, by the independent verifier, at 5908a8c (12 steps). The builder's own rerun at 5908a8c is void: its harness rewrote `/tmp/` paths but missed `-C /tmp`, so `install` looked in the wrong place; the README was not at fault, but its fixed `/tmp` paths are fragile (follow-up: use a `mktemp -d` directory). macOS half: Pass, 2026-10-07 — the first green macOS run on `main` (run 37567919632, on the owner's Mac; [runner record](2026-10-06-macos-self-hosted-runner.md)).
+- [x] T00.03 clean checkout from README (Ubuntu half) — Pass at f56532b (11 steps, evidence log) and, by the independent verifier, at 5908a8c (12 steps); re-run from the current README at `3577d3e` on 2026-10-07, 13 steps (evidence log). The builder's own rerun at 5908a8c is void: its harness rewrote `/tmp/` paths but missed `-C /tmp`, so `install` looked in the wrong place; the README was not at fault, but its fixed `/tmp` paths are fragile (follow-up: use a `mktemp -d` directory). macOS half: Pass, 2026-10-07 — the first green macOS run on `main` (run 37567919632, on the owner's Mac; [runner record](2026-10-06-macos-self-hosted-runner.md)).
 - [x] T00.11 contract check fails on a broken contract — Pass (evidence log).
 - [x] Regression guard: every gate class was shown failing on a known violation (evidence log), and the scope defect has its own self-test.
 
@@ -172,3 +172,21 @@ $ gh pr close 10 --delete-branch    → closed unmerged (mergedAt null); remote 
 ```
 
 No merge or push to `main` was attempted: GitHub's own merge state is the evidence, and a failed refusal would have put a failing test on `main`. The pre-commit hook also refused the first drill commit for formatting (`pre-commit: formatting differs`), so the drill failed at the test step as intended.
+
+### T00.03 re-run from the current README (2026-10-07)
+
+The README's install commands changed in `ea109b0` and the gate grew to 13 steps, so the clean-checkout test was repeated (follow-up from the pre-merge verification of PR #7).
+
+```text
+$ git clone https://github.com/rikuripi/Rikuri-PI.git   → main at 3577d3e
+$ env -i HOME=<empty dir> PATH=/usr/local/bin:/usr/bin:/bin LANG=C.UTF-8 bash -c '…'
+step 1: rustup.rs installer, --default-toolchain none; python3 3.14.4 (Ubuntu's)
+step 2: the README's code block, extracted from the clone's README and run as written
+        gitleaks.tgz: OK · cargo-deny.tgz: OK (SHA-256); its own `rm -r -- "$dl"` removed the download directory
+step 3: git config core.hooksPath scripts/quality/hooks
+step 4: scripts/quality/full-gate.sh
+        rustc 1.98.1 installed from rust-toolchain.toml · gitleaks 8.30.1 · cargo-deny 0.20.2
+        GATE tools … scrap: PASS (13 of 13); secrets: 73 commits scanned
+        RESULT: PASS (13 steps), exit=0                                   Pass
+(scratch clone and HOME removed afterwards)
+```
