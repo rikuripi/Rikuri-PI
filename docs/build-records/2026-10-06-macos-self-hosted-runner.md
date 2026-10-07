@@ -6,10 +6,10 @@
 | Date | 2026-10-06 |
 | Author / agent session | Claude Code session for Henry Chen |
 | Branch | `stage-00/bootstrap` (PR #7) |
-| Commits | fill at close-out |
+| Commits | `1bb159f` (workflow, README, this record) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md), Bootstrap gate |
 | Related ADR / requirement | S00.02, T00.03 (macOS half); ADR 0000 "macOS platform-neutral core CI remains continuous"; [kickoff decision on macOS CI](2026-10-05-stage-00-kickoff.md) |
-| Status | IN PROGRESS (waits for the owner to register the runner) |
+| Status | IN PROGRESS (runner registered and proven on the PR branch; the first run on `main` follows the merge) |
 
 **Risk note (execution on the owner's machine):** a self-hosted runner executes whatever a workflow sends it. This changes `.github/workflows/ci.yml`, a protected path.
 
@@ -44,4 +44,17 @@ The kickoff decision (macOS on merges to `main` only, not on PRs) stands; only t
 # Prepared before the owner registers the runner (2026-10-06)
 .github/workflows/ci.yml   macos-core: runs-on macos-15 → [self-hosted, macOS]; header comment records the decision
 README.md                  "macOS runner" section: setup, trust boundary, offline behavior, rollback
+
+# Owner registered the runner (2026-10-06): Standard macOS user `rikurici`;
+# `which cargo` → /Users/rikurici/.cargo/bin/cargo; runner shown Idle in Settings → Actions → Runners.
+# Committed as 1bb159f; pushed to PR #7.
+
+# Pre-merge proof: CI dispatched on stage-00/bootstrap at 1378ed7, run 37564364375, 2026-10-07T02:56Z
+macOS core (build · unit · contract): success   job 112608603122
+  runner_name Henrys-MacBook-Air · labels [self-hosted, macOS] · runner group Default
+  rustc 1.98.1 (pinned) · cargo build --workspace --all-targets --locked: Finished
+  cargo test --workspace --locked: 24 passed (unit) · 4 passed (properties) · 0 failed      48 s on the Mac
+Full gate (Ubuntu): success (same run); PR run 37564364533 at 1378ed7: success
 ```
+
+The macOS half of T00.03 is shown on the owner's Mac before merge. The first run on `main` follows the merge of PR #7.
