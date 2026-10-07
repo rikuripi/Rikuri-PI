@@ -72,7 +72,7 @@ Build items S00.01–S00.13 as worded in the Stage Plan. S00.12 (E2) includes th
 
 Found by the `verifier` subagent at `e42901a` (verdict PASS, none blocks the merge). Owner of each: Henry Chen.
 
-- **`Provenance` trusts its own `origin` field** (stored `user_live` JSON yields `CurrentUser` authority). Must be resolved before S00.05/S00.06 merge to `main`; storage and the ledger must not load `Provenance` from untrusted bytes until then. Tracked as a deferral in the [S00.04 record](../../build-records/2026-10-05-s00-04-rikuri-domain.md#skipped--deferred--resequenced).
+- ~~**`Provenance` trusts its own `origin` field**~~ RESOLVED 2026-10-07 ([record](../../build-records/2026-10-07-provenance-loaded-authority.md)): a loaded `Provenance` always carries `none`. Was: stored `user_live` JSON yields `CurrentUser` authority. Must be resolved before S00.05/S00.06 merge to `main`; storage and the ledger must not load `Provenance` from untrusted bytes until then. Tracked as a deferral in the [S00.04 record](../../build-records/2026-10-05-s00-04-rikuri-domain.md#skipped--deferred--resequenced).
 - **Pre-commit hook skips its checks on a large staged change.** `pipefail` with `grep -q` lets `git diff` die of SIGPIPE, so `cargo fmt` and `cargo check` are skipped without a message (reproduced 3/3). CI still catches it. Fix with a regression test first, in the next gate-script change.
 - **T00.03 (Ubuntu) re-run from the current README** (install commands changed in `ea109b0`; the gate is now 13 steps). Before the Stage 00 exit.
 - **`claude-guard.yml`** (predates PR #7): actions pinned by tag, not SHA; no `permissions:` block; its comment saying Stage 00 CI "does not exist yet" is stale. Next change to that workflow.

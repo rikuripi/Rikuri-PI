@@ -6,6 +6,11 @@
 //! including text the user wrote in the past, carries `none`. `trusted_policy`
 //! authority comes from Rikuri's policy service (Stage 02), never from content
 //! provenance, so a `Provenance` value cannot hold it.
+//!
+//! Authority never comes from bytes. A `Provenance` loaded from storage or
+//! supplied by anyone is historical, so it carries `none` whatever its origin
+//! (§19.1, LOCKED): only `Provenance::new(Origin::UserLive, …)`, called by the
+//! kernel at the authenticated command boundary, carries `current_user`.
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -59,7 +64,7 @@ impl Origin {
     }
 }
 
-/// A provenance record whose authority disagrees with its origin.
+/// A provenance record claiming more authority than its origin allows.
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 #[error("provenance with origin {origin} cannot carry instruction authority {claimed}")]
 pub struct ProvenanceError {
@@ -69,8 +74,10 @@ pub struct ProvenanceError {
 
 /// Where a content segment came from, what authority it carries and how
 /// private it is. Fields are private: authority is computed from origin on
-/// construction and validated on deserialization, so no caller and no stored
-/// record can raise it.
+/// live construction, and a deserialized value always has `none`, so no
+/// caller and no stored record can raise it. Decide authority with
+/// `instruction_authority()`, never from `origin()`: a loaded `user_live`
+/// record keeps its origin for audit but has no authority.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(try_from = "ProvenanceRecord", into = "ProvenanceRecord")]
 pub struct Provenance {
@@ -130,8 +137,12 @@ impl Provenance {
     }
 }
 
-/// The serialized form. Deserialization goes through `TryFrom`, which
-/// refuses any authority other than the one the origin implies.
+/// The serialized form. `instruction_authority` is the value's real
+/// authority, so readers of the bytes never see historical content labelled
+/// `current_user`. Deserialization goes through `TryFrom`, which accepts the
+/// authority the origin implies or `none`, refuses any raise (a tampered
+/// record stays visible), and then grants `none`: a loaded record is
+/// historical.
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ProvenanceRecord {
@@ -150,7 +161,8 @@ impl TryFrom<ProvenanceRecord> for Provenance {
     type Error = ProvenanceError;
 
     fn try_from(r: ProvenanceRecord) -> Result<Self, ProvenanceError> {
-        if r.instruction_authority != r.origin.content_authority() {
+        let lowered = r.instruction_authority == InstructionAuthority::None;
+        if !lowered && r.instruction_authority != r.origin.content_authority() {
             return Err(ProvenanceError {
                 origin: r.origin,
                 claimed: r.instruction_authority,
@@ -158,7 +170,7 @@ impl TryFrom<ProvenanceRecord> for Provenance {
         }
         Ok(Provenance {
             origin: r.origin,
-            instruction_authority: r.instruction_authority,
+            instruction_authority: InstructionAuthority::None,
             privacy_class: r.privacy_class,
             source_id: r.source_id,
             source_span_id: r.source_span_id,
@@ -216,13 +228,67 @@ mod tests {
                     r#"{{"origin":"{origin}","instruction_authority":"{claimed}","privacy_class":"normal"}}"#
                 );
                 let parsed = serde_json::from_str::<Provenance>(&json);
-                if claimed == origin.content_authority() {
+                // A record may state the authority its origin implies, or
+                // `none` (a loaded record's real authority); never a raise.
+                if claimed == origin.content_authority() || claimed == InstructionAuthority::None {
                     assert!(parsed.is_ok(), "{json}");
                 } else {
                     assert!(parsed.is_err(), "accepted {json}");
                 }
             }
         }
+    }
+
+    // Architecture §19.1 (LOCKED): historical content has no instruction
+    // authority. Anything loaded from bytes is historical, including a
+    // faithful record of a live command (pre-merge verification of PR #7,
+    // 2026-10-06: `user_live`/`current_user` JSON loaded with authority).
+    #[test]
+    fn loaded_records_never_carry_authority() {
+        for &origin in Origin::ALL {
+            let claimed = origin.content_authority();
+            let json = format!(
+                r#"{{"origin":"{origin}","instruction_authority":"{claimed}","privacy_class":"normal"}}"#
+            );
+            let loaded = serde_json::from_str::<Provenance>(&json).unwrap();
+            assert_eq!(loaded.origin(), origin, "{json}");
+            assert_eq!(
+                loaded.instruction_authority(),
+                InstructionAuthority::None,
+                "{json}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_live_command_loses_its_authority_through_storage() {
+        let live = Provenance::new(Origin::UserLive, PrivacyClass::Normal);
+        assert_eq!(
+            live.instruction_authority(),
+            InstructionAuthority::CurrentUser
+        );
+        let stored = serde_json::to_string(&live).unwrap();
+        let loaded = serde_json::from_str::<Provenance>(&stored).unwrap();
+        assert_eq!(loaded.origin(), Origin::UserLive);
+        assert_eq!(loaded.instruction_authority(), InstructionAuthority::None);
+    }
+
+    // Readers of the bytes (ledger tools, the JSON interface, context
+    // packets) must never see historical content labelled `current_user`
+    // (verifier, PR #13, 2026-10-07): the wire carries the real authority.
+    #[test]
+    fn the_wire_carries_the_real_authority() {
+        let live = Provenance::new(Origin::UserLive, PrivacyClass::Normal);
+        let field =
+            |p: &Provenance| serde_json::to_value(p).unwrap()["instruction_authority"].clone();
+        assert_eq!(field(&live), "current_user");
+        let loaded: Provenance =
+            serde_json::from_str(&serde_json::to_string(&live).unwrap()).unwrap();
+        assert_eq!(field(&loaded), "none");
+        let saved = serde_json::to_string(&loaded).unwrap();
+        let reloaded: Provenance = serde_json::from_str(&saved).unwrap();
+        assert_eq!(reloaded, loaded);
+        assert_eq!(serde_json::to_string(&reloaded).unwrap(), saved);
     }
 
     #[test]
