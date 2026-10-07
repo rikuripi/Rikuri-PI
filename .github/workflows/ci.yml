@@ -8,7 +8,10 @@ name: CI
 #
 # macOS runs the platform-neutral core build/unit/contract checks on every
 # merge to main, not on PRs (owner decision 2026-10-05; continuous macOS core
-# checks per ADR 0000). A red macOS run on main stops the line.
+# checks per ADR 0000). A red macOS run on main stops the line. It runs on the
+# owner's Mac as a self-hosted runner, not GitHub's billed macOS machines
+# (owner decision 2026-10-06; setup in README > macOS runner). If the Mac is
+# offline the job waits as queued, and GitHub fails it after 24 hours.
 
 on:
   pull_request:
@@ -57,7 +60,7 @@ jobs:
   macos-core:
     name: macOS core (build · unit · contract)
     if: github.event_name != 'pull_request'
-    runs-on: macos-15
+    runs-on: [self-hosted, macOS]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
