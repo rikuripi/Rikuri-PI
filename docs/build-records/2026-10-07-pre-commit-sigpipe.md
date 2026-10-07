@@ -6,10 +6,10 @@
 | Date | 2026-10-07 |
 | Author / agent session | Claude Code session for Henry Chen |
 | Branch | `fix/pre-commit-sigpipe` |
-| Commits | fill at close-out |
+| Commits | `417c5ed` (regression test and sibling rewrites, red), `e7af53a` (fix), `93c6222` (pathspec-variable cases, red), `fa98886` (fix), close-out; PR #17 |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md), follow-up from the pre-merge verification of PR #7 |
 | Related ADR / requirement | S00.03 (hooks); AGENTS.md law 1 (nothing important fails silently) |
-| Status | IN PROGRESS |
+| Status | COMPLETE (2026-10-07; verifier PASS at `fa98886`; merged with PR #17) |
 
 **Risk note (protected path):** `scripts/quality/*` is the gate. The defect let the pre-commit gate pass a change it should have checked, without a message.
 
@@ -62,3 +62,16 @@ $ scripts/quality/full-gate.sh → RESULT: PASS (13 steps)
 ```
 
 The fix-lock was released again after this commit, by the owner's decision, so the verifier can run the tests from a `/tmp` export; that the tests did not change during the fix is shown by `git diff 93c6222 <fix commit> -- scripts/quality/tests` (empty).
+
+## Close-out (2026-10-07)
+
+- [x] Verifier PASS at `fa98886` (fix-lock not engaged during its run; its `/tmp` exports checked with `cmp` and removed):
+  - 417c5ed's test: red against main's hook (4,000-file case), green against `e7af53a` and the head. 93c6222's test: red against `e7af53a` (the three variable cases), green at the head. Tests unchanged through each fix.
+  - File selection, 25 scenarios through both selections: the same answer as main's regex, or broader (a rename `.rs` → `.txt`; names git quotes, such as `ä.rs`). A change staging only `README.md` still skips cargo.
+  - The here-string tests still fail on a scan without `--redact` and without `--verbose`.
+  - CI run 37573859282 at `fa98886`: `RESULT: PASS (13 steps)`; its own local gate in a `/tmp` clone: `RESULT: PASS (13 steps)`.
+- Known, not changed here (both predate this record; CI's full gate covers them):
+  - Neither the old nor the new selection triggers on a `rust-toolchain` file without extension or on `.cargo/config.toml`, though both affect the build.
+  - When cargo fails for a reason other than formatting (for example a crate that lost its only source file in a rename), the hook still says "formatting differs".
+  - No case for `GIT_ICASE_PATHSPECS`: it only widens matching, so it cannot cause a skip; the hook clears it anyway.
+- [x] Stage 00 follow-up marked resolved. Scrap: nothing task-created left in the repository.
