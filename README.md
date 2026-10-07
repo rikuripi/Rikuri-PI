@@ -74,13 +74,15 @@ The macOS job in CI builds and tests the same workspace on every merge to `main`
 
 The `macOS core` CI job runs on the owner's Mac instead of GitHub's billed macOS machines (owner decision 2026-10-06). It is not a required check, so pull requests never wait for it; it runs after each merge to `main`, and a red run stops the line.
 
-**Trust boundary.** A self-hosted runner executes whatever a workflow sends it. This job only runs merged code, but anyone with write access to the repository (the owner and the agent account `hchengit`, which AI sessions use) could push a branch whose workflow targets the runner. So the runner gets its own unprivileged macOS user, never the owner's.
+**Trust boundary.** A self-hosted runner executes whatever a workflow sends it. This job runs after merges to `main`, but also on manual dispatch, which runs the chosen branch's code, merged or not; and anyone with write access to the repository (the owner and the agent account `hchengit`, which AI sessions use) can dispatch it or push a branch whose workflow targets the runner. So the runner gets its own unprivileged macOS user, never the owner's.
 
 Setup (about 15 minutes, once):
 
-1. In System Settings → Users & Groups, add a **Standard** (not Administrator) user, for example `rikuri-ci`. Log in as that user for the remaining steps.
+1. In System Settings → Users & Groups, add a **Standard** (not Administrator) user, for example `rikuri-ci` (the runner user below). Log in as that user for the remaining steps.
 2. Install Rust for that user with rustup (`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`), then open a new terminal so `~/.cargo/bin` is on `PATH`. The pinned toolchain in `rust-toolchain.toml` installs itself on the first run.
 3. Open the repository's **Settings → Actions → Runners → New self-hosted runner**, choose macOS and your Mac's architecture, and run the download and `./config.sh` commands GitHub shows, in that user's home directory. Accept the default labels (`self-hosted`, `macOS`, and the architecture); the workflow selects `[self-hosted, macOS]`.
-4. Install and start it as a service: `./svc.sh install && ./svc.sh start`. On macOS this is a launch agent, so it runs while the `rikuri-ci` user is logged in; switching back to your own account (fast user switching) keeps it running. After a restart, log that user in again.
+4. Install and start it as a service: `./svc.sh install && ./svc.sh start`. On macOS this is a launch agent, so it runs while the runner user is logged in; switching back to your own account (fast user switching) keeps it running. After a restart, log that user in again.
 
-When the Mac is asleep, offline, or `rikuri-ci` is logged out, the job waits as **Queued** on the commit, and GitHub fails it after 24 hours, so a missed run shows up rather than passing silently. To retire the runner, remove it under Settings → Actions → Runners and change `runs-on` back to `macos-15`.
+When the Mac is asleep, offline, or the runner user is logged out, the job waits as **Queued** on the commit, and GitHub fails it after 24 hours, so a missed run shows up rather than passing silently. To retire the runner, remove it under Settings → Actions → Runners and change `runs-on` back to `macos-15`.
+
+The Rust toolchain stays installed for the runner user: the job's cache step uses `cache-bin: false`, because on a machine that keeps its files the cache action's cleanup otherwise deletes `rustup` and `cargo` from `~/.cargo/bin` (it did on 2026-10-06). If a run fails with "rustup is not installed for the runner user", reinstall Rust for that user (step 2).
