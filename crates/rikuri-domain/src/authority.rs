@@ -64,7 +64,7 @@ impl Origin {
     }
 }
 
-/// A provenance record whose authority disagrees with its origin.
+/// A provenance record claiming more authority than its origin allows.
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 #[error("provenance with origin {origin} cannot carry instruction authority {claimed}")]
 pub struct ProvenanceError {
@@ -137,10 +137,12 @@ impl Provenance {
     }
 }
 
-/// The serialized form. `instruction_authority` records the authority at
-/// capture, which the origin determines. Deserialization goes through
-/// `TryFrom`, which refuses any other value (a tampered record stays
-/// visible) and then grants `none`: a loaded record is historical.
+/// The serialized form. `instruction_authority` is the value's real
+/// authority, so readers of the bytes never see historical content labelled
+/// `current_user`. Deserialization goes through `TryFrom`, which accepts the
+/// authority the origin implies or `none`, refuses any raise (a tampered
+/// record stays visible), and then grants `none`: a loaded record is
+/// historical.
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ProvenanceRecord {
@@ -159,7 +161,8 @@ impl TryFrom<ProvenanceRecord> for Provenance {
     type Error = ProvenanceError;
 
     fn try_from(r: ProvenanceRecord) -> Result<Self, ProvenanceError> {
-        if r.instruction_authority != r.origin.content_authority() {
+        let lowered = r.instruction_authority == InstructionAuthority::None;
+        if !lowered && r.instruction_authority != r.origin.content_authority() {
             return Err(ProvenanceError {
                 origin: r.origin,
                 claimed: r.instruction_authority,
@@ -180,9 +183,7 @@ impl From<Provenance> for ProvenanceRecord {
     fn from(p: Provenance) -> Self {
         ProvenanceRecord {
             origin: p.origin,
-            // Authority at capture, so a loaded record (authority `none`)
-            // saves and loads again unchanged.
-            instruction_authority: p.origin.content_authority(),
+            instruction_authority: p.instruction_authority,
             privacy_class: p.privacy_class,
             source_id: p.source_id,
             source_span_id: p.source_span_id,

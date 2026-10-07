@@ -56,7 +56,8 @@ test result: FAILED. 4 passed; 2 failed
 ## 2. Build (fix-lock engaged after `c77c8a9`)
 
 - `TryFrom<ProvenanceRecord>` validates as before (the recorded authority must be the one the origin implies, so a tampered record is refused) and then grants `none`.
-- `From<Provenance> for ProvenanceRecord` writes the authority *at capture*, `origin.content_authority()`, not the in-memory value. Otherwise a loaded `user_live` record (authority `none`) would save as `user_live`/`none`, which the unchanged validation refuses, and a stored command could not be loaded twice. Serialized bytes for live-constructed values are unchanged.
+- *Superseded by the wire fix below:* `From<Provenance> for ProvenanceRecord` first wrote the authority *at capture*, `origin.content_authority()`, so that a loaded `user_live` record would not save as `user_live`/`none`, which the then-strict validation refused. The verifier showed this labels historical content `current_user` on the wire.
+- Wire fix (after `9304937`, fix-lock re-engaged): serialization writes the value's real authority (`p.instruction_authority`); validation accepts the authority the origin implies or `none` and refuses any raise; a loaded record still gets `none`. Bytes for live-constructed values are unchanged.
 - Doc comments and the Module Contract (`crates/rikuri-domain/README.md`): authority never comes from bytes; decide with `instruction_authority()`, never from `origin()`; `Provenance::new(Origin::UserLive, …)` only at the authenticated boundary; threat/control/test line added.
 - The [S00.04 record](2026-10-05-s00-04-rikuri-domain.md)'s deferral row and the Stage 00 follow-up bullet are marked resolved.
 
@@ -73,4 +74,12 @@ stored twice: (same bytes: true) · loaded authority: none / none · loaded twic
 imported/current_user        -> refused: provenance with origin imported cannot carry instruction authority current_user
 user_live/none               -> refused (not written by this code; a hand-edited record)
 user_live/trusted_policy     -> refused
+```
+
+```text
+# After the wire fix (tests unchanged since 9304937: the diff touches doc comments, TryFrom and From only)
+$ cargo test -p rikuri-domain
+authority::tests: the_wire_carries_the_real_authority ok · stored_records_cannot_raise_authority ok
+                  loaded_records_never_carry_authority ok · a_live_command_loses_its_authority_through_storage ok · 3 more ok
+test result: ok. 27 passed (unit) · 4 passed (properties)
 ```
