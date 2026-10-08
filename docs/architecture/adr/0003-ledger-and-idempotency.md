@@ -29,17 +29,17 @@ Rikuri must answer *what happened* durably, never repeat a consequential effect 
 
 ## Decision
 
-- **Tables** `events` and `idempotency` in the canonical database, owned by the `ledger` migration component. Triggers abort any UPDATE or DELETE on either table.
+- **Tables** `events` and `idempotency` in the canonical database, owned by the `ledger` migration component. Triggers abort any UPDATE, DELETE or REPLACE (including `INSERT OR REPLACE` and upserts) on either table, on any connection; the store also turns on `recursive_triggers`. Schema changes such as `DROP TABLE` are outside this protection. *Corrected 2026-10-08: the triggers first covered UPDATE and DELETE only, and REPLACE rewrote rows ([record](../../build-records/2026-10-08-storage-ledger-verifier-defects.md)).*
 - **Order:** `seq` (SQLite AUTOINCREMENT) is the authoritative order. Event IDs are ULIDs (ADR 0001) and are not used for ordering.
 - **Event fields** follow Architecture §8: `event_id`, `schema_version`, `recorded_at`, `event_type` (dotted lowercase), `status` (`succeeded | failed | rejected`), `actor_id`, optional `project_id`, `task_id`, `run_id`, `subject_ids`, `input_refs`, `result_refs` (typed IDs), `security_decision_id`, `cost_record_id`, `idempotency_key`, `caused_by`, `metadata`.
 - **Referenced content only:** metadata holds small scalars or lists of them; strings at most 200 characters; at most 4096 bytes in total (enforced in code and by the table). Anything larger is content and is referenced by ID.
-- **Idempotency:** every event whose risk class is consequential (anything but `observe_read_only`) requires a caller-chosen key (8–128 characters). The key, command, BLAKE3 hash of the command and its canonical parameters, the event ID and the response are stored in the same transaction as the effect. A repeat with the same command and hash returns the stored response and does nothing; a different command or hash under the key is a conflict. Responses are capped at 4096 bytes and by contract carry IDs, versions and statuses, not content.
+- **Idempotency:** every event whose risk class is consequential (anything but `observe_read_only`) requires a caller-chosen key (8–128 characters). The key, command, BLAKE3 hash of the command and its canonical parameters, the event ID and the response are stored in the same transaction as the effect. A repeat with the same command and hash returns the stored response and does nothing; a different command or hash under the key is a conflict. A response must be an object of small facts (IDs, versions, statuses), validated like event metadata and capped at 4096 bytes, because idempotency rows cannot be deleted and content there could never be forgotten. The command name is 1–64 bytes of `a–z 0–9 . _ -`.
 - **Replay helpers:** `replay` feeds every event to a fold in ledger order, so the kernel can rebuild or check derived facts from history (used by the health check, S00.07).
 
 ## Consequences
 
 - Forgetting (Stage 01) deletes content and keys, never events; an event can outlive what it references, so replay must distinguish a governed tombstone from a dangling reference (T00.12 and Stage 01 forget).
-- Triggers stop accidents and ordinary code paths, not a determined owner with the database open; that is consistent with ADR 0004.
+- Triggers stop accidents and ordinary code paths, not a determined owner with the database open; that is consistent with ADR 0004. Within that scope, raw SQL can still insert an event with an explicit `seq`, including one earlier than existing events, and a row at `seq ≤ 0` (which only raw SQL can create) is not covered by the insert guard on a connection without `recursive_triggers`; ordering integrity against deliberate raw SQL is out of scope under the same assumption. The insert guard reads an omitted `seq` as -1, which SQLite documents as undefined; if that changed, ordinary appends would be refused (fail closed) and the ledger tests would catch it.
 - The idempotency table grows with every consequential command. Retention/compaction policy is a later decision; Not yet proven at scale.
 
 ## Security / privacy impact

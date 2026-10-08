@@ -5,14 +5,39 @@
 //! the same transaction as its effects. A retry with the same key and the
 //! same request gets the stored response and changes nothing; the same key
 //! with a different request is refused, never silently re-applied.
+//!
+//! Records can never be deleted, so a stored response holds only small
+//! facts (IDs, versions, codes), validated like event metadata; content
+//! stays behind a reference where it remains forgettable.
 
-use rikuri_domain::{EventId, Timestamp};
+use rikuri_domain::{EventId, Timestamp, bounded};
 use rikuri_storage::Tx;
 use rikuri_storage::rusqlite::{self, ErrorCode, OptionalExtension, params};
 use serde::Serialize;
 use serde_json::Value;
 
 use crate::LedgerError;
+use crate::event::validate_metadata;
+
+/// Longest command name accepted, in bytes.
+pub const MAX_COMMAND_BYTES: usize = 64;
+
+/// A command name is 1–64 bytes of `a–z 0–9 . _ -`, e.g. `task.create`.
+fn validate_command(command: &str) -> Result<(), LedgerError> {
+    let ok = !command.is_empty()
+        && command.len() <= MAX_COMMAND_BYTES
+        && command.bytes().all(|b| {
+            b.is_ascii_lowercase() || b.is_ascii_digit() || matches!(b, b'.' | b'_' | b'-')
+        });
+    if ok {
+        Ok(())
+    } else {
+        Err(LedgerError::Invalid(format!(
+            "idempotency command \"{}\" must be 1-{MAX_COMMAND_BYTES} bytes of a-z 0-9 . _ -",
+            bounded(command)
+        )))
+    }
+}
 
 /// A caller-chosen idempotency key: 8–128 characters from
 /// `A–Z a–z 0–9 . _ : -`.
@@ -119,7 +144,9 @@ pub fn check(
 }
 
 /// Records `key` with the response to return on replay, in the same
-/// transaction as the command's effects and its event.
+/// transaction as the command's effects and its event. The command must be a
+/// short name and the response an object of small facts (see the module
+/// documentation).
 pub fn record(
     tx: &Tx<'_>,
     key: &IdempotencyKey,
@@ -129,10 +156,17 @@ pub fn record(
     response: &Value,
     now: Timestamp,
 ) -> Result<(), LedgerError> {
+    validate_command(command)?;
+    let Value::Object(fields) = response else {
+        return Err(LedgerError::Invalid(
+            "an idempotency response must be an object of small facts".into(),
+        ));
+    };
+    let response = validate_metadata(fields)?;
     let result = tx.execute(
         "INSERT INTO idempotency (idempotency_key, command, request_hash, event_id, response, recorded_at_ms)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-        params![key.as_str(), command, hash, event_id.to_string(), response.to_string(), now.millis()],
+        params![key.as_str(), command, hash, event_id.to_string(), response, now.millis()],
     );
     match result {
         Ok(_) => Ok(()),
@@ -143,7 +177,12 @@ pub fn record(
                     field: "event_id",
                     id: event_id.to_string(),
                 })
-            } else if detail.contains("UNIQUE") || detail.contains("PRIMARY KEY") {
+            } else if detail.contains("UNIQUE")
+                || detail.contains("PRIMARY KEY")
+                || detail.contains("append-only")
+            {
+                // the schema's append-only guard refuses an insert on an
+                // existing key before the primary-key check sees it
                 Err(LedgerError::IdempotencyKeyTaken(key.as_str().to_owned()))
             } else {
                 Err(LedgerError::Invalid(format!(

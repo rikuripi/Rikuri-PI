@@ -12,8 +12,9 @@ pub(crate) const SHOWN_BYTES: usize = 64;
 
 /// Rejected input as an error shows it: escaped, and cut at
 /// [`SHOWN_BYTES`] with the full length noted, so hostile input cannot
-/// inflate error messages, logs or responses.
-pub(crate) fn bounded(value: &str) -> String {
+/// inflate error messages, logs or responses. Public so every kernel crate
+/// formats untrusted text in errors the same way.
+pub fn bounded(value: &str) -> String {
     let mut out = String::new();
     for c in value.escape_debug() {
         if out.len() + c.len_utf8() > SHOWN_BYTES {

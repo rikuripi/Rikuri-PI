@@ -30,13 +30,13 @@ The kernel needs a canonical store for current state that survives a killed proc
 
 ## Decision
 
-- **One database** per Personal Intelligence at `<home>/state/rikuri.db`; the directory is created owner-only (0700). rusqlite 0.40.2 with the bundled SQLite 3.53.2 (libsqlite3-sys 0.38.2, MIT).
-- **Pragmas at open:** `journal_mode=WAL` (verified, else refuse), `synchronous=FULL` (a commit survives power loss, not only a process crash), `foreign_keys=ON`, 5 s busy timeout, `quick_check` must report `ok`.
+- **One database** per Personal Intelligence at `<home>/state/rikuri.db`; on Unix the directory is created owner-only (0700) and the database file 0600, and an existing directory or file that group or others can access is refused. rusqlite 0.40.2 with the bundled SQLite 3.53.2 (libsqlite3-sys 0.38.2, MIT).
+- **Pragmas at open:** `journal_mode=WAL` (verified, else refuse), `synchronous=FULL` (a commit survives power loss, not only a process crash), `foreign_keys=ON`, `recursive_triggers=ON` (so REPLACE fires DELETE triggers on append-only tables), 5 s busy timeout, `quick_check` must report `ok`.
 - **One writer:** `rikurid` owns the only connection. Writes run in IMMEDIATE transactions through `Store::write`; reads in a snapshot transaction through `Store::read`. Commit happens only if the closure returns `Ok`; any error rolls back.
 - **Object registry:** a common `objects` table (`id`, `kind`, `version`, `schema_version`, `privacy_class`, `deletion_unit_id`, `created_at_ms`, `updated_at_ms`, `body` as JSON) holds current state for every typed entity (Architecture §21.1). `privacy_class` is constrained to the four classes. A field moves into a typed table when it must be queried or indexed; that is a migration, not a redesign.
 - **Optimistic versioning:** `Repository<T>::update` names the version it read and changes the row only if it is still at that version, else `VersionConflict { expected, actual }`.
-- **Read-back:** every insert and update reads its row back inside the transaction and compares it with what was meant to be written before the commit (Transactional State Evolution: durable write → read back → atomic promote at commit).
-- **Migrations:** each component that owns tables registers a numbered list (`storage`, `ledger`, …). Lists are validated before anything is written. Each step runs in its own transaction with its bookkeeping row and a BLAKE3 checksum of its definition. Opening refuses a database at a newer version than the build knows, or one whose applied migration differs from this build's definition.
+- **Read-back:** every insert and update reads its row back inside the transaction and compares it with what was meant to be written before the commit (Transactional State Evolution: candidate write → read back inside the transaction → durable write and atomic promote in one commit). The read-back confirms what the transaction holds; durability comes from the commit with WAL and `synchronous=FULL`. *Corrected 2026-10-08: this line first put the durable write before the read-back.*
+- **Migrations:** each component that owns tables registers a numbered list (`storage`, `ledger`, …). Lists are validated before anything is written. The whole upgrade, across every component, runs in one transaction: every component's recorded history is checked first (contiguous versions, BLAKE3 checksums of applied definitions, not newer than this build), then all pending steps are applied with their bookkeeping rows, then one commit. A refusal or failure anywhere rolls everything back, so the previous build still opens. Opening refuses a database at a newer version than the build knows, one whose applied migration differs from this build's definition, or one with a gap in its recorded versions. Migration SQL must be transactional (no `BEGIN`/`COMMIT`, `VACUUM` or `journal_mode` changes). *Corrected 2026-10-08: this line first said each step ran in its own transaction, which let a failure in one component strand another already upgraded ([record](../../build-records/2026-10-08-storage-ledger-verifier-defects.md)).*
 - **Body schema:** each entity declares its body schema version. Reading a different version is refused as `Corrupt` until a migration converts it.
 
 ## Consequences
@@ -48,7 +48,7 @@ The kernel needs a canonical store for current state that survives a killed proc
 
 ## Security / privacy impact
 
-The database file and its directory are owner-only. `privacy_class` is enforced by the schema. Content encryption and per-deletion-unit keys arrive in Stage 01 (ADR 0005); until then the store holds only kernel task data, never imported personal content. Tamper detection (ID/body mismatch, unknown schema version) refuses rather than trusts a row.
+The database file and its directory are owner-only on Unix, enforced at open (see Decision); other platforms do not enforce it yet (Windows arrives at product Stage 9). `privacy_class` is enforced by the schema and, with `deletion_unit_id`, checked against the body on every read. Content encryption and per-deletion-unit keys arrive in Stage 01 (ADR 0005); until then the store holds only kernel task data, never imported personal content. Tamper detection (ID/body mismatch, kind, unknown schema version, privacy or deletion-unit column disagreeing with the body) refuses rather than trusts a row.
 
 ## Data / migration impact
 

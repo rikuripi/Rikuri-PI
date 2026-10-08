@@ -7,7 +7,7 @@ pub enum StorageError {
     #[error("SQLite error: {0}")]
     Sqlite(#[from] rusqlite::Error),
 
-    #[error("could not prepare the data directory {path}: {source}")]
+    #[error("could not prepare {path}: {source}")]
     Io {
         path: String,
         #[source]
@@ -55,7 +55,9 @@ pub enum StorageError {
         expected: String,
     },
 
-    #[error("{component} migration {version} ({name}) failed and was rolled back: {source}")]
+    #[error(
+        "{component} migration {version} ({name}) failed; the whole upgrade was rolled back and the database is unchanged: {source}"
+    )]
     MigrationFailed {
         component: &'static str,
         version: u32,

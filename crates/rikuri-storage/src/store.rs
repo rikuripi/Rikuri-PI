@@ -82,14 +82,24 @@ impl std::fmt::Debug for Store {
 impl Store {
     /// Opens (creating if needed) the database at `path`, checks it, applies
     /// the storage component's migrations and then each of `components`.
+    ///
+    /// On Unix the data directory and database are owner-only: a missing
+    /// directory is created 0700 and a missing database 0600 (SQLite gives
+    /// its `-wal` and `-shm` files the database's permissions), and an
+    /// existing directory or database that group or others can access is
+    /// refused rather than used or silently re-permissioned. Other platforms
+    /// do not enforce this yet (Windows support arrives at product Stage 9).
     pub fn open(
         path: &Path,
         clock: Box<dyn Clock>,
         components: &[&Migrations],
     ) -> Result<Store, StorageError> {
-        if let Some(dir) = path.parent() {
-            create_private_dir(dir)?;
-        }
+        let dir = match path.parent() {
+            Some(d) if !d.as_os_str().is_empty() => d,
+            _ => Path::new("."),
+        };
+        ensure_private_dir(dir)?;
+        ensure_private_file(path)?;
         let mut conn = Connection::open(path)?;
         conn.busy_timeout(Duration::from_secs(5))?;
         let mode: String = conn.query_row("PRAGMA journal_mode = WAL", [], |r| r.get(0))?;
@@ -104,6 +114,10 @@ impl Store {
         // process crash. The kernel's promise is "committed means durable".
         conn.pragma_update(None, "synchronous", "FULL")?;
         conn.pragma_update(None, "foreign_keys", true)?;
+        // Defense in depth for append-only tables: REPLACE then fires DELETE
+        // triggers on this connection. The tables' own BEFORE INSERT guards
+        // hold on every connection.
+        conn.pragma_update(None, "recursive_triggers", true)?;
         let check: String = conn.query_row("PRAGMA quick_check", [], |r| r.get(0))?;
         if check != "ok" {
             return Err(StorageError::Corrupt {
@@ -211,20 +225,85 @@ impl Store {
     }
 }
 
-/// Creates the data directory readable only by the owner.
-fn create_private_dir(dir: &Path) -> Result<(), StorageError> {
-    if dir.as_os_str().is_empty() || dir.exists() {
+fn io_error(path: &Path, source: std::io::Error) -> StorageError {
+    StorageError::Io {
+        path: path.display().to_string(),
+        source,
+    }
+}
+
+/// Refuses `path` if group or others have any access to it (Unix).
+#[cfg(unix)]
+fn refuse_if_shared(path: &Path, what: &str) -> Result<(), StorageError> {
+    use std::os::unix::fs::PermissionsExt;
+    let mode = std::fs::metadata(path)
+        .map_err(|e| io_error(path, e))?
+        .permissions()
+        .mode()
+        & 0o777;
+    if mode & 0o077 != 0 {
+        return Err(io_error(
+            path,
+            std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                format!(
+                    "the {what} has mode {mode:o}, so group or others can access it; \
+                     Rikuri requires owner-only (chmod {})",
+                    if what == "data directory" {
+                        "700"
+                    } else {
+                        "600"
+                    }
+                ),
+            ),
+        ));
+    }
+    Ok(())
+}
+
+/// Creates the data directory owner-only, or checks an existing one. The
+/// mode is checked after creating too: a recursive create succeeds when the
+/// directory appeared in the meantime, possibly with a looser mode.
+fn ensure_private_dir(dir: &Path) -> Result<(), StorageError> {
+    if !dir.exists() {
+        let mut builder = std::fs::DirBuilder::new();
+        builder.recursive(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::DirBuilderExt;
+            builder.mode(0o700);
+        }
+        builder.create(dir).map_err(|e| io_error(dir, e))?;
+    }
+    #[cfg(unix)]
+    refuse_if_shared(dir, "data directory")?;
+    Ok(())
+}
+
+/// Creates the database file owner-only before SQLite opens it, or checks
+/// an existing one. SQLite gives the WAL and shared-memory files the same
+/// permissions as the database.
+fn ensure_private_file(path: &Path) -> Result<(), StorageError> {
+    if path.exists() {
+        #[cfg(unix)]
+        refuse_if_shared(path, "database file")?;
         return Ok(());
     }
-    let mut builder = std::fs::DirBuilder::new();
-    builder.recursive(true);
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create_new(true);
     #[cfg(unix)]
     {
-        use std::os::unix::fs::DirBuilderExt;
-        builder.mode(0o700);
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
     }
-    builder.create(dir).map_err(|source| StorageError::Io {
-        path: dir.display().to_string(),
-        source,
-    })
+    match options.open(path) {
+        Ok(_) => Ok(()),
+        // created between the check and the open: check what is there
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+            #[cfg(unix)]
+            refuse_if_shared(path, "database file")?;
+            Ok(())
+        }
+        Err(e) => Err(io_error(path, e)),
+    }
 }

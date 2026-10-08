@@ -8,9 +8,9 @@ The append-only record of what happened, and the idempotency records that make a
 
 ## Owns
 
-- The `events` and `idempotency` tables (its own `ledger` migrations) and their append-only triggers.
-- Event validation: dotted lowercase type, a key for every consequential event, metadata of small scalars only (strings ≤ 200 characters, ≤ 4096 bytes), existing `caused_by`, no duplicate event ID.
-- Idempotency: key format, request fingerprint (BLAKE3 of command + canonical parameters), `Fresh` / `Replay` / `Conflict` check, recording in the caller's transaction.
+- The `events` and `idempotency` tables (its own `ledger` migrations) and their append-only triggers: UPDATE, DELETE and REPLACE (including `INSERT OR REPLACE` and upserts) are refused by the schema on any connection. Schema changes such as `DROP TABLE` are outside this protection; only migrations change the schema.
+- Event validation: dotted lowercase type, a key for every consequential event, metadata of small scalars only (keys and strings ≤ 200 characters, ≤ 4096 bytes), existing `caused_by`, no duplicate event ID.
+- Idempotency: key format, command name (1–64 bytes of `a–z 0–9 . _ -`), request fingerprint (BLAKE3 of command + canonical parameters), `Fresh` / `Replay` / `Conflict` check, recording in the caller's transaction. A stored response is an object of small facts validated like metadata, because idempotency rows can never be deleted and content there could never be forgotten.
 - Reads: `get`, `tail` (oldest first), `by_task`, `replay` (every event in `seq` order).
 
 ## Must not own
@@ -42,7 +42,7 @@ Trusted kernel code inside `rikurid`. Stored rows are decoded defensively: an un
 
 ## Failure and degraded behavior
 
-Typed `LedgerError`; an invalid event is refused before anything is written, and the caller's transaction then rolls back with it. Raw SQL that tries to UPDATE or DELETE history is aborted by triggers.
+Typed `LedgerError`; an invalid event is refused before anything is written, and the caller's transaction then rolls back with it. Raw SQL that tries to UPDATE, DELETE or REPLACE history is aborted by triggers. Text quoted in an error is bounded (`rikuri_domain::bounded`).
 
 ## Health / last-success signal
 
@@ -61,8 +61,9 @@ state / last_attempt / last_success / last_error / consecutive_failures / work_c
 ## Threat / control links
 
 - Threat: a retry or crash replay repeats a consequential effect. Control: key required for consequential events; replay returns the stored response; changed request refused. Tests: T00.05 idempotency cases; kill -9 matrix T00.07; property T00.06.
-- Threat: history edited by ordinary code. Control: triggers. Test: `ledger_rows_are_append_only_even_for_raw_sql`.
-- Threat: private content copied into the audit trail. Control: metadata limits; references only. Test: `events_cannot_embed_content`.
+- Threat: history edited by ordinary code. Control: schema triggers for UPDATE, DELETE and REPLACE, plus `recursive_triggers` on the store's connection. Tests: `ledger_rows_are_append_only_even_for_raw_sql`, `ledger_rows_refuse_replace_too`.
+- Threat: private content copied into the audit trail or an idempotency record. Control: metadata and response limits; references only. Tests: `events_cannot_embed_content`, `metadata_keys_are_bounded`, `idempotency_command_and_response_are_validated`.
+- Threat: hostile input inflates errors and logs. Control: bounded error text. Test: `event_type_errors_are_bounded`.
 
 ## Required tests
 

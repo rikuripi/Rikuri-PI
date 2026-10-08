@@ -12,7 +12,7 @@ use std::fmt::Display;
 use std::marker::PhantomData;
 use std::str::FromStr;
 
-use rikuri_domain::{DeletionUnitId, IdError, PrivacyClass, SchemaVersion, Timestamp};
+use rikuri_domain::{DeletionUnitId, IdError, PrivacyClass, SchemaVersion, Timestamp, bounded};
 use rusqlite::{ErrorCode, OptionalExtension, params};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -87,13 +87,15 @@ struct Row {
     kind: String,
     version: i64,
     schema_version: i64,
+    privacy_class: String,
+    deletion_unit_id: Option<String>,
     created_at_ms: i64,
     updated_at_ms: i64,
     body: String,
 }
 
-const SELECT: &str =
-    "SELECT id, kind, version, schema_version, created_at_ms, updated_at_ms, body FROM objects";
+const SELECT: &str = "SELECT id, kind, version, schema_version, privacy_class, deletion_unit_id,
+    created_at_ms, updated_at_ms, body FROM objects";
 
 fn read_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Row> {
     Ok(Row {
@@ -101,9 +103,11 @@ fn read_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Row> {
         kind: r.get(1)?,
         version: r.get(2)?,
         schema_version: r.get(3)?,
-        created_at_ms: r.get(4)?,
-        updated_at_ms: r.get(5)?,
-        body: r.get(6)?,
+        privacy_class: r.get(4)?,
+        deletion_unit_id: r.get(5)?,
+        created_at_ms: r.get(6)?,
+        updated_at_ms: r.get(7)?,
+        body: r.get(8)?,
     })
 }
 
@@ -115,14 +119,17 @@ fn to_body<T: Entity>(value: &T) -> Result<String, StorageError> {
     })
 }
 
+/// Decodes a stored row, trusting nothing in it: kind, body schema, ID,
+/// privacy class and deletion unit must all agree with the body. Stored text
+/// that appears in an error is bounded.
 fn decode<T: Entity>(row: Row) -> Result<Versioned<T>, StorageError> {
     let corrupt = |reason: String| StorageError::Corrupt {
         kind: T::KIND,
-        id: row.id.clone(),
+        id: bounded(&row.id),
         reason,
     };
     if row.kind != T::KIND {
-        return Err(corrupt(format!("row kind is {:?}", row.kind)));
+        return Err(corrupt(format!("row kind is \"{}\"", bounded(&row.kind))));
     }
     if row.schema_version != i64::from(T::SCHEMA.get()) {
         return Err(corrupt(format!(
@@ -133,9 +140,26 @@ fn decode<T: Entity>(row: Row) -> Result<Versioned<T>, StorageError> {
     }
     let version = u64::try_from(row.version).map_err(|_| corrupt("negative version".into()))?;
     let value: T = serde_json::from_str(&row.body)
-        .map_err(|e| corrupt(format!("body does not parse: {e}")))?;
+        .map_err(|e| corrupt(format!("body does not parse: {}", bounded(&e.to_string()))))?;
     if value.id().to_string() != row.id {
         return Err(corrupt(format!("body carries ID {}", value.id())));
+    }
+    let class = value.privacy_class();
+    if row.privacy_class != class.as_str() {
+        return Err(corrupt(format!(
+            "privacy class column is \"{}\" but the body is {class}",
+            bounded(&row.privacy_class)
+        )));
+    }
+    let unit = value.deletion_unit().map(|u| u.to_string());
+    if row.deletion_unit_id != unit {
+        return Err(corrupt(format!(
+            "deletion unit column is {} but the body's is {}",
+            row.deletion_unit_id
+                .as_deref()
+                .map_or("none".into(), bounded),
+            unit.as_deref().unwrap_or("none")
+        )));
     }
     Ok(Versioned {
         value,

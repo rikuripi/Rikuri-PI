@@ -1,9 +1,10 @@
 //! Versioned, transactional, checksummed schema migrations
 //! (Architecture §43). Each component that owns tables (storage itself, the
-//! ledger) registers its own numbered list. A migration runs in its own
-//! transaction with its bookkeeping row, so a failure leaves the previous
-//! version intact and retryable. Opening refuses a database written by a
-//! newer build or by a different definition of an applied migration.
+//! ledger) registers its own numbered list. One open upgrades every
+//! component in a single transaction, so a failure anywhere leaves the whole
+//! previous schema intact and retryable. Opening refuses a database written
+//! by a newer build, by a different definition of an applied migration, or
+//! with a gap in its recorded versions.
 
 use rikuri_domain::Timestamp;
 use rusqlite::{Connection, OptionalExtension, TransactionBehavior, params};
@@ -84,9 +85,14 @@ impl Migrations {
     }
 }
 
-/// Validates every component's list, then applies each component's pending
-/// migrations after checking the ones already applied. Nothing is written
-/// unless every list is well formed.
+/// Upgrades the database all-or-nothing (Architecture §43). Validates every
+/// component's list without touching the database; then, in one IMMEDIATE
+/// transaction, checks every component's recorded history (contiguous,
+/// not newer than this build, unchanged definitions) before applying any
+/// pending step, applies all pending steps of all components, and commits
+/// once. Any refusal or failure rolls the whole upgrade back, so the
+/// previous build still opens. Migration SQL therefore must be
+/// transactional: no `BEGIN`/`COMMIT`, `VACUUM` or `journal_mode` changes.
 pub(crate) fn apply_all(
     conn: &mut Connection,
     components: &[&Migrations],
@@ -102,18 +108,36 @@ pub(crate) fn apply_all(
             });
         }
     }
-    conn.execute_batch(BOOKKEEPING)?;
+    let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    tx.execute_batch(BOOKKEEPING)?;
+    let mut current = Vec::with_capacity(components.len());
     for c in components {
-        apply_component(conn, c, now)?;
+        current.push(check_component(&tx, c)?);
     }
+    for (c, applied) in components.iter().zip(current) {
+        for m in c.list.iter().filter(|m| m.version > applied) {
+            let failed = |source| StorageError::MigrationFailed {
+                component: c.component,
+                version: m.version,
+                name: m.name,
+                source,
+            };
+            tx.execute_batch(m.sql).map_err(failed)?;
+            tx.execute(
+                "INSERT INTO schema_migrations (component, version, name, checksum, applied_at_ms)
+                 VALUES (?1, ?2, ?3, ?4, ?5)",
+                params![c.component, m.version, m.name, checksum(m), now.millis()],
+            )
+            .map_err(failed)?;
+        }
+    }
+    tx.commit()?;
     Ok(())
 }
 
-fn apply_component(
-    conn: &mut Connection,
-    c: &Migrations,
-    now: Timestamp,
-) -> Result<(), StorageError> {
+/// Checks `c`'s recorded history and returns its current version. Writes
+/// nothing.
+fn check_component(conn: &Connection, c: &Migrations) -> Result<u32, StorageError> {
     let applied: Vec<(u32, String)> = {
         let mut stmt = conn.prepare(
             "SELECT version, checksum FROM schema_migrations WHERE component = ?1 ORDER BY version",
@@ -122,6 +146,19 @@ fn apply_component(
         rows.collect::<Result<_, _>>()?
     };
 
+    for (i, (version, _)) in applied.iter().enumerate() {
+        if usize::try_from(*version).ok() != Some(i + 1) {
+            return Err(StorageError::InvalidMigrations {
+                component: c.component,
+                reason: format!(
+                    "database records {} versions with version {version} at position {}; \
+                     they must run 1, 2, 3, … without gaps",
+                    applied.len(),
+                    i + 1
+                ),
+            });
+        }
+    }
     if let Some(&(found, _)) = applied.last()
         && found > c.latest()
     {
@@ -151,28 +188,7 @@ fn apply_component(
             });
         }
     }
-
-    let current = applied.last().map_or(0, |&(v, _)| v);
-    for m in c.list.iter().filter(|m| m.version > current) {
-        let failed = |source| StorageError::MigrationFailed {
-            component: c.component,
-            version: m.version,
-            name: m.name,
-            source,
-        };
-        let tx = conn
-            .transaction_with_behavior(TransactionBehavior::Immediate)
-            .map_err(failed)?;
-        tx.execute_batch(m.sql).map_err(failed)?;
-        tx.execute(
-            "INSERT INTO schema_migrations (component, version, name, checksum, applied_at_ms)
-             VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![c.component, m.version, m.name, checksum(m), now.millis()],
-        )
-        .map_err(failed)?;
-        tx.commit().map_err(failed)?;
-    }
-    Ok(())
+    Ok(applied.last().map_or(0, |&(v, _)| v))
 }
 
 /// The newest applied version of `component`, if any.

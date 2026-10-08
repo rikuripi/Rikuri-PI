@@ -2,7 +2,7 @@
 
 use rikuri_domain::{
     ActorId, AnyId, CostRecordId, EventId, IdError, ProjectId, RiskClass, RunId, SchemaVersion,
-    SecurityDecisionId, TaskId, Timestamp, wire_enum,
+    SecurityDecisionId, TaskId, Timestamp, bounded, wire_enum,
 };
 use rikuri_storage::rusqlite::{self, OptionalExtension, params};
 use rikuri_storage::{StorageError, Tx};
@@ -16,8 +16,9 @@ use crate::idempotency::IdempotencyKey;
 pub const EVENT_SCHEMA: SchemaVersion = SchemaVersion::V1;
 /// Upper bound on serialized metadata (also enforced by the table).
 pub const MAX_METADATA_BYTES: usize = 4096;
-/// Upper bound on any one metadata string. Metadata carries small facts
-/// (counts, codes, names of things); content lives behind a reference.
+/// Upper bound, in characters, on any one metadata string or key. Metadata
+/// carries small facts (counts, codes, names of things); content lives
+/// behind a reference.
 pub const MAX_METADATA_STRING: usize = 200;
 
 /// Every way an append or read can fail.
@@ -68,7 +69,8 @@ impl EventType {
         };
         if name.len() > 64 || parts.len() < 2 || !parts.iter().all(|w| word_ok(w)) {
             return Err(LedgerError::Invalid(format!(
-                "event type {name:?} must be dotted lowercase words, e.g. task.created"
+                "event type \"{}\" must be dotted lowercase words, e.g. task.created",
+                bounded(name)
             )));
         }
         Ok(EventType(name.to_owned()))
@@ -140,16 +142,27 @@ fn is_small_scalar(v: &Value) -> bool {
     }
 }
 
-fn validate_metadata(m: &Map<String, Value>) -> Result<String, LedgerError> {
+/// Validates a small-facts object (event metadata, idempotency responses):
+/// keys and strings of at most [`MAX_METADATA_STRING`] characters, values
+/// that are small scalars or lists of them, at most [`MAX_METADATA_BYTES`]
+/// serialized. Returns the serialized form.
+pub(crate) fn validate_metadata(m: &Map<String, Value>) -> Result<String, LedgerError> {
     for (k, v) in m {
+        if k.chars().count() > MAX_METADATA_STRING {
+            return Err(LedgerError::Invalid(format!(
+                "metadata key \"{}\" is longer than {MAX_METADATA_STRING} characters",
+                bounded(k)
+            )));
+        }
         let ok = match v {
             Value::Array(items) => items.iter().all(is_small_scalar),
             other => is_small_scalar(other),
         };
         if !ok {
             return Err(LedgerError::Invalid(format!(
-                "metadata {k:?} must be a small scalar or a list of them; \
-                 reference content by ID instead of embedding it"
+                "metadata \"{}\" must be a small scalar or a list of them; \
+                 reference content by ID instead of embedding it",
+                bounded(k)
             )));
         }
     }

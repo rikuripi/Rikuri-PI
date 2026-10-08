@@ -5,8 +5,8 @@
 | Change | Append-only referenced-content event ledger, idempotency records and replay helpers in the canonical database |
 | Date | 2026-10-05 |
 | Author / agent session | Claude Code session for Henry Chen |
-| Branch | `stage-00/kernel` |
-| Commits | fill at close-out |
+| Branch | `stage-00/storage-ledger`: replayed on 2026-10-08 from the local `stage-00/kernel` branch onto `main` at `c5f0060`, which had gained 41 commits (the PR #7/#11/#13/#17 gate fixes); clean cherry-pick, no conflicts. The old branch and its worktree are kept as a backup |
+| Commits | `298e9d6` on the original branch, replayed as `9de5061`; defect fixes `ab41b21` and the following commit ([defect record](2026-10-08-storage-ledger-verifier-defects.md)) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md) |
 | Related ADR / requirement | S00.06, T00.05, S00.10 ([ADR 0003](../architecture/adr/0003-ledger-and-idempotency.md), Proposed); Architecture §8, §41.1; PRD CORE-002, CORE-004, CORE-007 |
 | Status | IN PROGRESS |
@@ -41,7 +41,8 @@ Building the ledger exposed that `AnyId` could not be deserialized from runtime 
 
 ## 5. Close Out
 
-- [ ] Full required gate green on the branch; commit; Stage Gate Record updated.
+- [x] Full required gate green on the branch: Pass, 13 steps, after the replay onto current `main` (evidence log).
+- [x] Commit; Stage Gate Record updated (2026-10-08, owner's request).
 
 ## Skipped / Deferred / Resequenced
 
@@ -64,4 +65,9 @@ metadata not validated                      → events_cannot_embed_content FAIL
 changed request replays                     → idempotency_replays_the_same_request_and_refuses_a_changed_one FAILED
 append-only triggers missing                → ledger_rows_are_append_only_even_for_raw_sql FAILED
 tail returns newest first                   → append_then_query_in_order, ledger_holds_exactly_the_committed_events FAILED
+# 2026-10-08, replayed onto main c5f0060 (branch stage-00/storage-ledger)
+$ scripts/quality/full-gate.sh → RESULT: PASS (13 steps), exit 0
+  guard 91 tests OK; fmt, build, clippy -D warnings, test, cargo deny, secrets, ratchet (0/0/0) PASS
+  CONTRACT checked 3 crate(s); POLICY checked 3 crate(s); SCRAP clean
+  tests: rikuri-ledger ledger_contract 9 passed; rikuri-storage migrations 7, repository_contract 5 passed
 ```

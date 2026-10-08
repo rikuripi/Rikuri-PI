@@ -7,8 +7,11 @@
 //!
 //! Events reference content by ID and never embed it, so the ledger can stay
 //! append-only while content remains forgettable (Architecture §4.11).
-//! SQLite triggers refuse UPDATE and DELETE on events and idempotency rows,
-//! so append-only holds even for code that bypasses this crate.
+//! SQLite triggers in the schema refuse UPDATE, DELETE and REPLACE (including
+//! `INSERT OR REPLACE` and upserts) on events and idempotency rows, on any
+//! connection, so append-only holds even for SQL that bypasses this crate.
+//! Schema changes such as `DROP TABLE` are outside this protection; only
+//! migrations change the schema.
 
 mod event;
 mod idempotency;
@@ -56,6 +59,13 @@ CREATE TRIGGER events_no_update BEFORE UPDATE ON events
     BEGIN SELECT RAISE(ABORT, 'ledger events are append-only'); END;
 CREATE TRIGGER events_no_delete BEFORE DELETE ON events
     BEGIN SELECT RAISE(ABORT, 'ledger events are append-only'); END;
+-- REPLACE removes the conflicting row without firing DELETE triggers (unless
+-- recursive_triggers is on), so refuse any insert that would collide with an
+-- existing event. An omitted seq reads as -1 here, hence the > 0 test.
+CREATE TRIGGER events_no_replace BEFORE INSERT ON events
+    WHEN EXISTS (SELECT 1 FROM events WHERE event_id = NEW.event_id)
+      OR (NEW.seq > 0 AND EXISTS (SELECT 1 FROM events WHERE seq = NEW.seq))
+    BEGIN SELECT RAISE(ABORT, 'ledger events are append-only'); END;
 
 CREATE TABLE idempotency (
     idempotency_key TEXT    PRIMARY KEY NOT NULL,
@@ -68,6 +78,9 @@ CREATE TABLE idempotency (
 CREATE TRIGGER idempotency_no_update BEFORE UPDATE ON idempotency
     BEGIN SELECT RAISE(ABORT, 'idempotency records are append-only'); END;
 CREATE TRIGGER idempotency_no_delete BEFORE DELETE ON idempotency
+    BEGIN SELECT RAISE(ABORT, 'idempotency records are append-only'); END;
+CREATE TRIGGER idempotency_no_replace BEFORE INSERT ON idempotency
+    WHEN EXISTS (SELECT 1 FROM idempotency WHERE idempotency_key = NEW.idempotency_key)
     BEGIN SELECT RAISE(ABORT, 'idempotency records are append-only'); END;
 ",
     }],

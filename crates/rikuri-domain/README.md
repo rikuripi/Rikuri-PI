@@ -35,6 +35,8 @@ None directly. It defines the shapes other crates store.
 - `ProjectId`, `TaskId`, `RunId`, `EventId`, `ActorId`, `DeletionUnitId`, `ContentId`, `SourceId`, `SourceSpanId`, `SecurityDecisionId`, `CostRecordId`, `AnyId`; text form `<prefix>_<ULID>`, one canonical form per ID.
 - `IdSource` (trait), `SystemIdSource` (monotonic wall-clock ULIDs). `IdSource` and `Clock` are the two seams through which tests make IDs and times deterministic.
 - `PrivacyClass`, `ExecutionIntent`, `Origin`, `InstructionAuthority`, `RiskClass`, `ProjectTrust`: `as_str`, `FromStr`, `Display`, serde, all from one table.
+- `wire_enum!` (exported macro): defines such a closed enum with stable wire names, so every kernel crate's wire enums behave the same way.
+- `bounded(&str)`: how any kernel crate shows untrusted text in an error (escaped, at most 64 bytes plus the full length).
 - `Provenance`, `ContentRef`, `SchemaVersion`.
 - `Clock` (trait), `SystemClock`, `Timestamp` (UTC milliseconds).
 

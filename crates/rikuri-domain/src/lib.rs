@@ -27,4 +27,4 @@ pub use risk::RiskClass;
 pub use schema::SchemaVersion;
 pub use time::{Clock, SystemClock, Timestamp};
 pub use trust::ProjectTrust;
-pub use wire::UnknownVariant;
+pub use wire::{UnknownVariant, bounded};
