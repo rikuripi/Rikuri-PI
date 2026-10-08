@@ -5,7 +5,7 @@
 //! type fixes the states and their meaning so storage and events can record
 //! them from the start.
 
-use crate::wire::wire_enum;
+use crate::wire_enum;
 
 wire_enum! {
     /// Whether project-controlled code may run.
