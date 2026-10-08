@@ -1,0 +1,31 @@
+[package]
+name = "rikurid"
+version = "0.1.0"
+description = "Rikuri Pi trusted daemon: the only writer of canonical state, serving the versioned envelope on a local socket"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[features]
+# Test builds only: lets a harness stop the daemon at a named crash point
+# (RIKURI_CRASH_AT) so it can be killed with SIGKILL there, and lets the
+# T00.08 regression switch idempotency off. A build with this feature
+# reports itself Degraded in system.health.
+crash-injection = []
+
+[dependencies]
+rikuri-api.workspace = true
+rikuri-domain.workspace = true
+rikuri-ledger.workspace = true
+rikuri-storage.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+tempfile.workspace = true
+ulid.workspace = true
+
+[lints]
+workspace = true
