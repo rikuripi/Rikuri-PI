@@ -1,8 +1,10 @@
 //! The store: one SQLite connection, one writer, explicit transactions.
 
+use std::cell::Cell;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use rikuri_domain::{Clock, Timestamp};
@@ -43,6 +45,39 @@ pub struct Tx<'a> {
     inner: rusqlite::Transaction<'a>,
 }
 
+impl Tx<'_> {
+    /// The newest applied migration version of `component`, read inside this
+    /// transaction. Use this, not `Store::schema_version`, from inside a
+    /// `read` or `write` closure.
+    pub fn schema_version(&self, component: &str) -> Result<Option<u32>, StorageError> {
+        migrate::applied_version(self, component)
+    }
+}
+
+/// Distinguishes stores so a re-entrant call can be recognized.
+static NEXT_STORE_ID: AtomicU64 = AtomicU64::new(1);
+
+thread_local! {
+    /// The store whose transaction this thread is inside, or 0.
+    static ACTIVE_STORE: Cell<u64> = const { Cell::new(0) };
+}
+
+/// Marks this thread as inside `id`'s transaction until dropped, then
+/// restores what was there before (another store's transaction, or none).
+struct ActiveGuard(u64);
+
+impl ActiveGuard {
+    fn enter(id: u64) -> ActiveGuard {
+        ActiveGuard(ACTIVE_STORE.with(|a| a.replace(id)))
+    }
+}
+
+impl Drop for ActiveGuard {
+    fn drop(&mut self) {
+        ACTIVE_STORE.with(|a| a.set(self.0));
+    }
+}
+
 impl Deref for Tx<'_> {
     type Target = Connection;
 
@@ -65,6 +100,7 @@ pub struct StoreHealth {
 
 /// The canonical SQLite store.
 pub struct Store {
+    id: u64,
     conn: Mutex<Connection>,
     path: PathBuf,
     clock: Box<dyn Clock>,
@@ -132,6 +168,7 @@ impl Store {
         migrate::apply_all(&mut conn, &all, clock.now())?;
 
         Ok(Store {
+            id: NEXT_STORE_ID.fetch_add(1, Ordering::Relaxed),
             conn: Mutex::new(conn),
             path: path.to_path_buf(),
             clock,
@@ -150,7 +187,9 @@ impl Store {
 
     /// Runs `f` in an IMMEDIATE (writer) transaction. Commits if `f` returns
     /// `Ok`; rolls back if it returns `Err` or the commit fails. Nothing `f`
-    /// wrote is visible unless the commit succeeded.
+    /// wrote is visible unless the commit succeeded. Calling this store
+    /// again from inside `f` (`read`, `write`, `schema_version`) is refused
+    /// with `Reentrant`; use the `Tx` instead.
     pub fn write<T, E>(&self, f: impl FnOnce(&Tx<'_>) -> Result<T, E>) -> Result<T, E>
     where
         E: From<StorageError>,
@@ -177,7 +216,9 @@ impl Store {
     {
         let started = self.clock.now();
         let result = (|| {
+            self.refuse_reentry()?;
             let mut conn = self.conn.lock().map_err(|_| StorageError::Poisoned)?;
+            let _active = ActiveGuard::enter(self.id);
             let inner = conn
                 .transaction_with_behavior(behavior)
                 .map_err(StorageError::from)?;
@@ -218,8 +259,10 @@ impl Store {
             })
     }
 
-    /// The newest applied migration version of `component`.
+    /// The newest applied migration version of `component`. From inside a
+    /// transaction use `Tx::schema_version`; calling this there is refused.
     pub fn schema_version(&self, component: &str) -> Result<Option<u32>, StorageError> {
+        self.refuse_reentry()?;
         let conn = self.conn.lock().map_err(|_| StorageError::Poisoned)?;
         migrate::applied_version(&conn, component)
     }
@@ -259,6 +302,18 @@ fn refuse_if_shared(path: &Path, what: &str) -> Result<(), StorageError> {
         ));
     }
     Ok(())
+}
+
+impl Store {
+    /// The connection lock is not reentrant: taking it again on a thread that
+    /// already holds it would hang forever. Refuse instead, visibly.
+    fn refuse_reentry(&self) -> Result<(), StorageError> {
+        if ACTIVE_STORE.with(Cell::get) == self.id {
+            Err(StorageError::Reentrant)
+        } else {
+            Ok(())
+        }
+    }
 }
 
 /// Creates the data directory owner-only, or checks an existing one. The

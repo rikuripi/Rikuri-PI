@@ -1,6 +1,6 @@
 # Rikuri Pi
 
-Rikuri Pi is a planned Personal Intelligence Platform. This repository contains the project planning baseline, Git hygiene, the AI-session guard described in AGENTS.md, and the start of Foundation-0 Stage 00: a Rust workspace with its first library crates (`rikuri-domain`, `rikuri-storage`, `rikuri-ledger`) and the repository's full quality gate. The daemon that will use them, `rikurid`, is not built yet. No Foundation-0 acceptance gate has passed yet.
+Rikuri Pi is a planned Personal Intelligence Platform. This repository contains the project planning baseline, Git hygiene, the AI-session guard described in AGENTS.md, and the start of Foundation-0 Stage 00: a Rust workspace with its first library crates (`rikuri-domain`, `rikuri-storage`, `rikuri-ledger`, `rikuri-api`), the daemon `rikurid` and its CLI `rikuri` (S00.07, in progress), and the repository's full quality gate. No Foundation-0 acceptance gate has passed yet.
 
 For repository work, follow [AGENTS.md](AGENTS.md), which adapts the build procedure to Rikuri Pi’s SDLC and current repository maturity.
 

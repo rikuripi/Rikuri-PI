@@ -9,7 +9,7 @@ The canonical store: one SQLite database holding current state, written by one w
 ## Owns
 
 - Opening the database: owner-only data directory and database file on Unix (created 0700/0600; an existing directory or database that group or others can access is refused, never re-permissioned; SQLite gives `-wal`/`-shm` the database's mode; not yet enforced on other platforms), WAL (verified), `synchronous=FULL`, foreign keys, `recursive_triggers`, busy timeout, `quick_check`.
-- The transaction boundary: `Store::write` (IMMEDIATE; commit only on `Ok`, rollback on any error) and `Store::read` (snapshot, always rolled back).
+- The transaction boundary: `Store::write` (IMMEDIATE; commit only on `Ok`, rollback on any error) and `Store::read` (snapshot, always rolled back). A `Store` call made from inside one of its own transactions (`read`, `write`, `schema_version`) is refused with `Reentrant` instead of deadlocking on the connection lock; code inside a transaction uses the `Tx` (`Tx::schema_version`).
 - The migration runner and its bookkeeping (`schema_migrations`): validation of every component's list before writing; then one transaction for the whole upgrade, which checks every component's recorded history (contiguous versions, checksums, not newer than this build) before applying any step, so a refusal or failure anywhere changes nothing.
 - The `objects` registry table and `Repository<T>` / `SqliteRepository<T>`: insert at version 1, update only from the expected version, read-back inside the transaction (it confirms what the transaction holds, not durability, which comes from the commit), tamper detection on read.
 - The store's health evidence (`StoreHealth`).
@@ -33,6 +33,7 @@ Trusted kernel code inside `rikurid`. Treats stored rows as possibly damaged: a 
 
 - `Store::open(path, clock, &[&Migrations])`, `Store::write`, `Store::read`, `Store::health`, `Store::schema_version`, `Store::now`, `Store::path`.
 - `pub use rusqlite`, so components that own tables use the same SQLite build.
+- `Tx::schema_version`, for reading a component's version inside a transaction.
 - `Migration`, `Migrations`; `Entity` (kind, schema version, ID, privacy class, deletion unit); `Versioned<T>`; `Repository<T>` (`get`, `insert`, `update`, `list`); `SqliteRepository<T>`; `StorageError`.
 - `Tx` dereferences to the SQLite connection so components that own tables write in the same transaction. Raw transaction control through it (`COMMIT`, `BEGIN`) is not yet refused: deferred to S00.07 ([record](../../docs/build-records/2026-10-08-storage-ledger-verifier-defects.md)).
 
@@ -76,6 +77,7 @@ A store that has done nothing has no `last_success` and must not be reported hea
 - Threat: an upgrade half-applies or an old build misreads a newer store. Control: one transaction for the whole upgrade, checks before any step, checksums, contiguity, version refusal. Tests: migration suite, including `failed_multi_component_upgrade_changes_nothing`, `refusal_in_one_component_upgrades_no_other`, `recorded_versions_must_be_contiguous`.
 - Threat: another local user reads or replaces the database. Control: owner-only directory and files on Unix, shared ones refused. Tests: `database_and_directory_are_owner_only`, `shared_directory_or_database_is_refused`.
 - Threat: a read changes state. Control: `Store::read` always rolls back. Test: `reads_never_commit`.
+- Threat: a caller re-enters the store inside its own transaction and the process hangs silently. Control: a per-thread marker of the active store; re-entry returns `Reentrant`. Tests: `store_calls_inside_its_own_transaction_are_refused_not_deadlocked`, `sequential_store_calls_still_work`.
 
 ## Required tests
 

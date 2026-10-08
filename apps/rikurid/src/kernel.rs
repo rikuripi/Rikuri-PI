@@ -591,9 +591,11 @@ impl Kernel {
                 "trust": p.value.trust, "intent": p.value.intent
             })),
             "tasks": tasks,
+            // through the transaction: `Store` methods called inside one of
+            // its own transactions are refused (they would deadlock)
             "schema": {
-                "storage": self.store.schema_version("storage")?,
-                "ledger": self.store.schema_version("ledger")?,
+                "storage": tx.schema_version("storage")?,
+                "ledger": tx.schema_version("ledger")?,
             }
         }))
     }

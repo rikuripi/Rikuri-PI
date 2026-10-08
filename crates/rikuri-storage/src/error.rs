@@ -74,4 +74,9 @@ pub enum StorageError {
 
     #[error("the store's writer lock is poisoned; restart the daemon")]
     Poisoned,
+
+    #[error(
+        "a store call was made from inside one of this store's own transactions, which would deadlock; use the transaction (`Tx`) passed to the closure instead"
+    )]
+    Reentrant,
 }

@@ -24,7 +24,7 @@ The trusted Rikuri daemon: the only process that changes canonical state (Archit
 
 ## Trust level / boundary
 
-Trusted. Every request is untrusted input: envelope version, request ID length, command name and parameters are validated, and unknown fields are refused. The socket is meant to be owner-only (see Known limitations).
+Trusted. Every request is untrusted input: envelope version, request ID length, command name and parameters are validated, and unknown fields are refused. The socket and its directory are owner-only: an existing socket directory that group or others can access is refused, because the socket briefly has the umask's mode between `bind` and its `chmod 0600`.
 
 ## Canonical data touched
 
@@ -70,6 +70,7 @@ state / last_attempt / last_success / last_error / consecutive_failures / work_c
 
 ## Required tests
 
+- [x] defect regressions — `tests/s00_07_defects.rs`: `state.show` answers in-process and through the socket (deadlock regression, with a deadline), shared socket directory refused, socket and directory owner-only
 - [ ] unit/failure
 - [ ] T00.09 CLI → kernel → repository → ledger as one real path; socket and in-process adapters give the same envelopes
 - [ ] T00.10 smoke checks a content marker in `state.show` (`scripts/quality/smoke.sh`)
@@ -81,7 +82,6 @@ This file; rustdoc; `rikurid --help`; `rikuri --help`.
 
 ## Known limitations / explicit debt
 
-- **Defect, found 2026-10-08:** `state.show` deadlocks the daemon. It calls `Store::schema_version` inside `Store::read`, and both take the store's non-reentrant connection lock; every later request then times out. Being fixed tests-first ([S00.07 record](../../docs/build-records/2026-10-08-s00-07-rikurid.md)).
-- **Defect, found 2026-10-08:** an existing socket directory is not checked for owner-only, and the socket briefly has the umask's mode between `bind` and `chmod 0600`. Same class as the storage owner-only defect; being fixed in the same record.
-- No tests yet; the items above are unchecked.
+- Fixed 2026-10-08, tests-first ([S00.07 record](../../docs/build-records/2026-10-08-s00-07-rikurid.md)): `state.show` deadlocked the daemon by calling `Store::schema_version` inside `Store::read` (the store now refuses such calls with `Reentrant`, and the kernel reads the version through the transaction); an existing socket directory was not checked for owner-only.
+- T00.09, T00.10 (`smoke.sh`) and the crash-matrix tests are not written yet.
 - Unix only (local socket); Windows arrives with Windows support (product Stage 9).

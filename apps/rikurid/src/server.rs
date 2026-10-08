@@ -37,7 +37,15 @@ pub fn bind(socket: &Path) -> io::Result<UnixListener> {
             ),
         ));
     }
-    if let Some(dir) = socket.parent() {
+    // The directory must be owner-only: the socket exists with the umask's
+    // mode between `bind` and the `chmod` below, and the directory is what
+    // keeps others out in that window. Checked after creating too, since a
+    // recursive create succeeds on a directory that appeared meanwhile.
+    let dir = match socket.parent() {
+        Some(d) if !d.as_os_str().is_empty() => d,
+        _ => Path::new("."),
+    };
+    if !dir.exists() {
         let mut builder = std::fs::DirBuilder::new();
         builder.recursive(true);
         {
@@ -46,6 +54,7 @@ pub fn bind(socket: &Path) -> io::Result<UnixListener> {
         }
         builder.create(dir)?;
     }
+    refuse_if_shared(dir)?;
     if socket.exists() {
         if UnixStream::connect(socket).is_ok() {
             return Err(io::Error::new(
@@ -110,6 +119,24 @@ fn handle_connection(kernel: &Kernel, stream: UnixStream, log: &mut dyn Write) -
     out.push('\n');
     writer.write_all(out.as_bytes())?;
     writer.flush()
+}
+
+/// Refuses a socket directory that group or others can access.
+fn refuse_if_shared(dir: &Path) -> io::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    let mode = std::fs::metadata(dir)?.permissions().mode() & 0o777;
+    if mode & 0o077 != 0 {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            format!(
+                "the socket directory {} has mode {mode:o}, so group or others can access it; \
+                 Rikuri requires an owner-only directory (chmod 700), or pass --socket with a \
+                 path in one",
+                dir.display()
+            ),
+        ));
+    }
+    Ok(())
 }
 
 fn refuse(message: String) -> Response {
