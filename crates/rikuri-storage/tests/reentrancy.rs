@@ -82,3 +82,59 @@ fn sequential_store_calls_still_work() {
     });
     assert_eq!(outcome.as_deref(), Some("Ok(()) Ok(Some(1)) Ok(())"));
 }
+
+/// Two stores may nest (A's transaction calls B), but re-entering any store
+/// already in the nest is refused: A → B → A must not deadlock. (Before
+/// 2026-10-08 round 2 the marker remembered only the innermost store.)
+#[test]
+fn nested_stores_are_allowed_but_reentry_anywhere_in_the_nest_is_refused() {
+    let (tx, rx) = mpsc::channel();
+    std::thread::spawn(move || {
+        let (Ok(da), Ok(db)) = (tempfile::tempdir(), tempfile::tempdir()) else {
+            return;
+        };
+        let (Ok(a), Ok(b)) = (
+            Store::open(&da.path().join("state/a.db"), Box::new(Fixed), &[]),
+            Store::open(&db.path().join("state/b.db"), Box::new(Fixed), &[]),
+        ) else {
+            return;
+        };
+        let nested = a.read(|_| {
+            Ok::<_, StorageError>(b.read(|_| Ok::<_, StorageError>(a.schema_version("storage"))))
+        });
+        let allowed = a.read(|_| Ok::<_, StorageError>(b.read(|_| Ok::<_, StorageError>(()))));
+        let _ = tx.send(format!("{nested:?} | {allowed:?}"));
+    });
+    let Ok(outcome) = rx.recv_timeout(DEADLINE) else {
+        panic!("A → B → A: no answer within {DEADLINE:?} (deadlock)");
+    };
+    assert_eq!(outcome, "Ok(Ok(Err(Reentrant))) | Ok(Ok(()))");
+}
+
+/// After an inner store's transaction returns, the outer store is still
+/// marked active: re-entering it is refused, not a deadlock. (Catches a
+/// marker that pops the wrong entry.)
+#[test]
+fn reentry_after_an_inner_store_returns_is_still_refused() {
+    let (tx, rx) = mpsc::channel();
+    std::thread::spawn(move || {
+        let (Ok(da), Ok(db)) = (tempfile::tempdir(), tempfile::tempdir()) else {
+            return;
+        };
+        let (Ok(a), Ok(b)) = (
+            Store::open(&da.path().join("state/a.db"), Box::new(Fixed), &[]),
+            Store::open(&db.path().join("state/b.db"), Box::new(Fixed), &[]),
+        ) else {
+            return;
+        };
+        let after_b = a.read(|_| {
+            b.read(|_| Ok::<_, StorageError>(()))?;
+            Ok::<_, StorageError>(a.schema_version("storage"))
+        });
+        let _ = tx.send(format!("{after_b:?}"));
+    });
+    let Ok(outcome) = rx.recv_timeout(DEADLINE) else {
+        panic!("re-entering A after B returned: no answer within {DEADLINE:?} (deadlock)");
+    };
+    assert_eq!(outcome, "Ok(Err(Reentrant))");
+}
