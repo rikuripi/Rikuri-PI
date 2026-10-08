@@ -4,6 +4,10 @@ These are maintained revisions of the supplied project documents. Their original
 
 Coding agents start with [Agent Standard Work](../AGENTS.md). Use the Engineering Templates below for Build Records rather than maintaining a second checklist.
 
+## Mission
+
+[Mission Charter v1.0](Rikuri_Pi_Mission_Charter_v1.0.md) — why Rikuri exists: expand what a person can imagine, understand, create and accomplish, free of any one model, OS or ecosystem. It holds the decision test for competing approaches (§12). It is rationale, not requirements: the PRD and Architecture below govern, and the live Stage Plan controls Foundation-0.
+
 ## Current Foundation-0 baseline
 
 | Document | Role |
@@ -81,3 +85,7 @@ The supplied Security Architecture v1.0 has been [compared with the maintained s
 ## October 2 harness intent and evidence refinement
 
 [Architecture §11.1–11.3](Rikuri_Pi_Architecture_Spec_v1.7.md#111-preserved-intent-and-clarification-contract) defines preserved intent, material clarification, measurement/RAG routing, bounded execution and controlled profile evolution. [PRD HAR-001–004](Rikuri_Pi_PRD_v1.2.md#harness-intent-and-evidence-refinement--october-2-2026), [future acceptance §19](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#19-harness-intent-and-evidence-contract-acceptance), and the [ADR clarification](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#october-2-2026--harness-intent-and-evidence-clarification) preserve Pi-primary execution and the existing stage boundaries. The owner's small-model/node experience is design rationale, not runtime proof. [Build Record](../docs/build-records/2026-10-02-harness-intent-evidence.md); all runtime behavior remains Not yet proven.
+
+## October 8 mission charter
+
+The owner adopted the [Mission Charter](Rikuri_Pi_Mission_Charter_v1.0.md), a corrected form of the supplied Addendum A. Most of it restates existing promises. The new ones are PRD principles P32–P34, [PRD §29 MISSION-001–006](Rikuri_Pi_PRD_v1.2.md#29-october-8-mission-charter-requirements), three §22 measures, [Architecture §26.5](Rikuri_Pi_Architecture_Spec_v1.7.md#265-platform-claim-states-architectures-and-vendor-ai-layers) (four platform claim states, ARM64 targets, vendor AI layers as adapters rather than homes) and [Test Strategy §20](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#20-mission-charter-acceptance). Learned adaptation to the user stays at product Stage 10, and new features went to the [parking lot](../docs/PARKING_LOT.md), whose exit procedure now records a decision-test answer. Foundation-0 stages, gates, S/T/E IDs and dates are unchanged. See the [review](reviews/2026-10-08-mission-addendum-review.md), the [ADR clarification](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#october-8-2026--mission-charter-and-platform-independence) and the [Build Record](../docs/build-records/2026-10-08-mission-charter.md); runtime behavior remains Not yet proven.
