@@ -12,8 +12,9 @@ pub(crate) const SHOWN_BYTES: usize = 64;
 
 /// Rejected input as an error shows it: escaped, and cut at
 /// [`SHOWN_BYTES`] with the full length noted, so hostile input cannot
-/// inflate error messages, logs or responses.
-pub(crate) fn bounded(value: &str) -> String {
+/// inflate error messages, logs or responses. Public so every kernel crate
+/// formats untrusted text in errors the same way.
+pub fn bounded(value: &str) -> String {
     let mut out = String::new();
     for c in value.escape_debug() {
         if out.len() + c.len_utf8() > SHOWN_BYTES {
@@ -43,7 +44,11 @@ impl UnknownVariant {
     }
 }
 
-/// Defines a closed enum with stable wire names.
+/// Defines a closed enum with stable wire names: `as_str`, `FromStr`,
+/// `Display`, serde and an `ALL` list, all from one table. Exported so every
+/// kernel crate defines its wire enums the same way (the using crate needs
+/// `serde` as a dependency).
+#[macro_export]
 macro_rules! wire_enum {
     (
         $(#[$meta:meta])*
@@ -76,12 +81,12 @@ macro_rules! wire_enum {
         }
 
         impl ::std::str::FromStr for $name {
-            type Err = $crate::wire::UnknownVariant;
+            type Err = $crate::UnknownVariant;
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 match s {
                     $($wire => Ok($name::$variant),)+
-                    _ => Err($crate::wire::UnknownVariant::new(stringify!($name), s)),
+                    _ => Err($crate::UnknownVariant::new(stringify!($name), s)),
                 }
             }
         }
@@ -100,8 +105,6 @@ macro_rules! wire_enum {
         }
     };
 }
-
-pub(crate) use wire_enum;
 
 #[cfg(test)]
 pub(crate) mod tests {

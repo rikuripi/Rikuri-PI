@@ -2,7 +2,7 @@
 //!
 //! This crate owns vocabulary, not behavior: stable IDs, privacy and risk
 //! classes, provenance with instruction authority, deletion units, project
-//! trust and schema versions. It performs no I/O and depends on no other
+//! trust, schema versions, and the ID and clock seams. It performs no I/O and depends on no other
 //! Rikuri crate (Architecture §45.1, "`rikuri-domain` stays pure"). See
 //! `README.md` for the Module Contract.
 
@@ -12,6 +12,7 @@ pub mod id;
 pub mod privacy;
 pub mod risk;
 pub mod schema;
+pub mod time;
 pub mod trust;
 mod wire;
 
@@ -24,5 +25,6 @@ pub use id::{
 pub use privacy::{ExecutionIntent, PrivacyClass};
 pub use risk::RiskClass;
 pub use schema::SchemaVersion;
+pub use time::{Clock, SystemClock, Timestamp};
 pub use trust::ProjectTrust;
-pub use wire::UnknownVariant;
+pub use wire::{UnknownVariant, bounded};

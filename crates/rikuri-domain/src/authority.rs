@@ -18,7 +18,7 @@ use thiserror::Error;
 use crate::deletion::ContentRef;
 use crate::id::{SourceId, SourceSpanId};
 use crate::privacy::PrivacyClass;
-use crate::wire::wire_enum;
+use crate::wire_enum;
 
 wire_enum! {
     /// Where a piece of content came from.
