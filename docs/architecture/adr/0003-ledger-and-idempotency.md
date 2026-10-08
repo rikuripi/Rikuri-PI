@@ -1,6 +1,6 @@
 # ADR-0003: Referenced-content append-only ledger and idempotency
 
-Status: Proposed
+Status: Accepted (2026-10-08, Henry Chen, product owner; proposed 2026-10-05)
 Date: 2026-10-05
 Owners: Henry Chen (product owner, accepts); Stage 00 implementer
 Related requirements/tests: Stage Plan S00.06, S00.10, T00.05–T00.08, T00.12; Architecture §4 invariants 10–11, §8, §41.1; PRD CORE-002, CORE-004, CORE-007

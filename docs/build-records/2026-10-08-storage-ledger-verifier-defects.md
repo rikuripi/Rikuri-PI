@@ -8,7 +8,7 @@
 | Branch | `stage-00/storage-ledger` |
 | Commits | `ab41b21` (tests, red by design), then the fix in the commit containing this record, on `stage-00/storage-ledger` |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md); S00.05, S00.06 |
-| Related ADR / requirement | [ADR 0002](../architecture/adr/0002-sqlite-current-state-model.md), [ADR 0003](../architecture/adr/0003-ledger-and-idempotency.md) (both Proposed); T00.04, T00.05; Architecture §4.11, §43; [S00.05 record](2026-10-05-s00-05-rikuri-storage.md), [S00.06 record](2026-10-05-s00-06-rikuri-ledger.md) |
+| Related ADR / requirement | [ADR 0002](../architecture/adr/0002-sqlite-current-state-model.md), [ADR 0003](../architecture/adr/0003-ledger-and-idempotency.md) (both Proposed while this change was made; accepted by the owner 2026-10-08); T00.04, T00.05; Architecture §4.11, §43; [S00.05 record](2026-10-05-s00-05-rikuri-storage.md), [S00.06 record](2026-10-05-s00-06-rikuri-ledger.md) |
 | Status | COMPLETE — the defects are fixed and verified; S00.05/S00.06 themselves stay incomplete until `rikurid` is their real caller (S00.07); CI on the PR is Not yet proven until observed |
 
 ## 1. Plan

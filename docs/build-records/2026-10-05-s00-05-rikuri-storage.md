@@ -8,7 +8,7 @@
 | Branch | `stage-00/storage-ledger`: replayed on 2026-10-08 from the local `stage-00/kernel` branch onto `main` at `c5f0060`, which had gained 41 commits (the PR #7/#11/#13/#17 gate fixes); clean cherry-pick, no conflicts. The old branch and its worktree are kept as a backup |
 | Commits | `de5beea` on the original branch, replayed as `9cc42ed` (with the domain prerequisite `6006cd2` → `2b7d34f`); defect fixes `ab41b21` and the following commit ([defect record](2026-10-08-storage-ledger-verifier-defects.md)) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md) |
-| Related ADR / requirement | S00.05, T00.04, S00.10 ([ADR 0002](../architecture/adr/0002-sqlite-current-state-model.md), Proposed), E1; Architecture §8, §21–22, §43; PRD CORE-006 |
+| Related ADR / requirement | S00.05, T00.04, S00.10 ([ADR 0002](../architecture/adr/0002-sqlite-current-state-model.md), Accepted 2026-10-08), E1; Architecture §8, §21–22, §43; PRD CORE-006 |
 | Status | IN PROGRESS |
 
 ## 1. Plan

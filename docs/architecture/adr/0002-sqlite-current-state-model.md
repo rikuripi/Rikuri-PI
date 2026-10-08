@@ -1,6 +1,6 @@
 # ADR-0002: SQLite current-state model
 
-Status: Proposed
+Status: Accepted (2026-10-08, Henry Chen, product owner; proposed 2026-10-05)
 Date: 2026-10-05
 Owners: Henry Chen (product owner, accepts); Stage 00 implementer
 Related requirements/tests: Stage Plan S00.05, S00.10, T00.04, E1; Architecture §8, §21–22, §43, §46 ("Canonical personal DB: LOCKED Foundation-0 — SQLite/WAL/single canonical writer"); PRD CORE-006
