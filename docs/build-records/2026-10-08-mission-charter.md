@@ -6,10 +6,10 @@
 | Date | 2026-10-08 |
 | Author / agent session | Claude Code (Opus 5.5), owner-requested documentation change |
 | Branch | `docs/mission-charter` |
-| Commits | The commit containing this record on `docs/mission-charter` ("docs(mission): adopt the Mission Charter …"), at the owner's request; push and PR wait for the owner |
+| Commits | `c79068c` (adoption) and `112d135` (AGENTS.md row) on `docs/mission-charter`, at the owner's request; `main` (PR #18) merged in and a PR to `main` opened on 2026-10-08, also at the owner's request |
 | Stage Gate | Documentation refinement; no gate closure; Foundation-0 stages 00–05 unchanged |
 | Related ADR / requirement | ADR 0000 October 8 clarification; PRD P32–P34, MISSION-001–006, §22 rows; Architecture §26.5; Test Strategy §20 |
-| Status | COMPLETE — documentation only; runtime Not yet proven; committed, not pushed |
+| Status | COMPLETE — documentation only; runtime Not yet proven; pushed, PR open |
 
 ## 1. Plan
 
