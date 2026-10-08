@@ -44,8 +44,10 @@ struct Fixture {
 
 fn fixture() -> TestResult<Fixture> {
     let dir = tempfile::tempdir()?;
+    // in a subdirectory the store creates owner-only; the temporary
+    // directory itself follows the umask and may be shared
     let store = Store::open(
-        &dir.path().join("rikuri.db"),
+        &dir.path().join("state/rikuri.db"),
         Box::new(Fixed),
         &[&rikuri_ledger::MIGRATIONS],
     )?;
@@ -377,5 +379,215 @@ proptest! {
         let ids: Vec<_> = all.iter().map(|e| e.event_id).collect();
         prop_assert_eq!(ids, expected);
         prop_assert!(all.windows(2).all(|w| w[0].seq < w[1].seq));
+    }
+}
+
+// ---- 2026-10-08 verifier defects (docs/build-records/2026-10-08-storage-ledger-verifier-defects.md)
+
+/// Append-only must hold against every SQL form that rewrites a row, not
+/// only UPDATE and DELETE: REPLACE deletes the old row without firing DELETE
+/// triggers unless `recursive_triggers` is on.
+#[test]
+fn ledger_rows_refuse_replace_too() {
+    let f = fixture().unwrap();
+    let e = event(
+        &f,
+        "task.created",
+        RiskClass::KnownRepair,
+        Some("replace-1"),
+    )
+    .unwrap();
+    let key = IdempotencyKey::new("replace-1").unwrap();
+    f.store
+        .write(|tx| {
+            rikuri_ledger::append(tx, &e, now())?;
+            rikuri_ledger::record(tx, &key, "c", "h", e.event_id, &json!({}), now())
+        })
+        .unwrap();
+    for sql in [
+        // same seq and event_id, rewritten fields
+        "INSERT OR REPLACE INTO events SELECT seq, event_id, schema_version, recorded_at_ms,
+            'task.deleted', 'failed', actor_id, project_id, task_id, run_id, subject_ids,
+            input_refs, result_refs, security_decision_id, cost_record_id, idempotency_key,
+            caused_by_event_id, '{\"rewritten\":true}' FROM events",
+        // new seq, same event_id
+        "REPLACE INTO events (event_id, schema_version, recorded_at_ms, event_type, status,
+            actor_id, subject_ids, input_refs, result_refs, metadata)
+         SELECT event_id, schema_version, recorded_at_ms, 'task.deleted', 'failed', actor_id,
+            '[]', '[]', '[]', '{}' FROM events",
+        "INSERT OR REPLACE INTO idempotency SELECT idempotency_key, command, request_hash,
+            event_id, '{\"task_id\":\"forged\"}', recorded_at_ms FROM idempotency",
+        "INSERT INTO idempotency SELECT idempotency_key, command, request_hash, event_id, '{}',
+            recorded_at_ms FROM idempotency WHERE true
+         ON CONFLICT (idempotency_key) DO UPDATE SET response = '{\"task_id\":\"forged\"}'",
+    ] {
+        let r = f.store.write(|tx| {
+            tx.execute(sql, [])?;
+            Ok::<_, StorageError>(())
+        });
+        assert!(r.is_err(), "allowed: {sql}");
+    }
+    let still = f.store.read(|tx| rikuri_ledger::tail(tx, 10)).unwrap();
+    assert_eq!(still.len(), 1);
+    assert_eq!(still[0].event_type.as_str(), "task.created");
+    assert_eq!(still[0].status, EventStatus::Succeeded);
+    assert!(still[0].metadata.is_empty());
+    let replay = f
+        .store
+        .read(|tx| rikuri_ledger::check(tx, &key, "c", "h"))
+        .unwrap();
+    match replay {
+        IdempotencyCheck::Replay(r) => assert_eq!(r.response, json!({})),
+        other => panic!("expected the original record to replay, got {other:?}"),
+    }
+}
+
+/// An error never echoes unbounded caller input (the PR #7 defect class).
+#[test]
+fn event_type_errors_are_bounded() {
+    let huge = "a".repeat(1 << 20);
+    let err = EventType::new(&huge).unwrap_err();
+    assert!(
+        err.to_string().len() < 512,
+        "error message is {} bytes",
+        err.to_string().len()
+    );
+}
+
+/// Metadata keys obey the same length limit as metadata strings.
+#[test]
+fn metadata_keys_are_bounded() {
+    let f = fixture().unwrap();
+    let mut e = event(&f, "task.noted", RiskClass::ObserveReadOnly, None).unwrap();
+    e.metadata
+        .insert("k".repeat(MAX_METADATA_STRING + 1), json!(1));
+    let r = f.store.write(|tx| rikuri_ledger::append(tx, &e, now()));
+    match r {
+        Err(LedgerError::Invalid(msg)) => assert!(msg.len() < 512, "{} bytes", msg.len()),
+        other => panic!("long key accepted or wrong error: {other:?}"),
+    }
+}
+
+/// The idempotency command is a short name and the response holds only
+/// small scalars or ID lists: idempotency rows cannot be deleted, so content
+/// stored there could never be forgotten.
+#[test]
+fn idempotency_command_and_response_are_validated() {
+    let f = fixture().unwrap();
+    let e = event(
+        &f,
+        "task.created",
+        RiskClass::KnownRepair,
+        Some("validate-1"),
+    )
+    .unwrap();
+    f.store
+        .write(|tx| rikuri_ledger::append(tx, &e, now()))
+        .unwrap();
+    let key = IdempotencyKey::new("validate-1").unwrap();
+    let long_command = "c".repeat(65);
+    let bad: [(&str, &str, Value); 6] = [
+        ("empty command", "", json!({})),
+        ("long command", &long_command, json!({})),
+        ("spaced command", "task create", json!({})),
+        (
+            "nested response",
+            "task.create",
+            json!({"body": {"text": "secret"}}),
+        ),
+        (
+            "long string response",
+            "task.create",
+            json!({"note": "x".repeat(MAX_METADATA_STRING + 1)}),
+        ),
+        ("non-object response", "task.create", json!("plain text")),
+    ];
+    for (why, command, response) in bad {
+        let r = f.store.write(|tx| {
+            rikuri_ledger::record(tx, &key, command, "h", e.event_id, &response, now())
+        });
+        assert!(matches!(r, Err(LedgerError::Invalid(_))), "{why}: {r:?}");
+    }
+    let ok = f.store.write(|tx| {
+        rikuri_ledger::record(
+            tx,
+            &key,
+            "task.create",
+            "h",
+            e.event_id,
+            &json!({"task_id": "t", "version": 1}),
+            now(),
+        )
+    });
+    assert!(ok.is_ok(), "{ok:?}");
+}
+
+/// Append-only holds on any connection, not only the store's: the schema's
+/// insert guards refuse REPLACE on a raw connection where
+/// `recursive_triggers` is off (so DELETE triggers do not fire for REPLACE).
+#[test]
+fn ledger_rows_refuse_replace_on_a_raw_connection() {
+    let f = fixture().unwrap();
+    let e = event(
+        &f,
+        "task.created",
+        RiskClass::KnownRepair,
+        Some("raw-conn-1"),
+    )
+    .unwrap();
+    let key = IdempotencyKey::new("raw-conn-1").unwrap();
+    f.store
+        .write(|tx| {
+            rikuri_ledger::append(tx, &e, now())?;
+            rikuri_ledger::record(tx, &key, "c", "h", e.event_id, &json!({}), now())
+        })
+        .unwrap();
+
+    let raw = rikuri_storage::rusqlite::Connection::open(f.store.path()).unwrap();
+    // Neither the pragma nor foreign keys may be what refuses the rewrite.
+    raw.pragma_update(None, "foreign_keys", false).unwrap();
+    let (recursive, foreign): (i64, i64) = raw
+        .query_row(
+            "SELECT * FROM pragma_recursive_triggers, pragma_foreign_keys",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(
+        (recursive, foreign),
+        (0, 0),
+        "the raw connection must rely on neither recursive_triggers nor foreign keys"
+    );
+    for sql in [
+        // explicit seq of an existing event, new event_id
+        "INSERT OR REPLACE INTO events (seq, event_id, schema_version, recorded_at_ms, event_type,
+            status, actor_id, subject_ids, input_refs, result_refs, metadata)
+         SELECT seq, 'forged-event', schema_version, recorded_at_ms, 'task.deleted', 'failed',
+            actor_id, '[]', '[]', '[]', '{}' FROM events",
+        // existing event_id, seq omitted
+        "REPLACE INTO events (event_id, schema_version, recorded_at_ms, event_type, status,
+            actor_id, subject_ids, input_refs, result_refs, metadata)
+         SELECT event_id, schema_version, recorded_at_ms, 'task.deleted', 'failed', actor_id,
+            '[]', '[]', '[]', '{}' FROM events",
+        "INSERT OR REPLACE INTO idempotency SELECT idempotency_key, command, request_hash,
+            event_id, '{\"task_id\":\"forged\"}', recorded_at_ms FROM idempotency",
+    ] {
+        assert!(
+            raw.execute(sql, []).is_err(),
+            "allowed on a raw connection: {sql}"
+        );
+    }
+    drop(raw);
+
+    let still = f.store.read(|tx| rikuri_ledger::tail(tx, 10)).unwrap();
+    assert_eq!(still.len(), 1);
+    assert_eq!(still[0].event_type.as_str(), "task.created");
+    let replay = f
+        .store
+        .read(|tx| rikuri_ledger::check(tx, &key, "c", "h"))
+        .unwrap();
+    match replay {
+        IdempotencyCheck::Replay(r) => assert_eq!(r.response, json!({})),
+        other => panic!("expected the original record to replay, got {other:?}"),
     }
 }

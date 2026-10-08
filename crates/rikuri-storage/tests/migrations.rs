@@ -35,8 +35,10 @@ fn comp(list: &'static [Migration]) -> Migrations {
     }
 }
 
+// The database lives in a subdirectory the store creates owner-only; the
+// temporary directory itself follows the umask and may be shared.
 fn open(dir: &tempfile::TempDir, c: &Migrations) -> Result<Store, StorageError> {
-    Store::open(&dir.path().join("rikuri.db"), Box::new(Fixed), &[c])
+    Store::open(&dir.path().join("state/rikuri.db"), Box::new(Fixed), &[c])
 }
 
 fn count(store: &Store, sql: &str) -> Result<i64, StorageError> {
@@ -138,7 +140,7 @@ fn changed_definition_of_an_applied_migration_is_refused() {
 }
 
 #[test]
-fn malformed_migration_lists_are_refused_before_touching_the_database() {
+fn malformed_migration_lists_are_refused_before_any_table_exists() {
     const GAP: Migration = Migration {
         version: 3,
         name: "gap",
@@ -157,7 +159,8 @@ fn malformed_migration_lists_are_refused_before_touching_the_database() {
             matches!(err, StorageError::InvalidMigrations { .. }),
             "{why}: {err:?}"
         );
-        let raw = rikuri_storage::rusqlite::Connection::open(dir.path().join("rikuri.db")).unwrap();
+        let raw =
+            rikuri_storage::rusqlite::Connection::open(dir.path().join("state/rikuri.db")).unwrap();
         let tables: i64 = raw
             .query_row(
                 "SELECT COUNT(*) FROM sqlite_schema WHERE type = 'table'",
@@ -190,4 +193,144 @@ fn store_uses_wal_and_full_sync() {
         .unwrap();
     assert_eq!(mode, "wal");
     assert_eq!(sync, 2, "synchronous=FULL");
+}
+
+// ---- 2026-10-08 verifier defects (docs/build-records/2026-10-08-storage-ledger-verifier-defects.md)
+
+const A1: Migration = Migration {
+    version: 1,
+    name: "a table",
+    sql: "CREATE TABLE a (x INTEGER) STRICT;",
+};
+const A2: Migration = Migration {
+    version: 2,
+    name: "a extra",
+    sql: "CREATE TABLE a_extra (y INTEGER) STRICT;",
+};
+const B1: Migration = Migration {
+    version: 1,
+    name: "b table",
+    sql: "CREATE TABLE b (x INTEGER) STRICT;",
+};
+const B2_BROKEN: Migration = Migration {
+    version: 2,
+    name: "b broken",
+    sql: "INSERT INTO b (x) VALUES ('not a number');",
+};
+const B1_EDITED: Migration = Migration {
+    version: 1,
+    name: "b table",
+    sql: "CREATE TABLE b (x TEXT) STRICT;",
+};
+
+fn named(component: &'static str, list: &'static [Migration]) -> Migrations {
+    Migrations { component, list }
+}
+
+fn open_all(dir: &tempfile::TempDir, components: &[&Migrations]) -> Result<Store, StorageError> {
+    Store::open(
+        &dir.path().join("state/rikuri.db"),
+        Box::new(Fixed),
+        components,
+    )
+}
+
+/// Architecture §43: a failed upgrade must not leave a half-upgraded store.
+/// One component's failing step must undo every other component's steps, so
+/// the previous build still opens.
+#[test]
+fn failed_multi_component_upgrade_changes_nothing() {
+    let dir = tempfile::tempdir().unwrap();
+    drop(open_all(&dir, &[&named("aaa", &[A1]), &named("bbb", &[B1])]).unwrap());
+
+    let new_build = [&named("aaa", &[A1, A2]), &named("bbb", &[B1, B2_BROKEN])];
+    let err = open_all(&dir, &new_build).unwrap_err();
+    assert!(
+        matches!(
+            err,
+            StorageError::MigrationFailed {
+                component: "bbb",
+                version: 2,
+                ..
+            }
+        ),
+        "{err:?}"
+    );
+    // retrying gives the same answer, not a different, stuck state
+    let again = open_all(&dir, &new_build).unwrap_err();
+    assert!(
+        matches!(
+            again,
+            StorageError::MigrationFailed {
+                component: "bbb",
+                ..
+            }
+        ),
+        "{again:?}"
+    );
+
+    let old = open_all(&dir, &[&named("aaa", &[A1]), &named("bbb", &[B1])])
+        .expect("the previous build must still open after a failed upgrade");
+    assert_eq!(old.schema_version("aaa").unwrap(), Some(1));
+    assert_eq!(
+        count(
+            &old,
+            "SELECT COUNT(*) FROM sqlite_schema WHERE name = 'a_extra'"
+        )
+        .unwrap(),
+        0
+    );
+}
+
+/// A refusal found in one component (here a changed definition) must not
+/// leave another component already upgraded.
+#[test]
+fn refusal_in_one_component_upgrades_no_other() {
+    let dir = tempfile::tempdir().unwrap();
+    drop(open_all(&dir, &[&named("aaa", &[A1]), &named("bbb", &[B1])]).unwrap());
+
+    let err = open_all(
+        &dir,
+        &[&named("aaa", &[A1, A2]), &named("bbb", &[B1_EDITED])],
+    )
+    .unwrap_err();
+    assert!(
+        matches!(
+            err,
+            StorageError::MigrationMismatch {
+                component: "bbb",
+                ..
+            }
+        ),
+        "{err:?}"
+    );
+    let old = open_all(&dir, &[&named("aaa", &[A1]), &named("bbb", &[B1])])
+        .expect("the previous build must still open after a refused upgrade");
+    assert_eq!(old.schema_version("aaa").unwrap(), Some(1));
+}
+
+/// Recorded versions must run 1..=n: a missing bookkeeping row means the
+/// schema history was tampered with or lost, so the store is not trusted.
+#[test]
+fn recorded_versions_must_be_contiguous() {
+    const V3: Migration = Migration {
+        version: 3,
+        name: "note index",
+        sql: "CREATE INDEX notes_by_text ON notes (text);",
+    };
+    let dir = tempfile::tempdir().unwrap();
+    drop(open(&dir, &comp(&[V1, V2, V3])).unwrap());
+    let raw =
+        rikuri_storage::rusqlite::Connection::open(dir.path().join("state/rikuri.db")).unwrap();
+    raw.execute(
+        "DELETE FROM schema_migrations WHERE component = 'fixture' AND version = 2",
+        [],
+    )
+    .unwrap();
+    drop(raw);
+    let err = open(&dir, &comp(&[V1, V2, V3])).unwrap_err();
+    assert!(
+        matches!(err, StorageError::InvalidMigrations { .. }),
+        "{err:?}"
+    );
 }

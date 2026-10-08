@@ -311,3 +311,167 @@ proptest! {
         }
     }
 }
+
+// ---- 2026-10-08 verifier defects (docs/build-records/2026-10-08-storage-ledger-verifier-defects.md)
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Doc {
+    id: ProjectId,
+    privacy: PrivacyClass,
+    unit: Option<rikuri_domain::DeletionUnitId>,
+}
+
+impl Entity for Doc {
+    type Id = ProjectId;
+    const KIND: &'static str = "project";
+    const SCHEMA: SchemaVersion = SchemaVersion::V1;
+    fn id(&self) -> ProjectId {
+        self.id
+    }
+    fn privacy_class(&self) -> PrivacyClass {
+        self.privacy
+    }
+    fn deletion_unit(&self) -> Option<rikuri_domain::DeletionUnitId> {
+        self.unit
+    }
+}
+
+fn set_column(store: &Store, sql: &str, id: ProjectId) -> TestResult {
+    store.write(|tx| {
+        tx.execute(sql, [id.to_string()])?;
+        Ok::<_, StorageError>(())
+    })?;
+    Ok(())
+}
+
+/// The privacy and deletion-unit columns are what later filters and forget
+/// will trust, so they are stored and must agree with the body on every read.
+#[test]
+fn privacy_and_deletion_columns_must_match_the_body() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = open(&dir).unwrap();
+    let repo = SqliteRepository::<Doc>::new();
+    let ids = Seq(AtomicU64::new(1));
+    let unit = rikuri_domain::DeletionUnitId::generate(&ids).unwrap();
+    let doc = Doc {
+        id: ProjectId::generate(&ids).unwrap(),
+        privacy: PrivacyClass::Secret,
+        unit: Some(unit),
+    };
+    store
+        .write(|tx| repo.insert(tx, &doc, Timestamp(1)))
+        .unwrap();
+
+    let (class, stored_unit): (String, Option<String>) = store
+        .read(|tx| {
+            Ok::<_, StorageError>(tx.query_row(
+                "SELECT privacy_class, deletion_unit_id FROM objects WHERE id = ?1",
+                [doc.id.to_string()],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )?)
+        })
+        .unwrap();
+    assert_eq!(class, "secret");
+    assert_eq!(stored_unit, Some(unit.to_string()));
+    assert!(store.read(|tx| repo.get(tx, doc.id)).unwrap().is_some());
+
+    let other_unit = rikuri_domain::DeletionUnitId::generate(&ids).unwrap();
+    let other = format!("UPDATE objects SET deletion_unit_id = '{other_unit}' WHERE id = ?1");
+    for (why, tamper, restore) in [
+        (
+            "privacy downgraded",
+            "UPDATE objects SET privacy_class = 'normal' WHERE id = ?1",
+            "UPDATE objects SET privacy_class = 'secret' WHERE id = ?1",
+        ),
+        (
+            "deletion unit dropped",
+            "UPDATE objects SET deletion_unit_id = NULL WHERE id = ?1",
+            "",
+        ),
+        ("deletion unit swapped", other.as_str(), ""),
+    ] {
+        set_column(&store, tamper, doc.id).unwrap();
+        let got = store.read(|tx| repo.get(tx, doc.id));
+        assert!(
+            matches!(got, Err(StorageError::Corrupt { .. })),
+            "{why}: {got:?}"
+        );
+        let listed = store.read(|tx| repo.list(tx, 10));
+        assert!(
+            matches!(listed, Err(StorageError::Corrupt { .. })),
+            "{why}: {listed:?}"
+        );
+        if !restore.is_empty() {
+            set_column(&store, restore, doc.id).unwrap();
+        }
+        let fix = format!("UPDATE objects SET deletion_unit_id = '{unit}' WHERE id = ?1");
+        set_column(&store, &fix, doc.id).unwrap();
+    }
+}
+
+/// A row whose kind does not match the entity type is not trusted.
+#[test]
+fn rows_of_another_kind_are_refused() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = open(&dir).unwrap();
+    let repo = SqliteRepository::<Thing>::new();
+    let ids = Seq(AtomicU64::new(1));
+    let a = thing(&ids, "a").unwrap();
+    store.write(|tx| repo.insert(tx, &a, Timestamp(1))).unwrap();
+    set_column(
+        &store,
+        "UPDATE objects SET kind = 'task' WHERE id = ?1",
+        a.id,
+    )
+    .unwrap();
+    let got = store.read(|tx| repo.get(tx, a.id));
+    assert!(matches!(got, Err(StorageError::Corrupt { .. })), "{got:?}");
+}
+
+/// Reads run in a transaction that is always rolled back.
+#[test]
+fn reads_never_commit() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = open(&dir).unwrap();
+    store
+        .read(|tx| {
+            tx.execute(
+                "INSERT INTO objects (id, kind, version, schema_version, privacy_class,
+                     deletion_unit_id, created_at_ms, updated_at_ms, body)
+                 VALUES ('x', 'k', 1, 1, 'normal', NULL, 1, 1, '{}')",
+                [],
+            )?;
+            Ok::<_, StorageError>(())
+        })
+        .unwrap();
+    let n: i64 = store
+        .read(|tx| {
+            Ok::<_, StorageError>(tx.query_row("SELECT COUNT(*) FROM objects", [], |r| r.get(0))?)
+        })
+        .unwrap();
+    assert_eq!(n, 0, "a write inside read() was committed");
+}
+
+/// Corruption errors never echo unbounded stored text.
+#[test]
+fn corrupt_row_errors_are_bounded() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = open(&dir).unwrap();
+    let repo = SqliteRepository::<Thing>::new();
+    let ids = Seq(AtomicU64::new(1));
+    let a = thing(&ids, "a").unwrap();
+    store.write(|tx| repo.insert(tx, &a, Timestamp(1))).unwrap();
+    let huge = "k".repeat(1 << 20);
+    store
+        .write(|tx| {
+            tx.execute(
+                "UPDATE objects SET kind = ?1 WHERE id = ?2",
+                (huge.as_str(), a.id.to_string()),
+            )?;
+            Ok::<_, StorageError>(())
+        })
+        .unwrap();
+    let err = store.read(|tx| repo.get(tx, a.id)).unwrap_err();
+    let shown = err.to_string();
+    assert!(shown.len() < 1024, "error message is {} bytes", shown.len());
+}
