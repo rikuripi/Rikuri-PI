@@ -1977,6 +1977,84 @@ Successful novel repairs may become tested skills/runbooks.
 Health/fallback state is visible and absence-of-success can mark a
 component degraded.
 
+### 26.5 Platform claim states, architectures and vendor AI layers
+
+October 8, 2026, from the owner's [Mission Charter](Rikuri_Pi_Mission_Charter_v1.0.md) §4
+(PRD P33–P34, MISSION-003–005). This refines §26.1–26.2; the platform
+order above is unchanged and no Foundation-0 stage or gate changes.
+
+**Four claim states.** A capability on a given OS and processor
+architecture is in exactly one state:
+
+| State | Meaning | Minimum evidence |
+| --- | --- | --- |
+| Architecture-supported | Rikuri's contracts allow it; no adapter exists yet | Contract or design reference |
+| Implemented | An adapter exists for this OS/architecture | Code reference; builds |
+| Verified | Observed working on this OS/architecture | Platform, OS and architecture versions, date and a test or demo receipt |
+| Unavailable / restricted | The platform cannot support it, or only partly | The reason and the limiting platform capability |
+
+Compiling, launching or a green build moves a capability to
+Implemented at most. A Verified claim holds only for the versions it
+names; on any other version it is Implemented until observed again, and
+security capabilities follow the Engineering Standard's two-tier
+requalification rule. New or revised claims use these states; existing
+text is not rewritten retroactively. The OS Capability API's capability
+discovery reports them from product Stage 2 onward; this adds no scope to
+Foundation-0's Home or health surfaces (S05.02, S05.08).
+
+These states describe availability, not protection. Security assurance
+levels (the S03.11 envelope levels, such as `assurance: experimental`,
+and SEC-024's scoped assurance) and Stage Gate evidence (Pass / Fail /
+Not yet proven) keep their own vocabularies and are reported alongside.
+Verified never implies an assurance level.
+
+**Processor architectures.** Linux and Windows target x86-64 and
+ARM64; macOS includes Apple Silicon. Architecture-specific code stays in
+adapters exactly like OS-specific code: no processor-architecture
+assumption enters canonical kernel contracts, and canonical data formats
+do not depend on architecture. Ubuntu on x86-64 is the Foundation-0
+reference. ARM64 build and test timing is not yet sequenced (parking
+lot).
+
+**Vendor AI layers.** Operating-system and hardware vendors ship their
+own AI layers: OS-integrated model runtimes, NPU frameworks and built-in
+assistants, often hybrid local/cloud. Rikuri treats each one as a
+resource, never as the home of the user's intelligence:
+
+- It is admitted only as a model/runtime adapter (§13) or tool adapter,
+  through the same admission, privacy, budget, provenance and
+  verification path as any other runtime. It gains no authority from
+  being part of the OS.
+- It never holds canonical state. Knowledge, ProjectState, creative
+  history and harness profiles stay in Rikuri's stores. A vendor's own
+  memory, history or personalization features are outside Rikuri's
+  forget, export and portability guarantees and are not relied upon;
+  they count as provider retention under SEC-028. Unless that retention
+  is disabled and verified, the layer is ineligible for Private and Local
+  Only data.
+- Losing it, through uninstall, deprecation, policy change or moving to
+  another OS, degrades capability visibly through health and capability
+  state. Continuity is unaffected: the same projects and knowledge
+  continue with other admitted runtimes.
+- Local Only work may use it only while the runtime itself executes
+  inside an admitted envelope whose network is Denied for that execution
+  (§27.2). Evidence is requalified when the runtime or OS changes. A
+  layer that runs as an OS service with its own network access, or can
+  route work to its vendor's cloud by its own decision or by
+  configuration, is a cloud path and ineligible for Local Only;
+  configuration or vendor documentation is not proof.
+- A built-in assistant that can take actions is an opaque native worker
+  (§13.5, §27.3): it acts only through Rikuri's grants and fails closed
+  (SEC-021).
+
+**Heterogeneous compute.** CPUs, integrated and discrete GPUs, NPUs and
+remote nodes are execution resources described by machine capability
+descriptors (§10). Scheduling optimizations such as prefill/decode
+disaggregation and cross-device execution are product Stage 4 Model Lab
+candidates or later, admitted only when measured against a simpler
+baseline. No vendor-specific assumption (CUDA, MLX, ROCm, Vulkan, NPU
+SDKs) enters kernel contracts.
+
 # 27. Security and Trust Architecture
 
 Protection of the user's private, financial, personal/media, professional and proprietary data, and secrets is the highest product responsibility. Security is built around **capability containment and trust boundaries**. The September 28 Option C decision assigns trusted policy evaluation to AISecurity and containment to qualified adapters, while Rikuri retains canonical permission authority. Detectors add signals; they cannot grant authority or substitute for enforcement.
