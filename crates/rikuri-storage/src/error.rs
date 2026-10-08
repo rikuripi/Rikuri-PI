@@ -1,4 +1,28 @@
+use rikuri_domain::bounded;
 use thiserror::Error;
+
+/// Whether an error returned from a transaction means the store itself
+/// failed, as opposed to the caller refusing the change. Store failures
+/// (SQLite, I/O, a poisoned lock, re-entry, a corrupt row) count against the
+/// store's health; refusals (not found, already exists, version conflict,
+/// validation) do not. Every error type used with `Store::read`/`write`
+/// says which it is, so health can neither hide a failure nor report a
+/// refusal as one.
+pub trait StoreFailure {
+    /// `Some(bounded description)` for a store failure, `None` for a refusal.
+    fn store_failure(&self) -> Option<String>;
+}
+
+impl StoreFailure for StorageError {
+    fn store_failure(&self) -> Option<String> {
+        match self {
+            StorageError::NotFound { .. }
+            | StorageError::AlreadyExists { .. }
+            | StorageError::VersionConflict { .. } => None,
+            other => Some(bounded(&other.to_string())),
+        }
+    }
+}
 
 /// Every way a storage operation can fail. Callers map these to stable API
 /// error codes; nothing here panics on bad data.
@@ -79,4 +103,9 @@ pub enum StorageError {
         "a store call was made from inside one of this store's own transactions, which would deadlock; use the transaction (`Tx`) passed to the closure instead"
     )]
     Reentrant,
+
+    #[error(
+        "{path} is already open by another store (another rikurid?); a database has one writer"
+    )]
+    InUse { path: String },
 }

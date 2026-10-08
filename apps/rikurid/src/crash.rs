@@ -108,6 +108,13 @@ impl HangAtPoint {
         let (point, command) = spec
             .split_once('@')
             .ok_or_else(|| format!("RIKURI_CRASH_AT must be <point>@<command>, got {spec:?}"))?;
+        // crash points sit on the write path, so only a command that writes
+        // can reach one; anything else would never fire
+        if !rikuri_api::command::is_consequential(command) {
+            return Err(format!(
+                "RIKURI_CRASH_AT must name a command that writes, got {command:?}"
+            ));
+        }
         Ok(HangAtPoint {
             point: point.parse().map_err(|e| format!("{e}"))?,
             command: command.to_owned(),

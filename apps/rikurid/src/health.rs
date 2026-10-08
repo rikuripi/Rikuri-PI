@@ -72,24 +72,41 @@ impl ComponentHealth {
         }
     }
 
+    /// The store's health from its evidence. Reads and writes are judged
+    /// separately, so a successful read (including this check's own
+    /// consistency replay) can never hide a failing write. Refused requests
+    /// are not failures.
     pub fn from_store(component: &'static str, h: &StoreHealth) -> ComponentHealth {
-        let (state, detail) = match (h.last_success, h.consecutive_failures) {
-            (None, 0) => (
+        let (failing, n, error) = if h.writes.consecutive_failures > 0 {
+            ("write", h.writes.consecutive_failures, &h.writes.last_error)
+        } else {
+            ("read", h.reads.consecutive_failures, &h.reads.last_error)
+        };
+        let (state, detail) = if n > 0 {
+            (
+                if n < 3 {
+                    HealthState::Degraded
+                } else {
+                    HealthState::Critical
+                },
+                format!(
+                    "the last {n} {failing} transaction(s) failed: {}",
+                    error.as_deref().unwrap_or("no detail")
+                ),
+            )
+        } else if h.last_success.is_none() {
+            (
                 HealthState::Degraded,
                 "no successful transaction yet".to_owned(),
-            ),
-            (_, 0) => (
+            )
+        } else {
+            (
                 HealthState::Healthy,
-                format!("{} transactions succeeded", h.work_completed),
-            ),
-            (_, n) if n < 3 => (
-                HealthState::Degraded,
-                format!("{n} recent transaction failures"),
-            ),
-            (_, n) => (
-                HealthState::Critical,
-                format!("{n} consecutive transaction failures"),
-            ),
+                format!(
+                    "{} reads and {} writes succeeded; {} requests refused",
+                    h.reads.succeeded, h.writes.succeeded, h.refused
+                ),
+            )
         };
         ComponentHealth {
             component,
@@ -98,8 +115,23 @@ impl ComponentHealth {
             last_attempt: h.last_attempt,
             last_success: h.last_success,
             last_error: h.last_error.clone(),
-            consecutive_failures: h.consecutive_failures,
+            consecutive_failures: n,
             work_completed: h.work_completed,
+        }
+    }
+
+    /// The `writes` component while the daemon is quarantined: Critical, so
+    /// overall health is never green while writes are refused.
+    pub fn quarantined(reason: &str, now: Timestamp) -> ComponentHealth {
+        ComponentHealth {
+            component: "writes",
+            state: HealthState::Critical,
+            detail: format!("refused (quarantine): {reason}"),
+            last_attempt: Some(now),
+            last_success: None,
+            last_error: Some(reason.to_owned()),
+            consecutive_failures: 0,
+            work_completed: 0,
         }
     }
 

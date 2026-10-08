@@ -11,6 +11,10 @@ use rikurid::crash::{CrashHook, NoCrash};
 use rikurid::{Idempotency, Kernel, KernelConfig, server};
 
 fn main() -> ExitCode {
+    if std::env::args().skip(1).any(|a| a == "--help" || a == "-h") {
+        let _ = writeln!(std::io::stdout(), "{USAGE}");
+        return ExitCode::SUCCESS;
+    }
     let mut err = std::io::stderr();
     match run(&mut err) {
         Ok(()) => ExitCode::SUCCESS,
@@ -38,7 +42,8 @@ fn run(log: &mut dyn Write) -> Result<(), String> {
     if !report.problems.is_empty() {
         let _ = writeln!(
             log,
-            "rikurid: WARNING ledger and state disagree: {}",
+            "rikurid: WARNING the ledger-consistency check failed (state and history disagree, \
+             or the check could not run), so writes are refused until repaired (quarantine): {}",
             report.problems.join("; ")
         );
     }

@@ -30,9 +30,9 @@ None.
 
 ## Public contracts / interfaces
 
-`Request`, `Response` (`success`, `failure`, `exit_code`), `ApiError`, `ErrorCode` (`invalid_request`, `unsupported_envelope_version`, `unknown_command`, `not_initialized`, `not_found`, `version_conflict`, `idempotency_conflict`, `invalid_state`, `storage_failure`, `internal`, `daemon_unavailable`); `ENVELOPE_VERSION`, `MAX_REQUEST_BYTES`; `command::{ALL, is_consequential, NoParams, TaskCreate, TaskStart, TaskStep, TaskComplete, LedgerTail}` and the command-name constants; `client::send` (Unix).
+`Request`, `Response` (`success`, `failure`, `exit_code`), `ApiError`, `ErrorCode` (`invalid_request`, `unsupported_envelope_version`, `unknown_command`, `not_initialized`, `not_found`, `version_conflict`, `idempotency_conflict`, `invalid_state`, `storage_failure`, `internal`, `daemon_unavailable`, `quarantined`); `ENVELOPE_VERSION`, `MAX_REQUEST_BYTES`; `command::{ALL, is_consequential, NoParams, TaskCreate, TaskStart, TaskStep, TaskComplete, LedgerTail}` and the command-name constants; `client::send` (Unix).
 
-Exit codes: 0 success, 2 usage, 3 request refused, 4 daemon unavailable, 5 daemon failure.
+Exit codes: 0 success, 2 usage, 3 request refused, 4 daemon unavailable, 5 daemon failure (`storage_failure`, `internal`, and `quarantined`: the daemon refuses writes until the owner repairs its state). Codes are append-only: never renamed or reused.
 
 ## Allowed dependencies
 

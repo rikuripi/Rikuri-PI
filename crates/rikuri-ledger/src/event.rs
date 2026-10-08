@@ -5,7 +5,7 @@ use rikuri_domain::{
     SecurityDecisionId, TaskId, Timestamp, bounded, wire_enum,
 };
 use rikuri_storage::rusqlite::{self, OptionalExtension, params};
-use rikuri_storage::{StorageError, Tx};
+use rikuri_storage::{StorageError, StoreFailure, Tx};
 use serde::Serialize;
 use serde_json::{Map, Value};
 use thiserror::Error;
@@ -43,6 +43,23 @@ pub enum LedgerError {
 impl From<rusqlite::Error> for LedgerError {
     fn from(e: rusqlite::Error) -> Self {
         LedgerError::Storage(StorageError::Sqlite(e))
+    }
+}
+
+/// A storage failure or a corrupt stored row counts against the store's
+/// health; validation, a missing reference, a duplicate or a taken key is
+/// the caller's request being refused.
+impl StoreFailure for LedgerError {
+    fn store_failure(&self) -> Option<String> {
+        match self {
+            LedgerError::Storage(e) => e.store_failure(),
+            LedgerError::Corrupt(m) => Some(bounded(m)),
+            LedgerError::Invalid(_)
+            | LedgerError::IdempotencyKeyRequired { .. }
+            | LedgerError::MissingReference { .. }
+            | LedgerError::DuplicateEvent(_)
+            | LedgerError::IdempotencyKeyTaken(_) => None,
+        }
     }
 }
 

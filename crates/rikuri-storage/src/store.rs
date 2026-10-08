@@ -1,6 +1,6 @@
 //! The store: one SQLite connection, one writer, explicit transactions.
 
-use std::cell::Cell;
+use std::cell::RefCell;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -11,8 +11,8 @@ use rikuri_domain::{Clock, Timestamp};
 use rusqlite::{Connection, TransactionBehavior};
 use serde::Serialize;
 
-use crate::StorageError;
 use crate::migrate::{self, Migration, Migrations};
+use crate::{StorageError, StoreFailure};
 
 /// The storage component's own tables: the common object registry
 /// (Architecture §21.1) holding every typed entity's current state.
@@ -58,23 +58,27 @@ impl Tx<'_> {
 static NEXT_STORE_ID: AtomicU64 = AtomicU64::new(1);
 
 thread_local! {
-    /// The store whose transaction this thread is inside, or 0.
-    static ACTIVE_STORE: Cell<u64> = const { Cell::new(0) };
+    /// The stores whose transactions this thread is inside, outermost first.
+    /// Stores may nest (A's transaction calls B), but none may appear twice.
+    static ACTIVE_STORES: RefCell<Vec<u64>> = const { RefCell::new(Vec::new()) };
 }
 
-/// Marks this thread as inside `id`'s transaction until dropped, then
-/// restores what was there before (another store's transaction, or none).
-struct ActiveGuard(u64);
+/// Marks this thread as inside `id`'s transaction until dropped, including
+/// when the transaction closure panics.
+struct ActiveGuard;
 
 impl ActiveGuard {
     fn enter(id: u64) -> ActiveGuard {
-        ActiveGuard(ACTIVE_STORE.with(|a| a.replace(id)))
+        ACTIVE_STORES.with(|a| a.borrow_mut().push(id));
+        ActiveGuard
     }
 }
 
 impl Drop for ActiveGuard {
     fn drop(&mut self) {
-        ACTIVE_STORE.with(|a| a.set(self.0));
+        ACTIVE_STORES.with(|a| {
+            a.borrow_mut().pop();
+        });
     }
 }
 
@@ -87,8 +91,14 @@ impl Deref for Tx<'_> {
 }
 
 /// Health of the store, reported on absence of success as well as on
-/// failure (Architecture §53.7). `last_success` is the last committed write
-/// or completed read; a store that has never succeeded is not healthy.
+/// failure (Architecture §53.7). The top-level fields summarize every
+/// transaction: `last_success` is the last committed write or completed
+/// read, and a store that has never succeeded is not healthy. `reads` and
+/// `writes` keep the two apart, so a successful read can never hide a
+/// failing write. Only store failures (SQLite, I/O, a poisoned lock,
+/// re-entry, a corrupt row) count as failures; a transaction the caller
+/// rolled back with its own refusal (not found, conflict, validation) is
+/// counted in `refused` and says nothing against the store.
 #[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
 pub struct StoreHealth {
     pub last_attempt: Option<Timestamp>,
@@ -96,12 +106,50 @@ pub struct StoreHealth {
     pub last_error: Option<String>,
     pub consecutive_failures: u64,
     pub work_completed: u64,
+    pub reads: OpHealth,
+    pub writes: OpHealth,
+    pub refused: u64,
+}
+
+/// Health evidence for one kind of transaction (reads or writes).
+#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
+pub struct OpHealth {
+    pub last_attempt: Option<Timestamp>,
+    pub last_success: Option<Timestamp>,
+    pub last_error: Option<String>,
+    pub consecutive_failures: u64,
+    pub succeeded: u64,
+}
+
+impl OpHealth {
+    fn succeeded_at(&mut self, at: Timestamp) {
+        self.last_attempt = Some(at);
+        self.last_success = Some(at);
+        self.consecutive_failures = 0;
+        self.succeeded += 1;
+    }
+
+    fn failed_at(&mut self, at: Timestamp, error: &str) {
+        self.last_attempt = Some(at);
+        self.last_error = Some(error.to_owned());
+        self.consecutive_failures += 1;
+    }
+}
+
+/// How a transaction ended, for the store's health.
+enum Outcome {
+    Succeeded,
+    Failed(String),
+    Refused,
 }
 
 /// The canonical SQLite store.
 pub struct Store {
     id: u64,
     conn: Mutex<Connection>,
+    /// Held for the store's lifetime: one store, and so one writer, per
+    /// database file, also across processes.
+    _writer_lock: std::fs::File,
     path: PathBuf,
     clock: Box<dyn Clock>,
     health: Mutex<StoreHealth>,
@@ -135,7 +183,9 @@ impl Store {
             _ => Path::new("."),
         };
         ensure_private_dir(dir)?;
-        ensure_private_file(path)?;
+        // the lock first: a refused open creates nothing
+        let writer_lock = lock_writer(path)?;
+        ensure_private_file(path, "database file")?;
         let mut conn = Connection::open(path)?;
         conn.busy_timeout(Duration::from_secs(5))?;
         let mode: String = conn.query_row("PRAGMA journal_mode = WAL", [], |r| r.get(0))?;
@@ -173,6 +223,7 @@ impl Store {
             path: path.to_path_buf(),
             clock,
             health: Mutex::new(StoreHealth::default()),
+            _writer_lock: writer_lock,
         })
     }
 
@@ -192,7 +243,7 @@ impl Store {
     /// with `Reentrant`; use the `Tx` instead.
     pub fn write<T, E>(&self, f: impl FnOnce(&Tx<'_>) -> Result<T, E>) -> Result<T, E>
     where
-        E: From<StorageError>,
+        E: From<StorageError> + StoreFailure,
     {
         self.run(TransactionBehavior::Immediate, f)
     }
@@ -201,7 +252,7 @@ impl Store {
     /// at the end; reads cannot change state.
     pub fn read<T, E>(&self, f: impl FnOnce(&Tx<'_>) -> Result<T, E>) -> Result<T, E>
     where
-        E: From<StorageError>,
+        E: From<StorageError> + StoreFailure,
     {
         self.run(TransactionBehavior::Deferred, f)
     }
@@ -212,7 +263,7 @@ impl Store {
         f: impl FnOnce(&Tx<'_>) -> Result<T, E>,
     ) -> Result<T, E>
     where
-        E: From<StorageError>,
+        E: From<StorageError> + StoreFailure,
     {
         let started = self.clock.now();
         let result = (|| {
@@ -230,21 +281,46 @@ impl Store {
             }
             Ok::<T, E>(value)
         })();
-        self.record(started, result.is_ok());
+        let outcome = match &result {
+            Ok(_) => Outcome::Succeeded,
+            Err(e) => e.store_failure().map_or(Outcome::Refused, Outcome::Failed),
+        };
+        self.record(
+            started,
+            matches!(behavior, TransactionBehavior::Deferred),
+            outcome,
+        );
         result
     }
 
-    fn record(&self, at: Timestamp, ok: bool) {
-        if let Ok(mut h) = self.health.lock() {
-            h.last_attempt = Some(at);
-            if ok {
+    fn record(&self, at: Timestamp, read: bool, outcome: Outcome) {
+        let Ok(mut h) = self.health.lock() else {
+            return;
+        };
+        match outcome {
+            Outcome::Succeeded => {
+                h.last_attempt = Some(at);
                 h.last_success = Some(at);
                 h.consecutive_failures = 0;
                 h.work_completed += 1;
-            } else {
-                h.consecutive_failures += 1;
-                h.last_error = Some("transaction failed or was rolled back".into());
+                if read {
+                    h.reads.succeeded_at(at);
+                } else {
+                    h.writes.succeeded_at(at);
+                }
             }
+            Outcome::Failed(error) => {
+                h.last_attempt = Some(at);
+                h.consecutive_failures += 1;
+                if read {
+                    h.reads.failed_at(at, &error);
+                } else {
+                    h.writes.failed_at(at, &error);
+                }
+                h.last_error = Some(error);
+            }
+            // the caller's decision; the store itself worked
+            Outcome::Refused => h.refused += 1,
         }
     }
 
@@ -308,7 +384,7 @@ impl Store {
     /// The connection lock is not reentrant: taking it again on a thread that
     /// already holds it would hang forever. Refuse instead, visibly.
     fn refuse_reentry(&self) -> Result<(), StorageError> {
-        if ACTIVE_STORE.with(Cell::get) == self.id {
+        if ACTIVE_STORES.with(|a| a.borrow().contains(&self.id)) {
             Err(StorageError::Reentrant)
         } else {
             Ok(())
@@ -335,13 +411,35 @@ fn ensure_private_dir(dir: &Path) -> Result<(), StorageError> {
     Ok(())
 }
 
-/// Creates the database file owner-only before SQLite opens it, or checks
-/// an existing one. SQLite gives the WAL and shared-memory files the same
-/// permissions as the database.
-fn ensure_private_file(path: &Path) -> Result<(), StorageError> {
+/// Takes the database's writer lock (`<database>.lock`, owner-only), held
+/// for the store's lifetime. A second store on the same database, in this
+/// process or another, is refused instead of becoming a second writer.
+fn lock_writer(path: &Path) -> Result<std::fs::File, StorageError> {
+    let mut name = path.as_os_str().to_owned();
+    name.push(".lock");
+    let lock_path = PathBuf::from(name);
+    ensure_private_file(&lock_path, "lock file")?;
+    let file = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(&lock_path)
+        .map_err(|e| io_error(&lock_path, e))?;
+    match file.try_lock() {
+        Ok(()) => Ok(file),
+        Err(std::fs::TryLockError::WouldBlock) => Err(StorageError::InUse {
+            path: path.display().to_string(),
+        }),
+        Err(std::fs::TryLockError::Error(e)) => Err(io_error(&lock_path, e)),
+    }
+}
+
+/// Creates a file owner-only before anything opens it (the database before
+/// SQLite does, which then gives its WAL and shared-memory files the same
+/// permissions), or checks an existing one.
+fn ensure_private_file(path: &Path, what: &str) -> Result<(), StorageError> {
     if path.exists() {
         #[cfg(unix)]
-        refuse_if_shared(path, "database file")?;
+        refuse_if_shared(path, what)?;
         return Ok(());
     }
     let mut options = std::fs::OpenOptions::new();
@@ -356,7 +454,7 @@ fn ensure_private_file(path: &Path) -> Result<(), StorageError> {
         // created between the check and the open: check what is there
         Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
             #[cfg(unix)]
-            refuse_if_shared(path, "database file")?;
+            refuse_if_shared(path, what)?;
             Ok(())
         }
         Err(e) => Err(io_error(path, e)),

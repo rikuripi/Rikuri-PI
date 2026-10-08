@@ -593,7 +593,6 @@ dependencies = [
 name = "rikurid"
 version = "0.1.0"
 dependencies = [
- "proptest",
  "rikuri-api",
  "rikuri-domain",
  "rikuri-ledger",

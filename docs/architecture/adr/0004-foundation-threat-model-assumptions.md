@@ -39,7 +39,7 @@ Assumption record, not runtime evidence. The September 28 OpenShell receipt is c
 
 **Rules that follow:**
 
-1. Only the owner authorizes scope and consequences. Untrusted content cannot grant permission, change approval text, weaken verification, remove a budget ceiling or promote advice to canonical truth (`instruction_authority: none`; ADR 0001's domain types derive authority from origin).
+1. Only the owner authorizes scope and consequences. Untrusted content cannot grant permission, change approval text, weaken verification, remove a budget ceiling or promote advice to canonical truth (`instruction_authority: none`; `rikuri-domain`'s `Provenance` derives authority from origin, and a loaded `Provenance` always carries `none`).
 2. Only `rikurid` mutates canonical state. Clients and workers are untrusted callers of versioned contracts.
 3. Root-equivalent access stays out of Rikuri's processes: the accounts that run `rikurid`, Pi, model servers and tool servers are not members of `docker`, `lxd` or similar groups; a backend controller that needs a rootful engine runs under a dedicated service account or a rootless engine (ADR 0000 September 28, decision 2). On the reference machine the owner account is currently in `docker` and `lxd`; S00.13 records the owner's resolution before any worker is admitted.
 4. Foundation-0 workers hold no credential and have no permitted external destination (ADR 0000 September 28, decision 4). Model access stays inside `rikurid`'s provider adapter.

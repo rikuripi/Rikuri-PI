@@ -16,12 +16,12 @@ use rikuri_api::command::{
 use rikuri_api::{ApiError, ENVELOPE_VERSION, ErrorCode, Request, Response};
 use rikuri_domain::{
     ActorId, Clock, DeletionUnitId, EventId, ExecutionIntent, IdSource, PrivacyClass, ProjectId,
-    ProjectTrust, RiskClass, RunId, TaskId, Timestamp,
+    ProjectTrust, RiskClass, RunId, TaskId, Timestamp, bounded,
 };
 use rikuri_ledger::{
     EventStatus, EventType, IdempotencyCheck, IdempotencyKey, LedgerError, NewEvent,
 };
-use rikuri_storage::{Repository, SqliteRepository, StorageError, Store, Tx};
+use rikuri_storage::{Repository, SqliteRepository, StorageError, Store, StoreFailure, Tx};
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value, json};
 
@@ -63,18 +63,39 @@ const INIT_KEY: &str = "rikuri-system-init-v1";
 const MAX_TITLE_CHARS: usize = 200;
 const MAX_REQUEST_ID_CHARS: usize = 64;
 
+/// The most tasks `state.show` lists; `tasks_truncated` says when there are more.
+const MAX_SHOWN_TASKS: u32 = 1000;
+
 pub struct Kernel {
     store: Store,
     ids: Box<dyn IdSource>,
     crash: Box<dyn CrashHook>,
     idempotency: Idempotency,
     consistency: Mutex<ComponentHealth>,
+    /// Set when current state and ledger history disagree (owner decision
+    /// 2026-10-08): reads and health are served, every write is refused
+    /// until the owner repairs the store. Sticky for the daemon's lifetime.
+    quarantine: Mutex<Option<String>>,
 }
 
 /// Internal failure: a typed API error, or a simulated crash.
 enum Fail {
     Api(ApiError),
     Crashed(Crashed),
+}
+
+/// A storage failure or an internal kernel failure counts against the
+/// store's health; a refused request (validation, not found, conflict) or a
+/// simulated crash does not.
+impl StoreFailure for Fail {
+    fn store_failure(&self) -> Option<String> {
+        match self {
+            Fail::Api(e) if matches!(e.code, ErrorCode::StorageFailure | ErrorCode::Internal) => {
+                Some(bounded(&e.message))
+            }
+            _ => None,
+        }
+    }
 }
 
 impl From<ApiError> for Fail {
@@ -155,6 +176,7 @@ impl Kernel {
             crash: config.crash,
             idempotency: config.idempotency,
             consistency: Mutex::new(ComponentHealth::new("ledger_consistency")),
+            quarantine: Mutex::new(None),
         };
         kernel.check_consistency();
         Ok(kernel)
@@ -207,11 +229,13 @@ impl Kernel {
         match req.command.as_str() {
             command::SYSTEM_INIT => {
                 let _: NoParams = params(req)?;
+                no_client_key(req, "uses its own built-in key")?;
                 let key = key(INIT_KEY)?;
                 self.consequential(req, &key, |tx, now| self.plan_init(tx, now, &key))
             }
             command::SYSTEM_HEALTH => {
                 let _: NoParams = params(req)?;
+                no_client_key(req, "changes nothing")?;
                 Ok(read_only(self.health()))
             }
             command::TASK_CREATE => {
@@ -236,10 +260,12 @@ impl Kernel {
             }
             command::STATE_SHOW => {
                 let _: NoParams = params(req)?;
+                no_client_key(req, "changes nothing")?;
                 Ok(read_only(self.store.read(|tx| self.state(tx))?))
             }
             command::LEDGER_TAIL => {
                 let p: LedgerTail = params(req)?;
+                no_client_key(req, "changes nothing")?;
                 if !(1..=1000).contains(&p.limit) {
                     return Err(invalid("limit must be 1–1000".into()).into());
                 }
@@ -269,6 +295,30 @@ impl Kernel {
     ) -> Result<Applied, Fail> {
         let command = req.command.as_str();
         let hash = rikuri_ledger::request_hash(command, &req.params);
+        if let Some(reason) = self.quarantined() {
+            // A replay only reads the stored response, so a quarantined
+            // daemon still answers it (owner decision 2026-10-08); anything
+            // that would write is refused.
+            if self.idempotency == Idempotency::Enforced
+                && let IdempotencyCheck::Replay(record) = self
+                    .store
+                    .read(|tx| rikuri_ledger::check(tx, key, command, &hash))?
+            {
+                return Ok(Applied {
+                    result: record.response,
+                    replayed: true,
+                });
+            }
+            return Err(ApiError::new(
+                ErrorCode::Quarantined,
+                format!(
+                    "writes are refused (quarantine) because the ledger-consistency check \
+                     failed: {}; repair the store, then restart rikurid",
+                    brief(&reason)
+                ),
+            )
+            .into());
+        }
         self.crash.at(CrashPoint::BeforeTransaction, command)?;
         let applied = self.store.write(|tx| {
             if self.idempotency == Idempotency::Enforced {
@@ -570,7 +620,11 @@ impl Kernel {
         };
         let runs = SqliteRepository::<Run>::new();
         let mut tasks = vec![];
-        for t in SqliteRepository::<Task>::new().list(tx, 1000)? {
+        // one more than shown, to say whether the list is complete
+        let mut listed = SqliteRepository::<Task>::new().list(tx, MAX_SHOWN_TASKS + 1)?;
+        let tasks_truncated = listed.len() > MAX_SHOWN_TASKS as usize;
+        listed.truncate(MAX_SHOWN_TASKS as usize);
+        for t in listed {
             let last_run = match t.value.last_run {
                 Some(r) => runs.get(tx, r)?.map(|v| v.value),
                 None => None,
@@ -591,6 +645,7 @@ impl Kernel {
                 "trust": p.value.trust, "intent": p.value.intent
             })),
             "tasks": tasks,
+            "tasks_truncated": tasks_truncated,
             // through the transaction: `Store` methods called inside one of
             // its own transactions are refused (they would deadlock)
             "schema": {
@@ -616,7 +671,22 @@ impl Kernel {
                 report.events,
             );
         }
+        if let Some(first) = report.problems.first()
+            && let Ok(mut q) = self.quarantine.lock()
+            && q.is_none()
+        {
+            *q = Some(first.clone());
+        }
         report
+    }
+
+    /// Why writes are refused, if the daemon is quarantined. A poisoned lock
+    /// counts as quarantined: refusing writes is the safe answer.
+    pub fn quarantined(&self) -> Option<String> {
+        match self.quarantine.lock() {
+            Ok(q) => q.clone(),
+            Err(_) => Some("the quarantine lock is poisoned".into()),
+        }
     }
 
     fn health(&self) -> Value {
@@ -632,7 +702,21 @@ impl Kernel {
             self.idempotency == Idempotency::Enforced,
             self.store.now(),
         );
-        health::report(&[store, consistency, build])
+        let mut components = vec![store, consistency, build];
+        let quarantine = self.quarantined();
+        if let Some(reason) = &quarantine {
+            // Critical while writes are refused, even if the cause has since
+            // cleared: health is never green while the daemon is read-only.
+            components.push(ComponentHealth::quarantined(
+                &brief(reason),
+                self.store.now(),
+            ));
+        }
+        let mut report = health::report(&components);
+        if let (Some(reason), Some(obj)) = (quarantine, report.as_object_mut()) {
+            obj.insert("quarantined".into(), json!(brief(&reason)));
+        }
+        report
     }
 
     /// The store, for tests that inspect state directly.
@@ -670,11 +754,40 @@ fn params<T: DeserializeOwned>(req: &Request) -> Result<T, Fail> {
     }
     serde_json::from_value(req.params.clone()).map_err(|e| {
         invalid(format!(
-            "invalid params for {}: {e}",
-            truncate(&req.command)
+            "invalid params for {}: {}",
+            truncate(&req.command),
+            bounded(&e.to_string())
         ))
         .into()
     })
+}
+
+/// Kernel-written text (a consistency problem) shown in full up to 300
+/// bytes, escaped like `bounded`, which is sized for echoed client input.
+fn brief(s: &str) -> String {
+    const SHOWN: usize = 300;
+    let mut out = String::new();
+    for c in s.escape_debug() {
+        if out.len() + c.len_utf8() > SHOWN {
+            out.push_str(&format!("… ({} bytes)", s.len()));
+            return out;
+        }
+        out.push(c);
+    }
+    out
+}
+
+/// Refuses a client idempotency key on a command that takes none, rather
+/// than silently ignoring it.
+fn no_client_key(req: &Request, why: &str) -> Result<(), Fail> {
+    match req.idempotency_key {
+        Some(_) => Err(invalid(format!(
+            "{} takes no idempotency_key: it {why}",
+            truncate(&req.command)
+        ))
+        .into()),
+        None => Ok(()),
+    }
 }
 
 fn key(text: &str) -> Result<IdempotencyKey, Fail> {

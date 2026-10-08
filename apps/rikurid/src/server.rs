@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use rikuri_api::{ApiError, ErrorCode, MAX_REQUEST_BYTES, Request, Response};
+use rikuri_domain::bounded;
 
 use crate::Kernel;
 
@@ -25,7 +26,9 @@ pub fn socket_path(home: &Path) -> PathBuf {
 pub const MAX_SOCKET_PATH_BYTES: usize = 103;
 
 /// Binds the socket. Refuses if another daemon answers on it; replaces a
-/// stale socket file left by a daemon that died.
+/// stale socket left by a daemon that died; refuses, and never deletes,
+/// anything at the path that is not a socket (a regular file, a directory,
+/// a symlink).
 pub fn bind(socket: &Path) -> io::Result<UnixListener> {
     let len = socket.as_os_str().len();
     if len > MAX_SOCKET_PATH_BYTES {
@@ -55,14 +58,28 @@ pub fn bind(socket: &Path) -> io::Result<UnixListener> {
         builder.create(dir)?;
     }
     refuse_if_shared(dir)?;
-    if socket.exists() {
-        if UnixStream::connect(socket).is_ok() {
-            return Err(io::Error::new(
-                io::ErrorKind::AddrInUse,
-                format!("another rikurid is already serving {}", socket.display()),
-            ));
+    match std::fs::symlink_metadata(socket) {
+        Ok(meta) => {
+            use std::os::unix::fs::FileTypeExt;
+            if !meta.file_type().is_socket() {
+                return Err(io::Error::new(
+                    io::ErrorKind::AlreadyExists,
+                    format!(
+                        "{} exists and is not a socket; refusing to replace it",
+                        socket.display()
+                    ),
+                ));
+            }
+            if UnixStream::connect(socket).is_ok() {
+                return Err(io::Error::new(
+                    io::ErrorKind::AddrInUse,
+                    format!("another rikurid is already serving {}", socket.display()),
+                ));
+            }
+            std::fs::remove_file(socket)?;
         }
-        std::fs::remove_file(socket)?;
+        Err(e) if e.kind() == io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e),
     }
     let listener = UnixListener::bind(socket)?;
     {
@@ -91,7 +108,7 @@ pub fn serve(kernel: &Kernel, listener: &UnixListener, log: &mut dyn Write) -> i
 
 fn handle_connection(kernel: &Kernel, stream: UnixStream, log: &mut dyn Write) -> io::Result<()> {
     stream.set_read_timeout(Some(REQUEST_TIMEOUT))?;
-    let mut writer = stream.try_clone()?;
+    let writer = stream.try_clone()?;
     let limit = u64::try_from(MAX_REQUEST_BYTES + 1).unwrap_or(u64::MAX);
     let mut reader = BufReader::new(stream.take(limit));
     let mut line = String::new();
@@ -103,19 +120,33 @@ fn handle_connection(kernel: &Kernel, stream: UnixStream, log: &mut dyn Write) -
         Ok(_) => match serde_json::from_str::<Request>(line.trim_end()) {
             Ok(req) => {
                 let response = kernel.handle(&req);
-                let outcome = response.error.as_ref().map_or("ok", |e| e.code.as_str());
-                let _ = writeln!(
-                    log,
-                    "rikurid: {} -> {outcome}",
-                    req.command.chars().take(64).collect::<String>()
-                );
-                response
+                // the command name is client text: escaped and bounded so it
+                // cannot forge or flood log lines
+                log_outcome(log, &bounded(&req.command), &response);
+                return send(writer, &response);
             }
-            Err(e) => refuse(format!("malformed request envelope: {e}")),
+            Err(e) => refuse(format!(
+                "malformed request envelope: {}",
+                bounded(&e.to_string())
+            )),
         },
-        Err(e) => refuse(format!("could not read the request: {e}")),
+        Err(e) => refuse(format!(
+            "could not read the request: {}",
+            bounded(&e.to_string())
+        )),
     };
-    let mut out = serde_json::to_string(&response).map_err(io::Error::other)?;
+    log_outcome(log, "(unparsed request)", &response);
+    send(writer, &response)
+}
+
+/// Logs a request by command and outcome only, never by parameters.
+fn log_outcome(log: &mut dyn Write, command: &str, response: &Response) {
+    let outcome = response.error.as_ref().map_or("ok", |e| e.code.as_str());
+    let _ = writeln!(log, "rikurid: {command} -> {outcome}");
+}
+
+fn send(mut writer: UnixStream, response: &Response) -> io::Result<()> {
+    let mut out = serde_json::to_string(response).map_err(io::Error::other)?;
     out.push('\n');
     writer.write_all(out.as_bytes())?;
     writer.flush()

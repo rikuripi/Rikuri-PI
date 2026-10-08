@@ -167,9 +167,15 @@ wire_enum! {
         /// An unexpected kernel failure; nothing was committed.
         Internal => "internal",
         /// The daemon could not be reached or the connection broke before
-        /// a response. Produced by clients, never by the daemon. Whether the
-        /// command was applied is unknown: retry with the same idempotency key.
+        /// a response. Produced by clients, and by the in-process adapter
+        /// only for a simulated crash in a test build. Whether the command
+        /// was applied is unknown: retry with the same idempotency key.
         DaemonUnavailable => "daemon_unavailable",
+        /// The ledger-consistency check failed (current state and ledger
+        /// history disagree, or the check could not run), so the daemon
+        /// serves reads, health and replays of committed requests but refuses
+        /// every write until the owner repairs it. Nothing was committed.
+        Quarantined => "quarantined",
     }
 }
 
@@ -194,7 +200,7 @@ impl ErrorCode {
             | ErrorCode::IdempotencyConflict
             | ErrorCode::InvalidState => 3,
             ErrorCode::DaemonUnavailable => 4,
-            ErrorCode::StorageFailure | ErrorCode::Internal => 5,
+            ErrorCode::StorageFailure | ErrorCode::Internal | ErrorCode::Quarantined => 5,
         }
     }
 
@@ -228,7 +234,8 @@ mod tests {
                 "invalid_state",
                 "storage_failure",
                 "internal",
-                "daemon_unavailable"
+                "daemon_unavailable",
+                "quarantined"
             ]
         );
         for &c in ErrorCode::ALL {
