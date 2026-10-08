@@ -94,6 +94,9 @@ Verifier round 1 FAIL, six Important:
 Verifier round 2 FAIL, one new Important:
   MISSION-006 cited voice Ask/Dictate (Stage 8) in Stage 2 -> text questions only; voice Stage 8
 Verifier round 3 PASS; remaining trivial note (ADR cost line) applied afterwards.
+Owner follow-up (same day): AGENTS.md "Sources of authority" gains one row for the Mission Charter
+  (rationale only; PRD/Architecture/Stage Plan govern), at the owner's request, in a second commit.
+  Protected path; guard profile development. Self-checked: links and git diff --check.
 Owner follow-up (same day): a creative-production-system diagram, folded into the parking-lot entry only
   (no PRD/Architecture/ADR change; the parking lot carries no gate). Self-checked: links 5/0 broken,
   git diff --check exit 0. Not re-run through the verifier.

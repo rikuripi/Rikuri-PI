@@ -20,6 +20,7 @@ Applies to work throughout this repository. Adapted from the supplied Build Proc
 | [Test and Acceptance Strategy v1.2](doc/Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md) | Contract, invariant, replay, failure, security, and integration verification |
 | [Architecture v1.7](doc/Rikuri_Pi_Architecture_Spec_v1.7.md) and [PRD v1.2](doc/Rikuri_Pi_PRD_v1.2.md) | Architectural invariants and broader product requirements |
 | [Master Build Sequence v1.1](doc/Rikuri_Pi_Master_Build_Sequence_v1.1.md) | Post-Foundation dependencies and product stages |
+| [Mission Charter v1.0](doc/Rikuri_Pi_Mission_Charter_v1.0.md) | Why Rikuri exists, and the decision test for competing design choices (§12). Rationale only: the PRD and Architecture govern requirements, and the Stage Plan governs Foundation-0 |
 
 This file operationalizes those sources; it does not create a competing roadmap. If a material conflict remains, identify it and reconcile the affected requirements, ADR, tests, and documentation before implementing the disputed behavior. Preserve accepted ADR history through a dated clarification or a linked superseding decision.
 
