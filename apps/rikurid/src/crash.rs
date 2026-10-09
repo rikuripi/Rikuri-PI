@@ -4,9 +4,10 @@
 //! The kernel calls a [`CrashHook`] at each point. Production uses
 //! [`NoCrash`]. Tests either stop the real daemon at a point so a harness can
 //! kill it with SIGKILL ([`HangAtPoint`], `crash-injection` builds only), or
-//! fail in-process to simulate a crash ([`FailAtPoint`]).
-
-use std::sync::atomic::{AtomicBool, Ordering};
+//! implement [`CrashHook`] themselves to fail in-process (T00.06's hook
+//! returns [`Crashed`] once at an armed point). A one-shot `FailAtPoint`
+//! lived here until 2026-10-09; nothing used it, and S00.08's testkit owns
+//! test injectors.
 
 use rikuri_domain::wire_enum;
 
@@ -32,9 +33,49 @@ pub struct Crashed {
     pub point: CrashPoint,
 }
 
-/// Called by the kernel at each crash point of each consequential command.
+/// What a consequential command has done when it reaches a crash point.
+/// The kernel reads each field from facts when the point is reached (the
+/// store's open transaction, SQLite's change count, the ledger's newest
+/// event, the idempotency write's result, the store's write returning), so
+/// a point that moves sees different progress: that is how tests prove each
+/// point sits where Test Strategy §5 puts it (2026-10-09; points moved
+/// before the state write or into the transaction had passed every recovery
+/// test, and flags kept by hand let a point move unnoticed).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct Progress {
+    /// The canonical transaction is open.
+    pub transaction_open: bool,
+    /// The command's state change is written (inside the transaction).
+    pub state_written: bool,
+    /// Its events are appended to the ledger.
+    pub events_appended: bool,
+    /// Its idempotency record is written.
+    pub idempotency_recorded: bool,
+    /// The transaction committed.
+    pub committed: bool,
+}
+
+impl std::fmt::Display for Progress {
+    /// `tx=0 state=1 events=0 idem=0 committed=0`, as the stop marker
+    /// prints it for a harness to check.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let b = u8::from;
+        write!(
+            f,
+            "tx={} state={} events={} idem={} committed={}",
+            b(self.transaction_open),
+            b(self.state_written),
+            b(self.events_appended),
+            b(self.idempotency_recorded),
+            b(self.committed)
+        )
+    }
+}
+
+/// Called by the kernel at each crash point of each consequential command,
+/// with what the command has done so far.
 pub trait CrashHook: Send + Sync {
-    fn at(&self, point: CrashPoint, command: &str) -> Result<(), Crashed>;
+    fn at(&self, point: CrashPoint, command: &str, progress: Progress) -> Result<(), Crashed>;
 
     /// True when this hook can stop the kernel (test builds); reported in
     /// `system.health` so a test build is never mistaken for a real one.
@@ -46,7 +87,7 @@ pub trait CrashHook: Send + Sync {
 pub struct NoCrash;
 
 impl CrashHook for NoCrash {
-    fn at(&self, _: CrashPoint, _: &str) -> Result<(), Crashed> {
+    fn at(&self, _: CrashPoint, _: &str, _: Progress) -> Result<(), Crashed> {
         Ok(())
     }
     fn is_armed(&self) -> bool {
@@ -54,43 +95,10 @@ impl CrashHook for NoCrash {
     }
 }
 
-/// In-process simulation: fails once, at `point` of `command`.
-#[derive(Debug)]
-pub struct FailAtPoint {
-    point: CrashPoint,
-    command: String,
-    fired: AtomicBool,
-}
-
-impl FailAtPoint {
-    pub fn new(point: CrashPoint, command: &str) -> FailAtPoint {
-        FailAtPoint {
-            point,
-            command: command.to_owned(),
-            fired: AtomicBool::new(false),
-        }
-    }
-}
-
-impl CrashHook for FailAtPoint {
-    fn at(&self, point: CrashPoint, command: &str) -> Result<(), Crashed> {
-        if point == self.point
-            && command == self.command
-            && !self.fired.swap(true, Ordering::SeqCst)
-        {
-            Err(Crashed { point })
-        } else {
-            Ok(())
-        }
-    }
-    fn is_armed(&self) -> bool {
-        true
-    }
-}
-
-/// Real-process crash: at `point` of `command`, announce the point on
-/// stderr and stop forever, so a harness can SIGKILL the daemon there with
-/// its transaction state exactly as the point describes.
+/// Real-process crash: at `point` of `command`, announce the point and the
+/// command's [`Progress`] on stderr and stop forever, so a harness can
+/// check where it stopped and SIGKILL the daemon there with its transaction
+/// state exactly as the point describes.
 #[cfg(feature = "crash-injection")]
 #[derive(Debug)]
 pub struct HangAtPoint {
@@ -124,11 +132,11 @@ impl HangAtPoint {
 
 #[cfg(feature = "crash-injection")]
 impl CrashHook for HangAtPoint {
-    fn at(&self, point: CrashPoint, command: &str) -> Result<(), Crashed> {
+    fn at(&self, point: CrashPoint, command: &str, progress: Progress) -> Result<(), Crashed> {
         use std::io::Write;
         if point == self.point && command == self.command {
             let mut err = std::io::stderr();
-            let _ = writeln!(err, "{} {} {}", Self::MARKER, point, command);
+            let _ = writeln!(err, "{} {} {} {}", Self::MARKER, point, command, progress);
             let _ = err.flush();
             loop {
                 std::thread::sleep(std::time::Duration::from_secs(3600));

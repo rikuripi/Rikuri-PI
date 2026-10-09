@@ -10,6 +10,8 @@
 //!   clean consistency replay, and the client's retry with the same key
 //!   gives exactly one effect: run afresh before the commit, replayed after.
 //!   The cells cycle through outcomes and verifications, not only success.
+//!   Each stop also checks the progress the daemon printed, so a crash
+//!   point that moved fails here (W1 placement, 2026-10-09).
 //! - **T00.08**: with idempotency off, the same kill and retry apply the
 //!   create twice, and the W1 oracle (the consistency replay) reports it.
 //! - **T00.12**: across the crashes and replays, task, run and event IDs in
@@ -247,14 +249,50 @@ fn after_commit(point: CrashPoint) -> bool {
     matches!(point, CrashPoint::AfterCommit | CrashPoint::BeforeResponse)
 }
 
-/// Sends `req` to a daemon that will stop at `point`, kills it there with
-/// SIGKILL, and returns the response the client saw.
-fn send_and_kill(d: &mut Daemon, req: &Request, point: CrashPoint) -> TestResult<Response> {
+/// What the command must have done when the daemon stops at `point`, as
+/// the stop marker prints it (Test Strategy §5, written out here rather
+/// than taken from the daemon): point 1 nothing; point 2 the state written
+/// inside the open transaction, no event; points 3 and 6 committed with its
+/// events and, unless idempotency is off, its idempotency record.
+fn expected_progress(point: CrashPoint, idempotency: bool) -> String {
+    let idem = u8::from(idempotency);
+    match point {
+        CrashPoint::BeforeTransaction => "tx=0 state=0 events=0 idem=0 committed=0".to_owned(),
+        CrashPoint::AfterStateWrite => "tx=1 state=1 events=0 idem=0 committed=0".to_owned(),
+        CrashPoint::AfterCommit | CrashPoint::BeforeResponse => {
+            format!("tx=0 state=1 events=1 idem={idem} committed=1")
+        }
+    }
+}
+
+/// Sends `req` to a daemon that will stop at `point`, checks that it stopped
+/// where the point is defined (its progress), kills it there with SIGKILL,
+/// and returns the response the client saw.
+fn send_and_kill(
+    d: &mut Daemon,
+    req: &Request,
+    point: CrashPoint,
+    idempotency: bool,
+) -> TestResult<Response> {
     let socket = d.socket.clone();
     let sent = req.clone();
     let client = std::thread::spawn(move || client::send(&socket, &sent));
-    d.wait_for(&format!("{} {point} {}", HangAtPoint::MARKER, req.command))?;
+    let marker = format!("{} {point} {}", HangAtPoint::MARKER, req.command);
+    let seen = d.wait_for(&marker)?;
     d.kill9()?;
+    let line = seen.last().cloned().unwrap_or_default();
+    let progress = line
+        .split_once(&marker)
+        .map(|(_, rest)| rest.trim().to_owned())
+        .unwrap_or_default();
+    let want = expected_progress(point, idempotency);
+    if progress != want {
+        return Err(format!(
+            "{point}@{}: stopped with progress {progress:?}, expected {want:?} (crash point moved?)",
+            req.command
+        )
+        .into());
+    }
     client
         .join()
         .map_err(|_| "the client thread panicked".into())
@@ -279,7 +317,7 @@ fn crash_cell(
         }
         let before_state = state(&d)?;
         let before_events = ledger(&d)?.len();
-        let lost = send_and_kill(&mut d, &req, point)?;
+        let lost = send_and_kill(&mut d, &req, point, true)?;
         if code(&lost) != "daemon_unavailable" {
             return Err(format!("{at}: the client should have lost the answer: {lost:?}").into());
         }
@@ -441,7 +479,7 @@ fn t00_08_without_idempotency_the_same_crash_duplicates_and_w1_fails() -> TestRe
         "init",
     )?;
     let req = request(command::TASK_CREATE, &state(&d)?, SUCCESS)?;
-    let lost = send_and_kill(&mut d, &req, point)?;
+    let lost = send_and_kill(&mut d, &req, point, false)?;
     assert_eq!(code(&lost), "daemon_unavailable", "{lost:?}");
 
     let d = Daemon::start(&home, &[off])?;
