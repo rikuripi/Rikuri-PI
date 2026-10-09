@@ -9,7 +9,7 @@
 | Commits | this PR's commits on the branch |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md); W1; T00.07; closes the [crash matrix record](2026-10-08-stage-00-crash-matrix.md)'s deferral "Crash-point positions (W03–W05)" |
 | Related ADR / requirement | Test Strategy §5 (crash points 1, 2, 3, 6); Stage Plan T00.07; ADR 0003 |
-| Status | COMPLETE locally (verifier round 2 PASS; full gate PASS); CI Not yet proven |
+| Status | COMPLETE: verifier round 2 PASS; full gate PASS; CI [run 37957881673](https://github.com/rikuripi/Rikuri-PI/actions/runs/37957881673) on PR #22 at `d524c67` |
 
 ## 1. Plan
 
