@@ -2,20 +2,19 @@
 //! are tracked separately so a successful read cannot hide a failing write,
 //! and a caller's refusal is not a store failure.
 
-use rikuri_domain::{Clock, Timestamp};
+use rikuri_domain::Timestamp;
 use rikuri_storage::{StorageError, Store, StoreFailure};
-
-struct Fixed;
-impl Clock for Fixed {
-    fn now(&self) -> Timestamp {
-        Timestamp(1)
-    }
-}
+use rikuri_testkit::FixtureClock;
 
 #[test]
 fn reads_do_not_hide_write_failures_and_refusals_are_not_failures() {
     let dir = tempfile::tempdir().unwrap();
-    let store = Store::open(&dir.path().join("state/rikuri.db"), Box::new(Fixed), &[]).unwrap();
+    let store = Store::open(
+        &dir.path().join("state/rikuri.db"),
+        Box::new(FixtureClock::fixed(Timestamp(1))),
+        &[],
+    )
+    .unwrap();
 
     let refused = store.write(|_| {
         Err::<(), _>(StorageError::NotFound {

@@ -19,6 +19,9 @@
 #    shown to let the gate pass code it refuses.
 # 4. No tracked member source sets clippy's or rustc's environment through
 #    `rustc-env` (a build script set CLIPPY_ARGS, and clippy passed).
+# 5. The test kit stays test-only (S00.08): no member but the kit itself
+#    takes `rikuri-testkit` as a normal or build dependency, so fixture IDs
+#    (which restart at 1) or clocks can never reach a runtime path.
 # Threat model (owner, 2026-10-05): a tripwire for accidental or careless
 # weakening, matching the common forms. Deliberate subversion by someone
 # with commit access is for review and branch protection; the gate also
@@ -58,6 +61,17 @@ for name in members:
     lints = manifest.get("lints")
     if lints != {"workspace": True}:
         fail(f"{name}: [lints] must be exactly `workspace = true` (found {lints!r})")
+    # 5. rikuri-testkit only as a dev-dependency (also under a renamed key,
+    # or in a target-specific table).
+    if manifest.get("package", {}).get("name") != "rikuri-testkit":
+        tables = [manifest.get("dependencies", {}), manifest.get("build-dependencies", {})]
+        for target in manifest.get("target", {}).values():
+            tables += [target.get("dependencies", {}), target.get("build-dependencies", {})]
+        for table in tables:
+            for key, spec in table.items():
+                package = spec.get("package", key) if isinstance(spec, dict) else key
+                if package == "rikuri-testkit":
+                    fail(f"{name}: rikuri-testkit may only be a dev-dependency (found `{key}` as a runtime or build dependency)")
 print(f"POLICY checked {len(members)} crate(s)")
 if not listed:
     fail("cannot list the crates Cargo builds (see the MEMBERS line above)")

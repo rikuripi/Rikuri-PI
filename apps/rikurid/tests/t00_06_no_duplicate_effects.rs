@@ -9,45 +9,18 @@
 
 use std::collections::BTreeSet;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
 
 use proptest::prelude::*;
 use rikuri_api::{Request, Response, command};
 use rikuri_domain::{SystemClock, SystemIdSource};
-use rikurid::crash::{CrashHook, CrashPoint, Crashed, Progress};
+use rikuri_testkit::CrashInjector;
+use rikurid::crash::CrashPoint;
 use rikurid::{Idempotency, Kernel, KernelConfig};
 use serde_json::{Value, json};
 
-/// Crashes the next consequential command at the armed point, once.
-#[derive(Clone, Default)]
-struct ArmedOnce(Arc<Mutex<Option<CrashPoint>>>);
-
-impl ArmedOnce {
-    fn arm(&self, point: Option<CrashPoint>) {
-        if let Ok(mut p) = self.0.lock() {
-            *p = point;
-        }
-    }
-}
-
-impl CrashHook for ArmedOnce {
-    fn at(&self, point: CrashPoint, _command: &str, _: Progress) -> Result<(), Crashed> {
-        match self.0.lock() {
-            Ok(mut armed) if *armed == Some(point) => {
-                *armed = None;
-                Err(Crashed { point })
-            }
-            _ => Ok(()),
-        }
-    }
-    fn is_armed(&self) -> bool {
-        true
-    }
-}
-
 fn open(
     home: &Path,
-    crash: ArmedOnce,
+    crash: CrashInjector,
     idempotency: Idempotency,
 ) -> Result<Kernel, rikurid::KernelError> {
     Kernel::open(
@@ -163,7 +136,7 @@ fn request(op: &Op, state: &Value, serial: usize) -> Option<Request> {
 /// consistency problems, task.created events in the ledger).
 fn run_sequence(
     k: &Kernel,
-    crash: &ArmedOnce,
+    crash: &CrashInjector,
     steps: &[(Op, Option<CrashPoint>, bool)],
 ) -> (BTreeSet<String>, Value, Vec<String>, usize) {
     let mut created_keys = BTreeSet::new();
@@ -214,7 +187,7 @@ proptest! {
         steps in proptest::collection::vec((op(), crash_point(), any::<bool>()), 1..30)
     ) {
         let dir = tempfile::tempdir().unwrap();
-        let crash = ArmedOnce::default();
+        let crash = CrashInjector::new();
         let k = open(&dir.path().join("home"), crash.clone(), Idempotency::Enforced).unwrap();
         k.handle(&Request::new(command::SYSTEM_INIT, json!({})));
 
@@ -242,7 +215,7 @@ fn every_point_of_every_command_recovers_with_one_effect() {
     ];
     for &point in CrashPoint::ALL {
         let dir = tempfile::tempdir().unwrap();
-        let crash = ArmedOnce::default();
+        let crash = CrashInjector::new();
         let k = open(
             &dir.path().join("home"),
             crash.clone(),
@@ -281,7 +254,7 @@ fn every_point_of_every_command_recovers_with_one_effect() {
 #[test]
 fn without_idempotency_the_oracle_reports_the_duplicate() {
     let dir = tempfile::tempdir().unwrap();
-    let crash = ArmedOnce::default();
+    let crash = CrashInjector::new();
     let k = open(
         &dir.path().join("home"),
         crash.clone(),
@@ -312,7 +285,7 @@ fn a_kernel_without_idempotency_reports_its_build_critical() {
     let dir = tempfile::tempdir().unwrap();
     let k = open(
         &dir.path().join("home"),
-        ArmedOnce::default(),
+        CrashInjector::new(),
         Idempotency::DisabledForRegressionTest,
     )
     .unwrap();

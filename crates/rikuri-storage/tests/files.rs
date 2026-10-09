@@ -7,15 +7,9 @@
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
-use rikuri_domain::{Clock, Timestamp};
+use rikuri_domain::Timestamp;
 use rikuri_storage::{StorageError, Store};
-
-struct Fixed;
-impl Clock for Fixed {
-    fn now(&self) -> Timestamp {
-        Timestamp(1)
-    }
-}
+use rikuri_testkit::FixtureClock;
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
@@ -58,7 +52,7 @@ fn database_and_directory_are_owner_only() {
     let dir = tempfile::tempdir().unwrap();
     let data = dir.path().join("state");
     let db = data.join("rikuri.db");
-    let store = Store::open(&db, Box::new(Fixed), &[]).unwrap();
+    let store = Store::open(&db, Box::new(FixtureClock::fixed(Timestamp(1))), &[]).unwrap();
     write_one_row(&store).unwrap();
 
     assert_eq!(mode(&data).unwrap(), 0o700, "data directory");
@@ -80,7 +74,10 @@ fn shared_directory_or_database_is_refused() {
     std::fs::create_dir(&data).unwrap();
     set_mode(&data, 0o755).unwrap();
     let db = data.join("rikuri.db");
-    assert_refused_as_not_private(Store::open(&db, Box::new(Fixed), &[]), "0755 directory");
+    assert_refused_as_not_private(
+        Store::open(&db, Box::new(FixtureClock::fixed(Timestamp(1))), &[]),
+        "0755 directory",
+    );
     assert!(
         !db.exists(),
         "nothing may be created in a refused directory"
@@ -92,11 +89,14 @@ fn shared_directory_or_database_is_refused() {
     std::fs::create_dir(&data).unwrap();
     set_mode(&data, 0o700).unwrap();
     let db = data.join("rikuri.db");
-    drop(Store::open(&db, Box::new(Fixed), &[]).unwrap());
+    drop(Store::open(&db, Box::new(FixtureClock::fixed(Timestamp(1))), &[]).unwrap());
     set_mode(&db, 0o644).unwrap();
-    assert_refused_as_not_private(Store::open(&db, Box::new(Fixed), &[]), "0644 database");
+    assert_refused_as_not_private(
+        Store::open(&db, Box::new(FixtureClock::fixed(Timestamp(1))), &[]),
+        "0644 database",
+    );
 
     // legitimate use: an existing private directory and database reopen
     set_mode(&db, 0o600).unwrap();
-    assert!(Store::open(&db, Box::new(Fixed), &[]).is_ok());
+    assert!(Store::open(&db, Box::new(FixtureClock::fixed(Timestamp(1))), &[]).is_ok());
 }

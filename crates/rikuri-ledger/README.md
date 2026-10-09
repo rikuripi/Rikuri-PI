@@ -34,7 +34,7 @@ Trusted kernel code inside `rikurid`. Stored rows are decoded defensively: an un
 
 ## Allowed dependencies
 
-`rikuri-domain`, `rikuri-storage`, `serde`, `serde_json`, `thiserror`, `blake3`. Test-only: `proptest`, `tempfile`, `ulid`.
+`rikuri-domain`, `rikuri-storage`, `serde`, `serde_json`, `thiserror`, `blake3`. Test-only: `proptest`, `tempfile`, `rikuri-testkit`.
 
 ## Forbidden dependencies
 

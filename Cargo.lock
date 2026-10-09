@@ -545,10 +545,10 @@ dependencies = [
  "clap",
  "rikuri-api",
  "rikuri-domain",
+ "rikuri-testkit",
  "rikurid",
  "serde_json",
  "tempfile",
- "ulid",
 ]
 
 [[package]]
@@ -570,11 +570,11 @@ dependencies = [
  "proptest",
  "rikuri-domain",
  "rikuri-storage",
+ "rikuri-testkit",
  "serde",
  "serde_json",
  "tempfile",
  "thiserror",
- "ulid",
 ]
 
 [[package]]
@@ -584,11 +584,20 @@ dependencies = [
  "blake3",
  "proptest",
  "rikuri-domain",
+ "rikuri-testkit",
  "rusqlite",
  "serde",
  "serde_json",
  "tempfile",
  "thiserror",
+]
+
+[[package]]
+name = "rikuri-testkit"
+version = "0.1.0"
+dependencies = [
+ "rikuri-domain",
+ "serde_json",
  "ulid",
 ]
 
@@ -601,11 +610,11 @@ dependencies = [
  "rikuri-domain",
  "rikuri-ledger",
  "rikuri-storage",
+ "rikuri-testkit",
  "serde",
  "serde_json",
  "tempfile",
  "thiserror",
- "ulid",
 ]
 
 [[package]]

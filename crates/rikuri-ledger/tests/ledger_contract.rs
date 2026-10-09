@@ -2,43 +2,22 @@
 //! the stored response; a changed request is refused), append-only
 //! enforcement, referenced-content limits, and transactional atomicity.
 
-use std::sync::atomic::{AtomicU64, Ordering};
-
 use proptest::prelude::*;
-use rikuri_domain::{
-    ActorId, AnyId, Clock, EventId, IdError, IdSource, RiskClass, TaskId, Timestamp,
-};
+use rikuri_domain::{ActorId, AnyId, EventId, RiskClass, TaskId, Timestamp};
 use rikuri_ledger::{
     EventStatus, EventType, IdempotencyCheck, IdempotencyKey, LedgerError, MAX_METADATA_STRING,
     NewEvent,
 };
 use rikuri_storage::{StorageError, Store};
+use rikuri_testkit::{FixtureClock, FixtureIds, T0, T0_TIME};
 use serde_json::{Map, Value, json};
-use ulid::Ulid;
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
-
-struct Seq(AtomicU64);
-impl IdSource for Seq {
-    fn next_ulid(&self) -> Result<Ulid, IdError> {
-        Ok(Ulid::from_parts(
-            1_790_000_000_000,
-            u128::from(self.0.fetch_add(1, Ordering::SeqCst)),
-        ))
-    }
-}
-
-struct Fixed;
-impl Clock for Fixed {
-    fn now(&self) -> Timestamp {
-        Timestamp(1_790_000_000_000)
-    }
-}
 
 struct Fixture {
     _dir: tempfile::TempDir,
     store: Store,
-    ids: Seq,
+    ids: FixtureIds,
     actor: ActorId,
 }
 
@@ -48,10 +27,10 @@ fn fixture() -> TestResult<Fixture> {
     // directory itself follows the umask and may be shared
     let store = Store::open(
         &dir.path().join("state/rikuri.db"),
-        Box::new(Fixed),
+        Box::new(FixtureClock::fixed(T0_TIME)),
         &[&rikuri_ledger::MIGRATIONS],
     )?;
-    let ids = Seq(AtomicU64::new(1));
+    let ids = FixtureIds::sequential(T0);
     let actor = ActorId::generate(&ids)?;
     Ok(Fixture {
         _dir: dir,

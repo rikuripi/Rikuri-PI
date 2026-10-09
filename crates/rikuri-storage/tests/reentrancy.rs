@@ -8,15 +8,9 @@
 use std::sync::mpsc;
 use std::time::Duration;
 
-use rikuri_domain::{Clock, Timestamp};
+use rikuri_domain::Timestamp;
 use rikuri_storage::{StorageError, Store};
-
-struct Fixed;
-impl Clock for Fixed {
-    fn now(&self) -> Timestamp {
-        Timestamp(1)
-    }
-}
+use rikuri_testkit::FixtureClock;
 
 const DEADLINE: Duration = Duration::from_secs(10);
 
@@ -28,8 +22,11 @@ fn on_a_thread(case: fn(&Store) -> String) -> Option<String> {
         let Ok(dir) = tempfile::tempdir() else {
             return;
         };
-        let Ok(store) = Store::open(&dir.path().join("state/rikuri.db"), Box::new(Fixed), &[])
-        else {
+        let Ok(store) = Store::open(
+            &dir.path().join("state/rikuri.db"),
+            Box::new(FixtureClock::fixed(Timestamp(1))),
+            &[],
+        ) else {
             return;
         };
         let _ = tx.send(case(&store));
@@ -94,8 +91,16 @@ fn nested_stores_are_allowed_but_reentry_anywhere_in_the_nest_is_refused() {
             return;
         };
         let (Ok(a), Ok(b)) = (
-            Store::open(&da.path().join("state/a.db"), Box::new(Fixed), &[]),
-            Store::open(&db.path().join("state/b.db"), Box::new(Fixed), &[]),
+            Store::open(
+                &da.path().join("state/a.db"),
+                Box::new(FixtureClock::fixed(Timestamp(1))),
+                &[],
+            ),
+            Store::open(
+                &db.path().join("state/b.db"),
+                Box::new(FixtureClock::fixed(Timestamp(1))),
+                &[],
+            ),
         ) else {
             return;
         };
@@ -122,8 +127,16 @@ fn reentry_after_an_inner_store_returns_is_still_refused() {
             return;
         };
         let (Ok(a), Ok(b)) = (
-            Store::open(&da.path().join("state/a.db"), Box::new(Fixed), &[]),
-            Store::open(&db.path().join("state/b.db"), Box::new(Fixed), &[]),
+            Store::open(
+                &da.path().join("state/a.db"),
+                Box::new(FixtureClock::fixed(Timestamp(1))),
+                &[],
+            ),
+            Store::open(
+                &db.path().join("state/b.db"),
+                Box::new(FixtureClock::fixed(Timestamp(1))),
+                &[],
+            ),
         ) else {
             return;
         };

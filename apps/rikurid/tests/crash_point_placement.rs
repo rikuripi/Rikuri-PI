@@ -8,31 +8,12 @@
 //! same progress, and the crash matrix checks it per cell.
 #![cfg(unix)]
 
-use std::sync::{Arc, Mutex};
-
 use rikuri_api::{Request, command};
 use rikuri_domain::{SystemClock, SystemIdSource};
-use rikurid::crash::{CrashHook, CrashPoint, Crashed, Progress};
+use rikuri_testkit::CrashInjector;
+use rikurid::crash::{CrashPoint, Progress};
 use rikurid::{Idempotency, Kernel, KernelConfig};
 use serde_json::{Value, json};
-
-type Seen = Vec<(CrashPoint, String, Progress)>;
-
-/// Records every crash point the kernel reaches; never crashes.
-#[derive(Clone, Default)]
-struct Recorder(Arc<Mutex<Seen>>);
-
-impl CrashHook for Recorder {
-    fn at(&self, point: CrashPoint, command: &str, progress: Progress) -> Result<(), Crashed> {
-        if let Ok(mut seen) = self.0.lock() {
-            seen.push((point, command.to_owned(), progress));
-        }
-        Ok(())
-    }
-    fn is_armed(&self) -> bool {
-        true
-    }
-}
 
 /// Test Strategy §5, written out here rather than taken from the kernel:
 /// point 1 before the transaction; point 2 after the state write, before
@@ -106,7 +87,7 @@ fn every_crash_point_sees_what_test_strategy_section_5_says() {
         (Idempotency::DisabledForRegressionTest, false),
     ] {
         let dir = tempfile::tempdir().unwrap();
-        let recorder = Recorder::default();
+        let recorder = CrashInjector::new();
         let k = Kernel::open(
             &dir.path().join("home"),
             KernelConfig {
@@ -119,7 +100,7 @@ fn every_crash_point_sees_what_test_strategy_section_5_says() {
         .unwrap();
         lifecycle(&k);
 
-        let seen = recorder.0.lock().unwrap().clone();
+        let seen = recorder.seen();
         let mut want = vec![];
         for cmd in [
             command::SYSTEM_INIT,
@@ -141,7 +122,7 @@ fn every_crash_point_sees_what_test_strategy_section_5_says() {
 #[test]
 fn a_replay_reports_no_write() {
     let dir = tempfile::tempdir().unwrap();
-    let recorder = Recorder::default();
+    let recorder = CrashInjector::new();
     let k = Kernel::open(
         &dir.path().join("home"),
         KernelConfig {
@@ -156,7 +137,7 @@ fn a_replay_reports_no_write() {
     let create = Request::new(command::TASK_CREATE, json!({"title": "t"}))
         .with_idempotency_key("key-create-0001");
     ok(&k, &create);
-    recorder.0.lock().unwrap().clear();
+    recorder.clear_seen();
     let again = k.handle(&create);
     assert!(again.replayed, "{again:?}");
 
@@ -164,7 +145,7 @@ fn a_replay_reports_no_write() {
         committed: true,
         ..Progress::default()
     };
-    let seen = recorder.0.lock().unwrap().clone();
+    let seen = recorder.seen();
     assert_eq!(
         seen,
         vec![

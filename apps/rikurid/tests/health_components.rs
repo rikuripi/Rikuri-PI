@@ -7,11 +7,11 @@
 #![cfg(unix)]
 
 use std::path::Path;
-use std::sync::atomic::{AtomicI64, Ordering};
 
 use rikuri_api::{Request, command};
-use rikuri_domain::{Clock, SystemClock, SystemIdSource, Timestamp};
+use rikuri_domain::{SystemClock, SystemIdSource, Timestamp};
 use rikuri_storage::{OpHealth, StoreHealth};
+use rikuri_testkit::FixtureClock;
 use rikurid::crash::NoCrash;
 use rikurid::health::{ComponentHealth, HealthState};
 use rikurid::kernel::database_path;
@@ -191,16 +191,6 @@ fn store_thresholds_are_degraded_then_critical_at_three() {
     assert!(c.detail.contains("1 write transaction(s)"), "{c:?}");
 }
 
-/// A clock that moves forward one millisecond per reading, so "when" each
-/// check happened is distinguishable.
-struct Stepping(AtomicI64);
-
-impl Clock for Stepping {
-    fn now(&self) -> Timestamp {
-        Timestamp(self.0.fetch_add(1, Ordering::SeqCst))
-    }
-}
-
 /// After a failure is repaired, the next successful check resets the
 /// count, records this success (not an older one) and the work it covered.
 #[test]
@@ -211,7 +201,7 @@ fn a_successful_check_after_a_failure_resets_the_evidence() -> TestResult {
         &home,
         KernelConfig {
             ids: Box::new(SystemIdSource::new()),
-            clock: Box::new(Stepping(AtomicI64::new(1_000))),
+            clock: Box::new(FixtureClock::stepping(Timestamp(1_000), 1)),
             crash: Box::new(NoCrash),
             idempotency: Idempotency::Enforced,
         },

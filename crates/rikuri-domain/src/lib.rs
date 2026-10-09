@@ -7,6 +7,7 @@
 //! `README.md` for the Module Contract.
 
 pub mod authority;
+pub mod crash;
 pub mod deletion;
 pub mod id;
 pub mod privacy;
@@ -17,6 +18,7 @@ pub mod trust;
 mod wire;
 
 pub use authority::{InstructionAuthority, Origin, Provenance, ProvenanceError};
+pub use crash::{CrashHook, CrashPoint, Crashed, Progress};
 pub use deletion::ContentRef;
 pub use id::{
     ActorId, AnyId, ContentId, CostRecordId, DeletionUnitId, EventId, IdError, IdSource, ProjectId,

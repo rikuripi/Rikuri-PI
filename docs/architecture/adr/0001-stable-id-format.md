@@ -61,5 +61,5 @@ Before Stage 01 data exists, change the format in `rikuri-domain` alone. Afterwa
 
 ## Follow-up tests
 
-- `rikuri-testkit` `FixtureIds` passes the same ID properties (S00.08).
+- `rikuri-testkit` `FixtureIds` passes the same ID properties (S00.08). *Done 2026-10-09: `crates/rikuri-testkit/tests/fixtures.rs`, `fixture_ids_keep_the_adr_0001_id_properties` ([S00.08 record](../../build-records/2026-10-09-s00-08-rikuri-testkit.md)).*
 - T00.12: task/run/event IDs survive crash and replay unchanged.

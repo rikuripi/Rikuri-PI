@@ -5,6 +5,9 @@
 #    must refuse such a crate and accept one that opts in.
 # 2. module-contracts.sh matched heading prefixes, so "## Healthiness"
 #    counted as "## Health". Headings must match exactly.
+# 3. rikuri-testkit is test-only (S00.08, 2026-10-09): crate-policy.sh must
+#    refuse it as a normal or build dependency, renamed or not, and accept it
+#    as a dev-dependency.
 # Fixture crates are generated here; none are committed. Both checks ask
 # Cargo for the workspace members (second review, F1), so the fixture is a
 # workspace Cargo can load: a root manifest, and a target in every crate.
@@ -42,6 +45,16 @@ rm -rf -- "$tmp/crates/nolints"
 crate override $'[lints]\nworkspace = true\n\n[lints.clippy]\nunwrap_used = "allow"' '## Health'
 expect fail "a crate overriding workspace lints is refused" "$here/crate-policy.sh" "$tmp"
 rm -rf -- "$tmp/crates/override"
+
+crate rikuri-testkit $'[lints]\nworkspace = true' '## Health'
+crate devuser $'[lints]\nworkspace = true\n\n[dev-dependencies]\nrikuri-testkit = { path = "../rikuri-testkit" }' '## Health'
+expect pass "rikuri-testkit as a dev-dependency is accepted" "$here/crate-policy.sh" "$tmp"
+crate runtimeuser $'[lints]\nworkspace = true\n\n[dependencies]\nrikuri-testkit = { path = "../rikuri-testkit" }' '## Health'
+expect fail "rikuri-testkit as a runtime dependency is refused" "$here/crate-policy.sh" "$tmp"
+rm -rf -- "$tmp/crates/runtimeuser"
+crate builduser $'[lints]\nworkspace = true\n\n[build-dependencies]\nfixtures = { package = "rikuri-testkit", path = "../rikuri-testkit" }' '## Health'
+expect fail "rikuri-testkit renamed as a build dependency is refused" "$here/crate-policy.sh" "$tmp"
+rm -rf -- "$tmp/crates/builduser" "$tmp/crates/devuser" "$tmp/crates/rikuri-testkit"
 
 crate prefix $'[lints]\nworkspace = true' '## Healthiness'
 expect fail "'## Healthiness' does not count as '## Health'" "$here/module-contracts.sh" "$tmp"
