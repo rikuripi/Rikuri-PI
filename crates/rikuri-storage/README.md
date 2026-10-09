@@ -9,10 +9,11 @@ The canonical store: one SQLite database holding current state, written by one w
 ## Owns
 
 - Opening the database: owner-only data directory and database file on Unix (created 0700/0600; an existing directory or database that group or others can access is refused, never re-permissioned; SQLite gives `-wal`/`-shm` the database's mode; not yet enforced on other platforms), WAL (verified), `synchronous=FULL`, foreign keys, `recursive_triggers`, busy timeout, `quick_check`.
-- The transaction boundary: `Store::write` (IMMEDIATE; commit only on `Ok`, rollback on any error) and `Store::read` (snapshot, always rolled back).
+- The transaction boundary: `Store::write` (IMMEDIATE; commit only on `Ok`, rollback on any error) and `Store::read` (snapshot, always rolled back). A `Store` call made from inside one of its own transactions (`read`, `write`, `schema_version`) is refused with `Reentrant` instead of deadlocking on the connection lock; code inside a transaction uses the `Tx` (`Tx::schema_version`). Different stores may nest (A's transaction calls B); re-entering any store already in the nest is refused.
+- One writer per database: `Store::open` takes an exclusive lock on `<database>.lock` (owner-only) for the store's lifetime, so a second store on the same file, in this process or another, gets `InUse`. The lock is taken before the database file is created, so an open refused at the lock (held elsewhere, or a lock file others can access) creates no database file; the data directory and the lock file itself may already have been created.
 - The migration runner and its bookkeeping (`schema_migrations`): validation of every component's list before writing; then one transaction for the whole upgrade, which checks every component's recorded history (contiguous versions, checksums, not newer than this build) before applying any step, so a refusal or failure anywhere changes nothing.
 - The `objects` registry table and `Repository<T>` / `SqliteRepository<T>`: insert at version 1, update only from the expected version, read-back inside the transaction (it confirms what the transaction holds, not durability, which comes from the commit), tamper detection on read.
-- The store's health evidence (`StoreHealth`).
+- The store's health evidence (`StoreHealth`), and the rule (`StoreFailure`) by which an error from a transaction counts as a store failure (SQLite, I/O, a poisoned lock, re-entry, a corrupt row) or as the caller refusing the change (not found, already exists, version conflict, validation).
 
 ## Must not own
 
@@ -33,7 +34,8 @@ Trusted kernel code inside `rikurid`. Treats stored rows as possibly damaged: a 
 
 - `Store::open(path, clock, &[&Migrations])`, `Store::write`, `Store::read`, `Store::health`, `Store::schema_version`, `Store::now`, `Store::path`.
 - `pub use rusqlite`, so components that own tables use the same SQLite build.
-- `Migration`, `Migrations`; `Entity` (kind, schema version, ID, privacy class, deletion unit); `Versioned<T>`; `Repository<T>` (`get`, `insert`, `update`, `list`); `SqliteRepository<T>`; `StorageError`.
+- `Tx::schema_version`, for reading a component's version inside a transaction.
+- `Migration`, `Migrations`; `Entity` (kind, schema version, ID, privacy class, deletion unit); `Versioned<T>`; `Repository<T>` (`get`, `insert`, `update`, `list`); `SqliteRepository<T>`; `StorageError` (including `Reentrant` and `InUse`); `StoreFailure`, which every error type used with `read`/`write` implements; `StoreHealth`, `OpHealth`.
 - `Tx` dereferences to the SQLite connection so components that own tables write in the same transaction. Raw transaction control through it (`COMMIT`, `BEGIN`) is not yet refused: deferred to S00.07 ([record](../../docs/build-records/2026-10-08-storage-ledger-verifier-defects.md)).
 
 ## Allowed dependencies
@@ -54,11 +56,14 @@ Every failure is a typed `StorageError`; nothing panics on bad data. A failed tr
 
 ```text
 state:                (derived by rikurid: no success yet or recent failures → not healthy)
-last_attempt:         start time of the last transaction
+last_attempt:         start time of the last transaction that succeeded or failed
 last_success:         start time of the last committed write or completed read
-last_error:           last failure description
-consecutive_failures: failures since the last success
+last_error:           last store failure, bounded
+consecutive_failures: store failures since the last success, any kind
 work_completed:       successful transactions since open
+reads, writes:        the same evidence for each kind separately, so a successful read
+                      cannot hide a failing write
+refused:              transactions the caller rolled back with its own refusal (not failures)
 ```
 
 A store that has done nothing has no `last_success` and must not be reported healthy (Architecture §53.7).
@@ -76,6 +81,10 @@ A store that has done nothing has no `last_success` and must not be reported hea
 - Threat: an upgrade half-applies or an old build misreads a newer store. Control: one transaction for the whole upgrade, checks before any step, checksums, contiguity, version refusal. Tests: migration suite, including `failed_multi_component_upgrade_changes_nothing`, `refusal_in_one_component_upgrades_no_other`, `recorded_versions_must_be_contiguous`.
 - Threat: another local user reads or replaces the database. Control: owner-only directory and files on Unix, shared ones refused. Tests: `database_and_directory_are_owner_only`, `shared_directory_or_database_is_refused`.
 - Threat: a read changes state. Control: `Store::read` always rolls back. Test: `reads_never_commit`.
+- Threat: a caller re-enters the store inside its own transaction and the process hangs silently. Control: a per-thread stack of the stores whose transactions are open; re-entry into any of them returns `Reentrant`, and the stack is popped even if a transaction closure panics. Tests: `store_calls_inside_its_own_transaction_are_refused_not_deadlocked`, `sequential_store_calls_still_work`, `nested_stores_are_allowed_but_reentry_anywhere_in_the_nest_is_refused`, `reentry_after_an_inner_store_returns_is_still_refused`.
+- Threat: two writers on one database. Control: the writer lock. Test: `a_second_store_on_the_same_database_is_refused`.
+- Threat: health hides failing writes behind successful reads, or reports refusals as failures. Control: separate read and write evidence; `StoreFailure` classification. Tests: `reads_do_not_hide_write_failures_and_refusals_are_not_failures`, `storage_errors_say_whether_the_store_failed` (and the ledger's `ledger_errors_say_whether_the_store_failed`); through `rikurid`, `store_health_reports_failed_writes` and `refused_requests_do_not_mark_the_store_failed`.
+- Threat: a refused open leaves files behind, or the lock file is readable by others. Control: lock first, owner-only lock file. Tests: `a_second_open_reports_in_use`, `the_lock_file_is_owner_only`.
 
 ## Required tests
 

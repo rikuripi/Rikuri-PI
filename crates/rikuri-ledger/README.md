@@ -30,7 +30,7 @@ Trusted kernel code inside `rikurid`. Stored rows are decoded defensively: an un
 
 ## Public contracts / interfaces
 
-`MIGRATIONS`; `NewEvent`, `Event`, `EventType`, `EventStatus`, `LedgerError`; `append`, `get`, `tail`, `by_task`, `replay`; `IdempotencyKey`, `request_hash`, `check` → `IdempotencyCheck`, `record`, `IdempotencyRecord`; limits `MAX_METADATA_BYTES`, `MAX_METADATA_STRING`.
+`MIGRATIONS`; `NewEvent`, `Event`, `EventType`, `EventStatus`, `LedgerError` (implements `rikuri_storage::StoreFailure`: a storage failure or corrupt row counts against the store's health, a refused event does not); `append`, `get`, `tail`, `by_task`, `replay`; `IdempotencyKey`, `request_hash`, `check` → `IdempotencyCheck`, `record`, `IdempotencyRecord`; limits `MAX_METADATA_BYTES`, `MAX_METADATA_STRING`.
 
 ## Allowed dependencies
 
