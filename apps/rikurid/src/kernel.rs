@@ -698,6 +698,7 @@ impl Kernel {
             .map(|c| c.clone())
             .unwrap_or_else(|_| ComponentHealth::new("ledger_consistency"));
         let build = ComponentHealth::build(
+            cfg!(feature = "crash-injection"),
             self.crash.is_armed(),
             self.idempotency == Idempotency::Enforced,
             self.store.now(),

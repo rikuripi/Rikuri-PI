@@ -23,8 +23,17 @@ serde_json.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
+proptest.workspace = true
 tempfile.workspace = true
 ulid.workspace = true
+
+# T00.07/T00.08/T00.12 drive a crash-injection daemon; the full gate's
+# crash-matrix step runs it (cargo test --features crash-injection
+# --target-dir target/crash-injection, so the test build never replaces the
+# production target/debug/rikurid).
+[[test]]
+name = "crash_matrix"
+required-features = ["crash-injection"]
 
 [lints]
 workspace = true

@@ -2,11 +2,14 @@ name: CI
 
 # Stage Plan S00.02. The Ubuntu job runs scripts/quality/full-gate.sh, the
 # same script developers run (README > Running the full gate), so CI and local
-# results cannot drift: format → build → clippy → unit/contract tests →
-# dependency policy → secret scan → ratchet → module contracts → scrap sweep.
-# No step uses continue-on-error.
+# results cannot drift: pinned tools → gate self-tests → guard tests →
+# format → build → clippy → unit/contract tests → smoke → crash matrix →
+# dependency policy → secret scan → ratchet → module contracts → crate policy
+# → scrap sweep (15 steps). No step uses continue-on-error.
 #
-# macOS runs the platform-neutral core build/unit/contract checks on every
+# macOS runs the platform-neutral core build/unit/contract checks and the
+# crash matrix (SQLite recovery after SIGKILL is platform-neutral; the job
+# keeps its original name so its check history stays continuous) on every
 # merge to main, not on PRs (owner decision 2026-10-05; continuous macOS core
 # checks per ADR 0000). A red macOS run on main stops the line. It runs on the
 # owner's Mac as a self-hosted runner, not GitHub's billed macOS machines
@@ -85,3 +88,5 @@ jobs:
         run: cargo build --workspace --all-targets --locked
       - name: Unit and contract tests
         run: cargo test --workspace --locked
+      - name: Crash matrix (W1; SQLite recovery after SIGKILL is platform-neutral core)
+        run: cargo test -p rikurid --features crash-injection --test crash_matrix --locked --target-dir target/crash-injection

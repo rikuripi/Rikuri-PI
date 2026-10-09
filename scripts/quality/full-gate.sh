@@ -49,11 +49,20 @@ run_selftests() { # the gate's own regression tests (scripts/quality/tests)
 }
 
 # Lints with warnings as errors, then again for rikurid's test-only
-# crash-injection feature, which no other step compiles (owner decision
-# 2026-10-08) so it cannot rot unnoticed.
+# crash-injection feature, which only the crash-matrix step also compiles
+# (owner decision 2026-10-08) so it cannot rot unnoticed.
 run_clippy() {
   cargo clippy --workspace --all-targets --locked -- -D warnings &&
     cargo clippy -p rikurid --all-targets --features crash-injection --locked -- -D warnings
+}
+
+# W1 (T00.07, T00.08, T00.12): kill -9 a crash-injection rikurid at every
+# Stage 00 crash point of every consequential command, restart, retry. Built
+# in its own target directory so the test build never replaces the
+# production target/debug/rikurid that smoke and owners run.
+run_crash_matrix() {
+  cargo test -p rikurid --features crash-injection --test crash_matrix --locked \
+    --target-dir "${CARGO_TARGET_DIR:-target}/crash-injection"
 }
 
 step tools tool_versions
@@ -64,6 +73,7 @@ step build cargo build --workspace --all-targets --locked
 step clippy run_clippy
 step test cargo test --workspace --locked
 step smoke scripts/quality/smoke.sh
+step crash-matrix run_crash_matrix
 step dependencies cargo deny --locked check
 step secrets scripts/quality/secret-scan.sh
 step ratchet scripts/quality/ratchet.sh
