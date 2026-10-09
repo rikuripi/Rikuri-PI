@@ -9,7 +9,7 @@
 | Commits | `de5beea` on the original branch, replayed as `9cc42ed` (with the domain prerequisite `6006cd2` → `2b7d34f`); defect fixes `ab41b21` and the following commit ([defect record](2026-10-08-storage-ledger-verifier-defects.md)) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md) |
 | Related ADR / requirement | S00.05, T00.04, S00.10 ([ADR 0002](../architecture/adr/0002-sqlite-current-state-model.md), Accepted 2026-10-08), E1; Architecture §8, §21–22, §43; PRD CORE-006 |
-| Status | IN PROGRESS |
+| Status | COMPLETE (2026-10-08) — `rikurid` writes through it (S00.07, PR #20) |
 
 ## 1. Plan
 
@@ -40,7 +40,7 @@ During the build, a test claimed "refused before touching the database" while th
 - [x] Unit/failure: 12 tests (7 migration, 5 contract/health/tamper/property).
 - [x] Shared contract suite: T00.04 generic `contract<R: Repository<Thing>>`.
 - [x] Property: `versions_follow_the_model` (64 cases × up to 40 operations).
-- [ ] Running-system probe — through `rikurid` (S00.07).
+- [x] Running-system probe — through `rikurid`: T00.09 and the smoke (T00.10), CI run 37864086595 on `main` after PR #20.
 - [x] Regression guard: five mutants, each failing (evidence log).
 
 ## 5. Close Out
@@ -52,7 +52,7 @@ During the build, a test claimed "refused before touching the database" while th
 
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
-| Real caller | RESEQUENCED within Stage 00 | `rikurid` is the only writer | S00.05 incomplete until `rikurid` uses it | Stage 00 implementer | S00.07 | T00.09 vertical slice writes through `Store` |
+| Real caller | DONE 2026-10-08 (PR #20, `aef4094`): `rikurid` writes through `Store`; T00.09 green on the PR and `main` (run 37864086595). Was RESEQUENCED within Stage 00 | `rikurid` is the only writer | S00.05 incomplete until `rikurid` uses it | Stage 00 implementer | S00.07 | T00.09 vertical slice writes through `Store` |
 | `synchronous=FULL` latency | Not yet proven | Not measured | None on correctness | Stage 00 implementer | Stage 00 close-out | Write latency recorded on the reference installation |
 
 Execution-evidence fields: N/A (no execution path).
