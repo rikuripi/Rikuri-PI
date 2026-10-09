@@ -138,3 +138,27 @@ fn reentry_after_an_inner_store_returns_is_still_refused() {
     };
     assert_eq!(outcome, "Ok(Err(Reentrant))");
 }
+
+fn where_am_i(store: &Store) -> String {
+    let before = store.in_transaction();
+    let in_read = store
+        .read(|_tx| Ok::<_, StorageError>(store.in_transaction()))
+        .unwrap_or(false);
+    let in_write = store
+        .write(|_tx| Ok::<_, StorageError>(store.in_transaction()))
+        .unwrap_or(false);
+    let failed = store.write(|_tx| Err::<(), _>(StorageError::Reentrant));
+    let after = store.in_transaction();
+    format!("{before} {in_read} {in_write} {} {after}", failed.is_err())
+}
+
+/// `in_transaction` answers from the store's own state: true inside a read
+/// or a write, false before, after, and after a failed write. The kernel's
+/// crash points use it to prove where they sit (W1, 2026-10-09).
+#[test]
+fn in_transaction_is_true_only_inside_a_transaction() {
+    assert_eq!(
+        on_a_thread(where_am_i).as_deref(),
+        Some("false true true true false")
+    );
+}

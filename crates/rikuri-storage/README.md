@@ -32,7 +32,7 @@ Trusted kernel code inside `rikurid`. Treats stored rows as possibly damaged: a 
 
 ## Public contracts / interfaces
 
-- `Store::open(path, clock, &[&Migrations])`, `Store::write`, `Store::read`, `Store::health`, `Store::schema_version`, `Store::now`, `Store::path`.
+- `Store::open(path, clock, &[&Migrations])`, `Store::write`, `Store::read`, `Store::health`, `Store::schema_version`, `Store::now`, `Store::path`, `Store::in_transaction` (whether this thread is inside one of this store's transactions; `rikurid`'s crash points use it, W1).
 - `pub use rusqlite`, so components that own tables use the same SQLite build.
 - `Tx::schema_version`, for reading a component's version inside a transaction.
 - `Migration`, `Migrations`; `Entity` (kind, schema version, ID, privacy class, deletion unit); `Versioned<T>`; `Repository<T>` (`get`, `insert`, `update`, `list`); `SqliteRepository<T>`; `StorageError` (including `Reentrant` and `InUse`); `StoreFailure`, which every error type used with `read`/`write` implements; `StoreHealth`, `OpHealth`.
@@ -93,7 +93,8 @@ A store that has done nothing has no `last_success` and must not be reported hea
 - [x] shared contract suite — T00.04 `tests/repository_contract.rs`, generic over `Repository<T>`
 - [x] invariant/property tests — model-based `versions_follow_the_model`
 - [ ] replay/golden fixtures — N/A (no nondeterministic path)
-- [ ] integration/smoke — through `rikurid` (S00.07)
+- [x] re-entry refused, never deadlocked, and `in_transaction` true only inside a read or write — `tests/reentrancy.rs`
+- [x] integration/smoke — through `rikurid` (S00.07: T00.09 and the smoke, PR #20)
 
 ## Documentation / help entry points
 

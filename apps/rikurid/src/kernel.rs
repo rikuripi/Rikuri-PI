@@ -25,7 +25,7 @@ use rikuri_storage::{Repository, SqliteRepository, StorageError, Store, StoreFai
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value, json};
 
-use crate::crash::{CrashHook, CrashPoint, Crashed};
+use crate::crash::{CrashHook, CrashPoint, Crashed, Progress};
 use crate::entities::{Owner, Project, Run, RunStatus, Task, TaskStatus};
 use crate::health::{self, ComponentHealth, ConsistencyReport};
 
@@ -319,16 +319,44 @@ impl Kernel {
             )
             .into());
         }
-        self.crash.at(CrashPoint::BeforeTransaction, command)?;
-        let applied = self.store.write(|tx| {
+        // What the command has done at each crash point, read from facts
+        // when the point is reached, so a point that moves sees different
+        // progress (crash::Progress, W1 placement): the store says whether
+        // its transaction is open, SQLite's change count whether anything
+        // was written, the ledger's newest sequence number whether an event
+        // was appended, and `recorded` is the result of writing the
+        // idempotency record.
+        let at = |point: CrashPoint, progress: Progress| {
+            let progress = Progress {
+                transaction_open: self.store.in_transaction(),
+                ..progress
+            };
+            self.crash.at(point, command, progress)
+        };
+        at(CrashPoint::BeforeTransaction, Progress::default())?;
+        let (applied, done) = self.store.write(|tx| {
+            let newest_event = || -> Result<Option<u64>, Fail> {
+                Ok(rikuri_ledger::tail(tx, 1)?.last().map(|e| e.seq))
+            };
+            let changes_at_start = tx.total_changes();
+            let newest_at_start = newest_event()?;
+            let facts = |recorded: bool| -> Result<Progress, Fail> {
+                Ok(Progress {
+                    state_written: tx.total_changes() > changes_at_start,
+                    events_appended: newest_event()? > newest_at_start,
+                    idempotency_recorded: recorded,
+                    ..Progress::default()
+                })
+            };
             if self.idempotency == Idempotency::Enforced {
                 match rikuri_ledger::check(tx, key, command, &hash)? {
                     IdempotencyCheck::Fresh => {}
                     IdempotencyCheck::Replay(record) => {
-                        return Ok(Applied {
+                        let replay = Applied {
                             result: record.response,
                             replayed: true,
-                        });
+                        };
+                        return Ok((replay, facts(false)?));
                     }
                     IdempotencyCheck::Conflict(record) => {
                         return Err(Fail::Api(
@@ -346,13 +374,13 @@ impl Kernel {
             }
             let now = self.store.now();
             let planned = plan(tx, now)?;
-            self.crash.at(CrashPoint::AfterStateWrite, command)?;
+            at(CrashPoint::AfterStateWrite, facts(false)?)?;
             let mut primary = None;
             for event in &planned.events {
                 let stored = rikuri_ledger::append(tx, event, now)?;
                 primary.get_or_insert(stored.event_id);
             }
-            if self.idempotency == Idempotency::Enforced {
+            let recorded = if self.idempotency == Idempotency::Enforced {
                 let primary = primary.ok_or_else(|| {
                     Fail::Api(ApiError::new(
                         ErrorCode::Internal,
@@ -360,14 +388,22 @@ impl Kernel {
                     ))
                 })?;
                 rikuri_ledger::record(tx, key, command, &hash, primary, &planned.result, now)?;
-            }
-            Ok(Applied {
+                true
+            } else {
+                false
+            };
+            let applied = Applied {
                 result: planned.result,
                 replayed: false,
-            })
+            };
+            Ok((applied, facts(recorded)?))
         })?;
-        self.crash.at(CrashPoint::AfterCommit, command)?;
-        self.crash.at(CrashPoint::BeforeResponse, command)?;
+        let done = Progress {
+            committed: true,
+            ..done
+        };
+        at(CrashPoint::AfterCommit, done)?;
+        at(CrashPoint::BeforeResponse, done)?;
         Ok(applied)
     }
 

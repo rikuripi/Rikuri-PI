@@ -381,10 +381,19 @@ fn refuse_if_shared(path: &Path, what: &str) -> Result<(), StorageError> {
 }
 
 impl Store {
+    /// True while this thread is inside one of this store's transactions (a
+    /// read or a write, from before `BEGIN` until after its commit or
+    /// rollback). A caller can prove where it stands relative to its
+    /// transaction from the store's own state, not its own bookkeeping
+    /// (`rikurid`'s crash points, W1).
+    pub fn in_transaction(&self) -> bool {
+        ACTIVE_STORES.with(|a| a.borrow().contains(&self.id))
+    }
+
     /// The connection lock is not reentrant: taking it again on a thread that
     /// already holds it would hang forever. Refuse instead, visibly.
     fn refuse_reentry(&self) -> Result<(), StorageError> {
-        if ACTIVE_STORES.with(|a| a.borrow().contains(&self.id)) {
+        if self.in_transaction() {
             Err(StorageError::Reentrant)
         } else {
             Ok(())

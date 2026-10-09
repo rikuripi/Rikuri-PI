@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex};
 use proptest::prelude::*;
 use rikuri_api::{Request, Response, command};
 use rikuri_domain::{SystemClock, SystemIdSource};
-use rikurid::crash::{CrashHook, CrashPoint, Crashed};
+use rikurid::crash::{CrashHook, CrashPoint, Crashed, Progress};
 use rikurid::{Idempotency, Kernel, KernelConfig};
 use serde_json::{Value, json};
 
@@ -31,7 +31,7 @@ impl ArmedOnce {
 }
 
 impl CrashHook for ArmedOnce {
-    fn at(&self, point: CrashPoint, _command: &str) -> Result<(), Crashed> {
+    fn at(&self, point: CrashPoint, _command: &str, _: Progress) -> Result<(), Crashed> {
         match self.0.lock() {
             Ok(mut armed) if *armed == Some(point) => {
                 *armed = None;
