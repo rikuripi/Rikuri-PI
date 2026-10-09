@@ -9,7 +9,7 @@
 | Commits | this PR's commits on `stage-00/crash-matrix` (no other branch carries this work) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md); W1; T00.06, T00.07, T00.08, T00.12; closes S00.06's open item; carries the S00.07 deferral "consistency replay does not compare completions with run state" |
 | Related ADR / requirement | ADR 0002, ADR 0003 (Accepted); Test Strategy §5 (crash points); Architecture §8 (one transaction), §43; [S00.07 record](2026-10-08-s00-07-rikurid.md) |
-| Status | COMPLETE locally (verifier round 6 PASS, full gate PASS); CI on the PR Not yet proven |
+| Status | COMPLETE: verifier round 6 PASS; CI [run 37885121628](https://github.com/rikuripi/Rikuri-PI/actions/runs/37885121628) on PR #21 at `c0bd3be` (`GATE crash-matrix: PASS`, `RESULT: PASS (15 steps)`). The macOS job runs the matrix after the merge to `main` |
 
 ## 1. Plan
 
@@ -60,7 +60,7 @@
 ## 4. Verify
 
 - [x] Red, then green, for B (evidence log).
-- [x] T00.06, T00.07, T00.08, T00.12 pass locally (evidence log). CI: Not yet proven (not pushed).
+- [x] T00.06, T00.07, T00.08, T00.12 pass locally (evidence log) and in CI: [run 37885121628](https://github.com/rikuripi/Rikuri-PI/actions/runs/37885121628) on PR #21 at `c0bd3be` (log: `Running tests/crash_matrix.rs (target/crash-injection/...)`, `t00_07_kill_9_at_every_point_of_every_command_then_one_effect ... ok`, 6 passed, `GATE crash-matrix: PASS`, `RESULT: PASS (15 steps)`).
 - [x] Mutants, round 1: 4 against T00.06 and the replay tests, 8 against the real-process matrix; all caught (evidence log). R7's catch by T00.08 is racy (verifier: 4 runs in 6); T00.07 catches it every time.
 - [x] Mutants, round 2 (the I1 branches and the new checks), after the owner released the fix-lock (2026-10-08): 10 of 10 caught (evidence log).
 - [x] Full gate: `RESULT: PASS (15 steps)`, in round 1 and again with the oracle fix.
@@ -94,7 +94,7 @@
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
 | Crash points 4, 5, 7, 8 (tool, budget, backup) | Not in Stage 00 | Those systems do not exist yet (Stage Plan T00.07) | Their stages add cells to `crash_matrix.rs`; all eight rerun at release | Stage implementer of each system | When each system lands (Stage Plan T00.07); full matrix (points 1–8) at Stage 05 and release (E1 register, release checklist) | Each point's cell in the matrix passes and bites |
-| W1 row on the Stage Plan gate board | Left NOT STARTED | The board needs a durable receipt (a CI run); none exists until the PR runs | Stage 00 exit | Henry (protected document) | This PR, after CI is observed | CI run with `GATE crash-matrix: PASS` linked in the board's Evidence cell |
+| W1 row on the Stage Plan gate board | DONE 2026-10-09 (owner: "Update W1") | Updated to COMPLETE for the Stage 00 points with [run 37885121628](https://github.com/rikuripi/Rikuri-PI/actions/runs/37885121628) as its receipt | Stage 00 exit | Henry (protected document) | This PR | The board's Evidence cell links the run |
 | Points 3 and 6 coincide in the kernel | Kept; recorded | Nothing runs between the commit and the response inside `Kernel::consequential` (S00.07 design), so the 8 point-6 cells repeat the point-3 ones | Point 6 differs once a response path sits between them (the socket write, a UI acknowledgement) | Stage 00 implementer | When such a path is added | A point-6 cell that fails where point 3 passes, or a recorded reason they stay together |
 | T00.12 "deletion-governed references" | Partly proven | Stage 00 has no deletion path; the matrix checks that the task title never reaches the ledger, and each task carries its own deletion unit | Forget/deletion tests own the rest | Stage implementer of forget | When forget lands (Stage Plan) | A forget test proves the payload goes and only references stay |
 | Crash-point positions (W03–W05) | DEFERRED | The outcome tests prove recovery at each hook as placed, but points 1 and 2 both expect "no change", so moving point 2 before `plan` or after the event append, or point 1 into the transaction, keeps them green. Pinning placement needs the hook to see the open transaction or a kernel step trace | W1's outcome claims stand for the hooks where they are; a refactor that moved a hook would go unnoticed until this lands | Stage 00 implementer | S00.08 (`CrashInjector` in `rikuri-testkit`) | A test fails when point 2 moves before the plan or after the event append, or point 1 moves inside the transaction |
