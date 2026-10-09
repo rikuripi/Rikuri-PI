@@ -4,7 +4,7 @@ Template C, [Engineering Templates v1.1](../../doc/Rikuri_Pi_Engineering_Templat
 
 ## Purpose
 
-The kernel's shared vocabulary: stable typed IDs, data privacy classes and execution intent, provenance with instruction authority, risk classes, project execution trust, deletion units with content references, and schema versions. Every other crate speaks these types, so a value means the same thing in storage, the ledger, the CLI envelope and later stages.
+The kernel's shared vocabulary: stable typed IDs, data privacy classes and execution intent, provenance with instruction authority, risk classes, project execution trust, deletion units with content references, schema versions, and the injection seams tests use to make runs deterministic (`Clock`, `IdSource`, and the crash-point vocabulary). Every other crate speaks these types, so a value means the same thing in storage, the ledger, the CLI envelope and later stages.
 
 ## Owns
 
@@ -14,6 +14,7 @@ The kernel's shared vocabulary: stable typed IDs, data privacy classes and execu
 - The rule that authority never comes from bytes (Architecture §19.1, LOCKED): a deserialized `Provenance` is historical and always has `instruction_authority: none`, even a faithful record of a live command. Only `Provenance::new(Origin::UserLive, …)` carries `current_user`; callers must make that call only at the authenticated command boundary, and must decide authority with `instruction_authority()`, never from `origin()`. The serialized `instruction_authority` is the value's real authority, so a loaded record is written back as `none` and readers of the bytes never see historical content labelled `current_user`; loading accepts the authority the origin implies or `none`, and refuses any raise.
 - The privacy combination rule: derived material takes the strictest input class; unclassified content is `local_only`.
 - `ContentRef`: events and records point at content through a content ID and its deletion unit, never by embedding it.
+- The crash-point vocabulary (`crash` module): `CrashPoint` (Test Strategy §5 points 1, 2, 3, 6), `Crashed`, `Progress` and the `CrashHook` trait the kernel calls at each point. It sits here, beside `Clock` and `IdSource`, so `rikurid` and `rikuri-testkit` share one copy (owner decision 2026-10-09); the kernel's own hooks stay in `rikurid`.
 
 ## Must not own
 
@@ -33,7 +34,8 @@ None directly. It defines the shapes other crates store.
 ## Public contracts / interfaces
 
 - `ProjectId`, `TaskId`, `RunId`, `EventId`, `ActorId`, `DeletionUnitId`, `ContentId`, `SourceId`, `SourceSpanId`, `SecurityDecisionId`, `CostRecordId`, `AnyId`; text form `<prefix>_<ULID>`, one canonical form per ID.
-- `IdSource` (trait), `SystemIdSource` (monotonic wall-clock ULIDs). `IdSource` and `Clock` are the two seams through which tests make IDs and times deterministic.
+- `IdSource` (trait), `SystemIdSource` (monotonic wall-clock ULIDs). `IdSource`, `Clock` and `CrashHook` are the seams through which tests make IDs, times and crashes deterministic (`rikuri-testkit` implements all three).
+- `crash::{CrashPoint, Crashed, Progress, CrashHook}`, re-exported at the crate root.
 - `PrivacyClass`, `ExecutionIntent`, `Origin`, `InstructionAuthority`, `RiskClass`, `ProjectTrust`: `as_str`, `FromStr`, `Display`, serde, all from one table.
 - `wire_enum!` (exported macro): defines such a closed enum with stable wire names, so every kernel crate's wire enums behave the same way.
 - `bounded(&str)`: how any kernel crate shows untrusted text in an error (escaped, at most 64 bytes plus the full length).
@@ -77,10 +79,11 @@ last_attempt / last_success / last_error / consecutive_failures / work_completed
 
 - [x] unit
 - [x] failure paths (malformed, wrong-kind, non-canonical, nil, unknown variants, raised authority)
-- [ ] shared contract suite — N/A: no replaceable implementation behind a trait here except `IdSource`, whose deterministic fixture arrives with `rikuri-testkit` (S00.08)
+- [x] seams with deterministic fixtures: `IdSource`, `Clock` and `CrashHook` are implemented by `rikuri-testkit` (S00.08), whose own suite pins them (including ADR 0001's ID properties for `FixtureIds`). Domain keeps three local fixtures: `tests/id_properties.rs` injects arbitrary ULIDs from proptest, which `FixtureIds` does not produce; the unit-test fixtures in `src/id.rs` and `src/deletion.rs` cannot use the kit, because a crate's own unit tests would compile a second copy of domain through it (integration tests would not)
+- [x] the crash vocabulary: `Progress`'s text form (the stop marker contract) and the crash points' wire names — `tests/crash_progress.rs`
 - [x] invariant/property tests (`tests/id_properties.rs`)
 - [ ] replay/golden fixtures — N/A until events exist (S00.06)
-- [ ] integration/smoke — the real callers are `rikuri-storage`, `rikuri-ledger` and `rikurid` (S00.05–S00.07); this crate is not complete until they use it
+- [x] integration/smoke — through its real callers `rikuri-storage`, `rikuri-ledger` and `rikurid` (S00.05–S00.07, PR #20: T00.09 and the smoke)
 
 ## Documentation / help entry points
 
@@ -88,5 +91,5 @@ This file; rustdoc on each module.
 
 ## Known limitations / explicit debt
 
-- No caller yet. Wiring point: `rikuri-storage` and `rikuri-ledger` in Stage 00; the Stage 00 gate cannot close while any type here lacks a real caller (Stage Plan stop-the-line: "module passes unit tests but has no real caller → NOT COMPLETE").
+- Real callers since PR #20 (`rikuri-storage`, `rikuri-ledger`, `rikurid`); before that, this item read "No caller yet" (Stage Plan stop-the-line: "module passes unit tests but has no real caller → NOT COMPLETE").
 - `SystemIdSource` is monotonic within one process only. Cross-process ordering relies on wall-clock time; IDs stay unique (80 random bits) but not strictly ordered across processes.

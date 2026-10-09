@@ -7,39 +7,21 @@
 use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::UnixStream;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use rikuri_api::{Request, Response, command};
-use rikuri_domain::{IdError, IdSource, SystemClock, SystemIdSource};
+use rikuri_domain::{IdSource, SystemClock, SystemIdSource};
+use rikuri_testkit::{FixtureIds, T0};
 use rikurid::crash::NoCrash;
 use rikurid::kernel::database_path;
 use rikurid::{Idempotency, Kernel, KernelConfig, server};
 use serde_json::{Value, json};
-use ulid::Ulid;
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 const DEADLINE: Duration = Duration::from_secs(10);
-
-/// System IDs until `failing` is set, then `SourceUnavailable`.
-struct SwitchableIds {
-    inner: SystemIdSource,
-    failing: Arc<AtomicBool>,
-}
-
-impl IdSource for SwitchableIds {
-    fn next_ulid(&self) -> Result<Ulid, IdError> {
-        if self.failing.load(Ordering::SeqCst) {
-            Err(IdError::SourceUnavailable(
-                "switched off by the test".into(),
-            ))
-        } else {
-            self.inner.next_ulid()
-        }
-    }
-}
 
 fn open_with(home: &Path, ids: Box<dyn IdSource>) -> Result<Kernel, rikurid::KernelError> {
     Kernel::open(
@@ -187,11 +169,8 @@ fn a_quarantined_daemon_still_replays_committed_requests() {
 #[test]
 fn internal_failures_inside_writes_are_not_green() {
     let dir = tempfile::tempdir().unwrap();
-    let failing = Arc::new(AtomicBool::new(false));
-    let ids = SwitchableIds {
-        inner: SystemIdSource::new(),
-        failing: Arc::clone(&failing),
-    };
+    let ids = FixtureIds::sequential(T0);
+    let failing = ids.failure_switch();
     let k = open_with(&home(&dir), Box::new(ids)).unwrap();
     call(&k, command::SYSTEM_INIT, json!({}));
     failing.store(true, Ordering::SeqCst);

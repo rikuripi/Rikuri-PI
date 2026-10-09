@@ -40,7 +40,7 @@ Trusted kernel code inside `rikurid`. Treats stored rows as possibly damaged: a 
 
 ## Allowed dependencies
 
-`rikuri-domain`, `rusqlite` (bundled SQLite), `serde`, `serde_json`, `thiserror`, `blake3`. Test-only: `proptest`, `tempfile`, `ulid`.
+`rikuri-domain`, `rusqlite` (bundled SQLite), `serde`, `serde_json`, `thiserror`, `blake3`. Test-only: `proptest`, `tempfile`, `rikuri-testkit`.
 
 ## Forbidden dependencies
 

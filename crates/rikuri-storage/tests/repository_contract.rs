@@ -2,13 +2,11 @@
 //! conflicts, transaction rollback, corruption detection. Written against
 //! the `Repository` trait so every implementation runs the same suite.
 
-use std::sync::atomic::{AtomicU64, Ordering};
-
 use proptest::prelude::*;
-use rikuri_domain::{Clock, IdError, IdSource, PrivacyClass, ProjectId, SchemaVersion, Timestamp};
+use rikuri_domain::{PrivacyClass, ProjectId, SchemaVersion, Timestamp};
 use rikuri_storage::{Entity, Repository, SqliteRepository, StorageError, Store, Versioned};
+use rikuri_testkit::{FixtureClock, FixtureIds, T0, T0_TIME};
 use serde::{Deserialize, Serialize};
-use ulid::Ulid;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Thing {
@@ -29,34 +27,17 @@ impl Entity for Thing {
     }
 }
 
-struct Seq(AtomicU64);
-impl IdSource for Seq {
-    fn next_ulid(&self) -> Result<Ulid, IdError> {
-        Ok(Ulid::from_parts(
-            1_790_000_000_000,
-            u128::from(self.0.fetch_add(1, Ordering::SeqCst)),
-        ))
-    }
-}
-
-struct Fixed;
-impl Clock for Fixed {
-    fn now(&self) -> Timestamp {
-        Timestamp(1_790_000_000_000)
-    }
-}
-
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
 fn open(dir: &tempfile::TempDir) -> TestResult<Store> {
     Ok(Store::open(
         &dir.path().join("state/rikuri.db"),
-        Box::new(Fixed),
+        Box::new(FixtureClock::fixed(T0_TIME)),
         &[],
     )?)
 }
 
-fn thing(ids: &Seq, name: &str) -> TestResult<Thing> {
+fn thing(ids: &FixtureIds, name: &str) -> TestResult<Thing> {
     Ok(Thing {
         id: ProjectId::generate(ids)?,
         name: name.into(),
@@ -74,7 +55,7 @@ fn current<R: Repository<Thing>>(
 
 /// The contract every `Repository<Thing>` must meet.
 fn contract<R: Repository<Thing>>(store: &Store, repo: &R) -> TestResult {
-    let ids = Seq(AtomicU64::new(1));
+    let ids = FixtureIds::sequential(T0);
     let now = Timestamp(1_790_000_000_000);
     let a = thing(&ids, "a")?;
 
@@ -166,7 +147,7 @@ fn sqlite_repository_meets_the_contract() {
 #[test]
 fn committed_state_survives_reopen() {
     let dir = tempfile::tempdir().unwrap();
-    let ids = Seq(AtomicU64::new(1));
+    let ids = FixtureIds::sequential(T0);
     let a = thing(&ids, "kept").unwrap();
     {
         let store = open(&dir).unwrap();
@@ -187,7 +168,7 @@ fn tampered_rows_are_reported_not_trusted() {
     let dir = tempfile::tempdir().unwrap();
     let store = open(&dir).unwrap();
     let repo = SqliteRepository::<Thing>::new();
-    let ids = Seq(AtomicU64::new(1));
+    let ids = FixtureIds::sequential(T0);
     let a = thing(&ids, "a").unwrap();
     let other = thing(&ids, "other").unwrap();
     store.write(|tx| repo.insert(tx, &a, Timestamp(1))).unwrap();
@@ -274,7 +255,7 @@ proptest! {
         let store = open(&dir).unwrap();
         let repo = SqliteRepository::<Thing>::new();
         let ids: Vec<ProjectId> = {
-            let s = Seq(AtomicU64::new(1));
+            let s = FixtureIds::sequential(T0);
             (0..4).map(|_| ProjectId::generate(&s).unwrap()).collect()
         };
         let mut model: [Option<u64>; 4] = [None; 4];
@@ -351,7 +332,7 @@ fn privacy_and_deletion_columns_must_match_the_body() {
     let dir = tempfile::tempdir().unwrap();
     let store = open(&dir).unwrap();
     let repo = SqliteRepository::<Doc>::new();
-    let ids = Seq(AtomicU64::new(1));
+    let ids = FixtureIds::sequential(T0);
     let unit = rikuri_domain::DeletionUnitId::generate(&ids).unwrap();
     let doc = Doc {
         id: ProjectId::generate(&ids).unwrap(),
@@ -415,7 +396,7 @@ fn rows_of_another_kind_are_refused() {
     let dir = tempfile::tempdir().unwrap();
     let store = open(&dir).unwrap();
     let repo = SqliteRepository::<Thing>::new();
-    let ids = Seq(AtomicU64::new(1));
+    let ids = FixtureIds::sequential(T0);
     let a = thing(&ids, "a").unwrap();
     store.write(|tx| repo.insert(tx, &a, Timestamp(1))).unwrap();
     set_column(
@@ -458,7 +439,7 @@ fn corrupt_row_errors_are_bounded() {
     let dir = tempfile::tempdir().unwrap();
     let store = open(&dir).unwrap();
     let repo = SqliteRepository::<Thing>::new();
-    let ids = Seq(AtomicU64::new(1));
+    let ids = FixtureIds::sequential(T0);
     let a = thing(&ids, "a").unwrap();
     store.write(|tx| repo.insert(tx, &a, Timestamp(1))).unwrap();
     let huge = "k".repeat(1 << 20);

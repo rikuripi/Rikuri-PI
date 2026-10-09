@@ -2,15 +2,9 @@
 //! migration rolled back to the last good version, and refusal of a
 //! database from a newer build or with a changed migration definition.
 
-use rikuri_domain::{Clock, Timestamp};
+use rikuri_domain::Timestamp;
 use rikuri_storage::{Migration, Migrations, StorageError, Store};
-
-struct Fixed;
-impl Clock for Fixed {
-    fn now(&self) -> Timestamp {
-        Timestamp(1)
-    }
-}
+use rikuri_testkit::FixtureClock;
 
 const V1: Migration = Migration {
     version: 1,
@@ -38,7 +32,11 @@ fn comp(list: &'static [Migration]) -> Migrations {
 // The database lives in a subdirectory the store creates owner-only; the
 // temporary directory itself follows the umask and may be shared.
 fn open(dir: &tempfile::TempDir, c: &Migrations) -> Result<Store, StorageError> {
-    Store::open(&dir.path().join("state/rikuri.db"), Box::new(Fixed), &[c])
+    Store::open(
+        &dir.path().join("state/rikuri.db"),
+        Box::new(FixtureClock::fixed(Timestamp(1))),
+        &[c],
+    )
 }
 
 fn count(store: &Store, sql: &str) -> Result<i64, StorageError> {
@@ -230,7 +228,7 @@ fn named(component: &'static str, list: &'static [Migration]) -> Migrations {
 fn open_all(dir: &tempfile::TempDir, components: &[&Migrations]) -> Result<Store, StorageError> {
     Store::open(
         &dir.path().join("state/rikuri.db"),
-        Box::new(Fixed),
+        Box::new(FixtureClock::fixed(Timestamp(1))),
         components,
     )
 }

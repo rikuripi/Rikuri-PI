@@ -8,42 +8,20 @@
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
 use rikuri_api::{Request, command};
-use rikuri_domain::{Clock, IdError, IdSource, Timestamp};
+use rikuri_testkit::{FixtureClock, FixtureIds, T0, T0_TIME};
 use rikurid::crash::NoCrash;
 use rikurid::{Idempotency, Kernel, KernelConfig, server};
 use serde_json::{Value, json};
-use ulid::Ulid;
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
-const T0: u64 = 1_790_000_000_000;
-
-/// IDs 1, 2, 3, … at a fixed time: the same requests give the same IDs.
-struct SequentialIds(AtomicU64);
-impl IdSource for SequentialIds {
-    fn next_ulid(&self) -> Result<Ulid, IdError> {
-        Ok(Ulid::from_parts(
-            T0,
-            u128::from(self.0.fetch_add(1, Ordering::SeqCst)),
-        ))
-    }
-}
-
-struct FixedClock;
-impl Clock for FixedClock {
-    fn now(&self) -> Timestamp {
-        Timestamp(i64::try_from(T0).unwrap_or(i64::MAX))
-    }
-}
-
 fn deterministic() -> KernelConfig {
     KernelConfig {
-        ids: Box::new(SequentialIds(AtomicU64::new(1))),
-        clock: Box::new(FixedClock),
+        ids: Box::new(FixtureIds::sequential(T0)),
+        clock: Box::new(FixtureClock::fixed(T0_TIME)),
         crash: Box::new(NoCrash),
         idempotency: Idempotency::Enforced,
     }

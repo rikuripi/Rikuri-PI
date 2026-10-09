@@ -31,7 +31,7 @@ The `rikuri` command line and its exit codes; output is the `rikuri-api` respons
 
 ## Allowed dependencies
 
-`rikuri-api`, `rikuri-domain`, `clap`, `serde_json`. Test-only: `rikurid` (library), `tempfile`, `ulid`.
+`rikuri-api`, `rikuri-domain`, `clap`, `serde_json`. Test-only: `rikurid` (library), `rikuri-testkit`, `tempfile`.
 
 ## Forbidden dependencies
 
