@@ -9,7 +9,7 @@
 | Commits | 586d878 (crate and workspace); 9b91f0e and the review-fix commit for two defects found later ([review-fixes record](2026-10-05-s00-gate-review-fixes.md)) |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md) |
 | Related ADR / requirement | S00.04, S00.09 (contract), S00.10 (ADR 0001); Architecture §4, §8, §19.1, §21.3, §27.6, §45.1; PRD §10.1, SEC-003, SEC-023 |
-| Status | IN PROGRESS |
+| Status | COMPLETE (2026-10-08) — real callers S00.05–S00.07; the end-to-end trace is T00.09 (PR #20) |
 
 **Risk note (protected path, REVIEW.md):** creates `docs/architecture/adr/0001-stable-id-format.md`; ADRs are protected. Status Proposed until the owner accepts it (the Stage 00 exit requires ADR 0001–0004 accepted).
 
@@ -51,7 +51,7 @@
 - [x] Invariant/property test: `tests/id_properties.rs`, 4 properties (total canonical parsing over arbitrary text; issued IDs round-trip only as their kind; text order equals ID order; every registered prefix parses).
 - [ ] Replay/golden fixture — N/A until events exist (S00.06).
 - [ ] Running-system probe — N/A: a library with no runtime. Its real callers are S00.05–S00.07.
-- [ ] End-to-end action trace — Not yet proven; arrives with T00.09.
+- [x] End-to-end action trace — T00.09 (`apps/rikuri-cli/tests/t00_09_cli_matches_in_process.rs`) through the real CLI, socket, kernel, store and ledger; CI run 37864086595 on `main` after PR #20, both jobs green.
 - [x] Recovery/fallback — N/A.
 - [x] Regression guard proven to fail against broken behavior: see evidence log (authority derivation deliberately broken in a scratch copy → test fails).
 - [x] Cost/performance — N/A.
@@ -70,7 +70,7 @@
 
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
-| Real caller for `rikuri-domain` types | RESEQUENCED within Stage 00 | A pure-type crate is used by the storage, ledger and daemon crates that follow | S00.04 is not complete until a real caller exists; S00.05–S00.07 must use these types rather than redefine them | Stage 00 implementer | S00.05–S00.07 | `rikurid` stores and emits these IDs/enums through the T00.09 vertical slice |
+| Real caller for `rikuri-domain` types | DONE 2026-10-08 (PR #20, `aef4094`): `rikurid` stores and emits these IDs and enums; T00.09 green on the PR and `main` (run 37864086595). Was RESEQUENCED within Stage 00 | A pure-type crate is used by the storage, ledger and daemon crates that follow | S00.04 is not complete until a real caller exists; S00.05–S00.07 must use these types rather than redefine them | Stage 00 implementer | S00.05–S00.07 | `rikurid` stores and emits these IDs/enums through the T00.09 vertical slice |
 | `Provenance` derives its authority from its own `origin` field (pre-merge verification of PR #7, 2026-10-06): JSON claiming `"origin":"user_live"` deserializes with `CurrentUser` authority, so stored bytes read back later could carry authority they should not | RESOLVED 2026-10-07 ([record](2026-10-07-provenance-loaded-authority.md)): loaded records always carry `none`. Was: DEFERRED, owned | No caller exists yet, so nothing can exploit it today; the fix belongs with the first code that stores or loads `Provenance` | S00.05 storage and S00.06 ledger must not deserialize `Provenance` from untrusted or stored bytes until this is resolved | Henry Chen | Before S00.05/S00.06 merge to `main` | Either the Module Contract states that `Provenance` is never deserialized from untrusted input and the storage/ledger code honours it, or the type separates stored origin from granted authority; a regression test shows stored `user_live` JSON cannot yield `CurrentUser` authority |
 | ADR 0001 acceptance | RESOLVED 2026-10-07: the owner accepted ADR 0001 (in session). Was: owner decision pending | The Stage 00 exit requires ADR 0001–0004 accepted | None before data exists; reversal path in the ADR | Henry Chen | Stage 00 exit | Owner marks ADR 0001 Accepted |
 
