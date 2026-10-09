@@ -16,5 +16,12 @@ rikuri-api.workspace = true
 rikuri-domain.workspace = true
 serde_json.workspace = true
 
+[dev-dependencies]
+# T00.09: the real CLI against a daemon served from the library, compared
+# with the in-process adapter
+rikurid.workspace = true
+tempfile.workspace = true
+ulid.workspace = true
+
 [lints]
 workspace = true

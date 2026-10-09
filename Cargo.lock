@@ -545,7 +545,10 @@ dependencies = [
  "clap",
  "rikuri-api",
  "rikuri-domain",
+ "rikurid",
  "serde_json",
+ "tempfile",
+ "ulid",
 ]
 
 [[package]]

@@ -67,8 +67,8 @@ state / last_attempt / last_success / last_error / consecutive_failures / work_c
 
 ## Required tests
 
-- [x] unit (wire names, exit codes, parameter parsing) — inline tests in `lib.rs` and `command.rs`
-- [ ] shared contract — the same requests through the socket and in-process give the same envelopes (T00.09, with `rikurid`)
+- [x] unit (wire names, exit codes, parameter parsing) — inline tests in `lib.rs` and `command.rs`; every code's exit code and retryable flag pinned one by one in `tests/exit_codes.rs`
+- [x] shared contract — the same requests through the socket and in-process give byte-identical envelopes (T00.09, `apps/rikuri-cli/tests/t00_09_cli_matches_in_process.rs`)
 
 ## Documentation / help entry points
 

@@ -31,11 +31,11 @@ The `rikuri` command line and its exit codes; output is the `rikuri-api` respons
 
 ## Allowed dependencies
 
-`rikuri-api`, `rikuri-domain`, `clap`, `serde_json`.
+`rikuri-api`, `rikuri-domain`, `clap`, `serde_json`. Test-only: `rikurid` (library), `tempfile`, `ulid`.
 
 ## Forbidden dependencies
 
-`rikuri-storage`, `rikuri-ledger`, `rikurid`'s library, any network or async crate.
+`rikuri-storage`, `rikuri-ledger`, `rikurid`'s library (allowed only as a test-only dependency, so T00.09 can serve a daemon to the real binary), any network or async crate.
 
 ## Failure and degraded behavior
 
@@ -60,8 +60,9 @@ state / last_attempt / last_success / last_error / consecutive_failures / work_c
 
 ## Required tests
 
-- [ ] T00.09: the CLI and the in-process adapter give the same envelopes and exit codes
-- [ ] T00.10: smoke through the CLI checks a content marker in `state show`
+- [x] T00.09: the CLI and the in-process adapter give byte-identical envelopes and the same exit codes — `tests/t00_09_cli_matches_in_process.rs` (runs the real binary against a daemon served from the `rikurid` library)
+- [x] T00.10: smoke through the CLI checks content in `state show` — `scripts/quality/smoke.sh`
+- [x] exit codes the parity run does not reach: 2 (usage), 4 (no daemon), 5 (a refused write) — `tests/cli_exit_codes.rs`
 
 ## Documentation / help entry points
 
@@ -69,5 +70,4 @@ state / last_attempt / last_success / last_error / consecutive_failures / work_c
 
 ## Known limitations / explicit debt
 
-- No tests yet.
 - Unix only (local socket).

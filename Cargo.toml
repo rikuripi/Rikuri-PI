@@ -24,6 +24,7 @@ rikuri-domain = { path = "crates/rikuri-domain" }
 rikuri-storage = { path = "crates/rikuri-storage" }
 rikuri-ledger = { path = "crates/rikuri-ledger" }
 rikuri-api = { path = "crates/rikuri-api" }
+rikurid = { path = "apps/rikurid" }
 clap = { version = "4.6.7", features = ["derive"] }
 
 [workspace.lints.rust]

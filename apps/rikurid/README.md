@@ -79,8 +79,8 @@ state / last_attempt / last_success / last_error / consecutive_failures / work_c
 ## Required tests
 
 - [x] defect regressions — `tests/s00_07_defects.rs` (round 1), `tests/s00_07_round2.rs` (round 2) and `tests/s00_07_round3.rs` (round 3: quarantine stays Critical and sticky after the cause clears, replays of committed requests while quarantined, internal faults inside writes are not green, one log line per request with no forging and bounded envelope errors), plus round 2: `state.show` answers (deadlock regression, with a deadline), shared socket directory refused, socket owner-only, health under failed writes and refusals, replay and conflict, quarantine, one kernel per home, no file deleted by `bind`, bounded parameter errors, keys refused where none is taken, `state.show` truncation
-- [ ] T00.09 CLI → kernel → repository → ledger as one real path; socket and in-process adapters give the same envelopes
-- [ ] T00.10 smoke checks a content marker in `state.show` (`scripts/quality/smoke.sh`)
+- [x] T00.09 CLI → kernel → repository → ledger as one real path; socket and in-process adapters give byte-identical envelopes and the same exit codes — `apps/rikuri-cli/tests/t00_09_cli_matches_in_process.rs`
+- [x] T00.10 smoke checks content, not liveness: a task title in `state.show`, never in the ledger, health healthy, the task after a restart — `scripts/quality/smoke.sh` (a gate step), with its self-test `scripts/quality/tests/smoke-checks-content.sh`
 - [ ] T00.06/T00.07/T00.08/T00.12 crash matrix, property and regression
 
 ## Documentation / help entry points
@@ -92,5 +92,5 @@ This file; rustdoc; `rikurid --help`; `rikuri --help`.
 - Fixed 2026-10-08, tests-first ([S00.07 record](../../docs/build-records/2026-10-08-s00-07-rikurid.md)): `state.show` deadlocked the daemon; an existing socket directory was not checked; health showed the store healthy while writes failed; `bind` deleted any non-socket file at the socket path; and the smaller items listed in that record.
 - One connection at a time with a per-read timeout: a slow or non-reading client can stall the daemon for others. Acceptable while the socket is owner-only (ADR 0004); must change before any caller other than the owner can reach a socket (for example the Pi harness's mounted socket, ADR 0000 September 28 decision 3).
 - The consistency replay checks events against tasks and run links and catches duplicate effects by idempotency key, but does not yet compare every completion event with run state; to be extended with the crash matrix (T00.07).
-- T00.09, T00.10 (`smoke.sh`) and the crash-matrix tests are not written yet.
+- The crash-matrix tests (T00.06–T00.08, T00.12) are not written yet.
 - Unix only (local socket); Windows arrives with Windows support (product Stage 9).

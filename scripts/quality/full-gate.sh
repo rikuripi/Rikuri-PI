@@ -63,6 +63,7 @@ step format cargo fmt --all --check
 step build cargo build --workspace --all-targets --locked
 step clippy run_clippy
 step test cargo test --workspace --locked
+step smoke scripts/quality/smoke.sh
 step dependencies cargo deny --locked check
 step secrets scripts/quality/secret-scan.sh
 step ratchet scripts/quality/ratchet.sh
