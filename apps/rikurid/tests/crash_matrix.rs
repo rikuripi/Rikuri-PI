@@ -136,10 +136,24 @@ impl Drop for Daemon {
 const SCRATCH_PREFIX: &str = "rikuri-crash.";
 const SCRATCH_RAND: usize = 6;
 
-/// A scratch directory's parent: /tmp, since a Unix socket path must stay
-/// short (about 104 bytes on macOS), and $TMPDIR there is long.
-fn scratch_parent(_tmpdir: Option<&OsStr>) -> PathBuf {
-    PathBuf::from("/tmp")
+/// A scratch directory's parent: `$TMPDIR` when the daemon's socket path in
+/// a home there fits ([`server::MAX_SOCKET_PATH_BYTES`]), so the gate's
+/// `no-temp-residue.sh`, which runs this file with a short private TMPDIR,
+/// sees a home a killed run leaves behind. Otherwise /tmp: a `$TMPDIR` can
+/// be too long for a socket (macOS allows about 104 bytes), and an unset or
+/// relative one, or the root, is no place to look. `smoke.sh` follows the
+/// same rule, though it knows the root only as `/` or `//`.
+fn scratch_parent(tmpdir: Option<&OsStr>) -> PathBuf {
+    match tmpdir.map(Path::new) {
+        Some(dir)
+            if dir.is_absolute()
+                && dir != Path::new("/")
+                && scratch_socket(dir).as_os_str().len() <= server::MAX_SOCKET_PATH_BYTES =>
+        {
+            dir.to_path_buf()
+        }
+        _ => PathBuf::from("/tmp"),
+    }
 }
 
 /// The daemon's socket path in a scratch home under `parent`.

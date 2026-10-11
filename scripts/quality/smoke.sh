@@ -9,7 +9,8 @@
 #
 # Uses target/debug (or $CARGO_TARGET_DIR) binaries built by the gate's
 # build step. RIKURID_BIN and RIKURI_BIN override them (the gate's self-test
-# uses that to prove these checks fail on wrong content).
+# uses that to prove these checks fail on wrong content, and that a home
+# left behind is seen).
 set -euo pipefail
 cd "$(dirname "$0")/../.." # the repository root, like the other quality scripts
 
@@ -17,9 +18,24 @@ target="${CARGO_TARGET_DIR:-target}"
 rikurid="${RIKURID_BIN:-$target/debug/rikurid}"
 rikuri="${RIKURI_BIN:-$target/debug/rikuri}"
 
-# Under /tmp, not $TMPDIR: a Unix socket path must stay short (about 104
-# bytes on macOS), and a long $TMPDIR would push run/rikurid.sock past it.
-work="$(mktemp -d /tmp/rikuri-smoke.XXXXXX)" # 0700
+# Under $TMPDIR when the daemon's socket path there fits (rikurid's
+# MAX_SOCKET_PATH_BYTES, 103), so the gate's no-temp-residue.sh, which runs
+# this with a short private TMPDIR, sees a home a killed run leaves behind.
+# Otherwise /tmp: a $TMPDIR can be too long for a socket (macOS allows about
+# 104 bytes), and an unset or relative one, or the root (`/` or `//`), is no
+# place to look. The crash matrix (apps/rikurid/tests/crash_matrix.rs)
+# follows the same rule; other spellings of the root (`///`, `/.`) send it
+# to /tmp but make mktemp fail here, loudly.
+base="${TMPDIR:-}"
+base="${base%/}"
+case "$base" in
+  /?*)
+    sock_bytes="$(printf '%s' "$base/rikuri-smoke.XXXXXX/home/run/rikurid.sock" | wc -c)"
+    [ "$((sock_bytes))" -le 103 ] || base=/tmp
+    ;;
+  *) base=/tmp ;;
+esac
+work="$(mktemp -d "$base/rikuri-smoke.XXXXXX")" # 0700
 home="$work/home"
 log="$work/rikurid.log"
 pid=""

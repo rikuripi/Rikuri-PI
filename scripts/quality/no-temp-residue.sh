@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
-# Runs a command (the gate's and CI's `cargo test --workspace`) with TMPDIR
-# set to a fresh private directory, and fails if the command fails, leaves
-# anything in that directory, or removes or replaces the directory (then
-# nothing can be checked): a test cleans up its scratch files. Before
+# Runs a command (the gate's and CI's `cargo test --workspace`, smoke and the
+# crash matrix) with TMPDIR set to a fresh private directory, and fails if
+# the command fails, leaves anything in that directory, or removes or
+# replaces the directory (then nothing can be checked): a test cleans up its
+# scratch files. Before
 # 2026-10-10, rikuri-storage's reentrancy tests let the process exit while
 # their threads were still removing their temporary directories, and most
 # runs left /tmp/.tmp*/state/ behind
 # (docs/build-records/2026-10-10-test-temp-residue.md).
 #
 # It sees what honours TMPDIR (tempfile::tempdir(), std::env::temp_dir()),
-# not scratch made at a fixed path, such as the crash matrix's and smoke's
-# directories under /tmp. The private directory is under /tmp, not $TMPDIR:
-# a Unix socket path in a test's home must stay short (about 104 bytes on
-# macOS), and $TMPDIR there is long. It is removed afterwards, once anything
-# left in it has been listed.
+# not scratch made at a fixed path. The private directory is under /tmp, not
+# $TMPDIR: a Unix socket path in a test's home must stay short (about 104
+# bytes on macOS), and $TMPDIR there can be long. The crash matrix and smoke
+# put their daemon homes in TMPDIR only while the socket path fits (until
+# 2026-10-10 always in /tmp, outside this check;
+# docs/build-records/2026-10-10-crash-and-smoke-temp-residue.md), so keep
+# this path short. It is removed afterwards, once anything left in it has
+# been listed.
 # Usage: no-temp-residue.sh <command> [args...]
 set -euo pipefail
 [ "$#" -gt 0 ] || { echo "usage: $0 <command> [args...]" >&2; exit 2; }
