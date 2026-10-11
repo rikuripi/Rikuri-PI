@@ -17,11 +17,12 @@ mod event;
 mod idempotency;
 
 pub use event::{
-    Event, EventStatus, EventType, LedgerError, MAX_METADATA_BYTES, MAX_METADATA_STRING, NewEvent,
-    append, by_task, get, replay, tail,
+    EVENT_SCHEMA, Event, EventStatus, EventType, LedgerError, MAX_METADATA_BYTES,
+    MAX_METADATA_STRING, NewEvent, after, append, by_task, get, replay, tail, task_counts,
 };
 pub use idempotency::{
-    IdempotencyCheck, IdempotencyKey, IdempotencyRecord, check, record, request_hash,
+    IdempotencyCheck, IdempotencyKey, IdempotencyRecord, check, record, record_mark, records_after,
+    request_hash,
 };
 
 use rikuri_storage::{Migration, Migrations};
@@ -83,5 +84,12 @@ CREATE TRIGGER idempotency_no_replace BEFORE INSERT ON idempotency
     WHEN EXISTS (SELECT 1 FROM idempotency WHERE idempotency_key = NEW.idempotency_key)
     BEGIN SELECT RAISE(ABORT, 'idempotency records are append-only'); END;
 ",
+    }, Migration {
+        version: 2,
+        name: "events counted by task and type",
+        // the kernel's candidate check counts a task's events by type
+        // before every commit (E1, ADR 0005); without this index the count
+        // reads every event row of the task
+        sql: "CREATE INDEX events_by_task_type ON events (task_id, event_type);",
     }],
 };
