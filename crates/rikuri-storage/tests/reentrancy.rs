@@ -15,24 +15,60 @@ use rikuri_testkit::FixtureClock;
 
 const DEADLINE: Duration = Duration::from_secs(10);
 
+/// Runs `work` on its own thread; its answer, or `None` if there was none
+/// by the deadline. The answer is sent after `work` returns, when the stores
+/// and scratch directories it made are already dropped, and the thread is
+/// then joined, so nothing it owned outlives the test (before 2026-10-10 the
+/// answer came first, and the test process could exit mid-cleanup). A
+/// deadlocked thread cannot be joined and is left behind.
+fn within_deadline(work: impl FnOnce() -> Option<String> + Send + 'static) -> Option<String> {
+    let (tx, rx) = mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        if let Some(answer) = work() {
+            let _ = tx.send(answer);
+        }
+    });
+    match rx.recv_timeout(DEADLINE) {
+        Err(mpsc::RecvTimeoutError::Timeout) => None,
+        answer => {
+            let _ = worker.join();
+            answer.ok()
+        }
+    }
+}
+
 /// Runs `case` on a fresh store on its own thread; its result text, or
 /// `None` if it did not finish by the deadline.
 fn on_a_thread(case: fn(&Store) -> String) -> Option<String> {
-    let (tx, rx) = mpsc::channel();
-    std::thread::spawn(move || {
-        let Ok(dir) = tempfile::tempdir() else {
-            return;
-        };
-        let Ok(store) = Store::open(
+    within_deadline(move || {
+        let dir = tempfile::tempdir().ok()?;
+        let store = Store::open(
             &dir.path().join("state/rikuri.db"),
             Box::new(FixtureClock::fixed(Timestamp(1))),
             &[],
-        ) else {
-            return;
+        )
+        .ok()?;
+        Some(case(&store))
+    })
+}
+
+/// Runs `case` on two fresh stores, A and B (each in its own scratch
+/// directory), on its own thread; its result text, or `None` if it did not
+/// finish by the deadline.
+fn on_two_stores(case: fn(&Store, &Store) -> String) -> Option<String> {
+    within_deadline(move || {
+        let (da, db) = (tempfile::tempdir().ok()?, tempfile::tempdir().ok()?);
+        let open = |dir: &tempfile::TempDir, name: &str| {
+            Store::open(
+                &dir.path().join("state").join(name),
+                Box::new(FixtureClock::fixed(Timestamp(1))),
+                &[],
+            )
+            .ok()
         };
-        let _ = tx.send(case(&store));
-    });
-    rx.recv_timeout(DEADLINE).ok()
+        let (a, b) = (open(&da, "a.db")?, open(&db, "b.db")?);
+        Some(case(&a, &b))
+    })
 }
 
 fn schema_version_inside_read(store: &Store) -> String {
@@ -104,32 +140,13 @@ fn a_case_leaves_no_scratch_directory_behind() {
 /// 2026-10-08 round 2 the marker remembered only the innermost store.)
 #[test]
 fn nested_stores_are_allowed_but_reentry_anywhere_in_the_nest_is_refused() {
-    let (tx, rx) = mpsc::channel();
-    std::thread::spawn(move || {
-        let (Ok(da), Ok(db)) = (tempfile::tempdir(), tempfile::tempdir()) else {
-            return;
-        };
-        let (Ok(a), Ok(b)) = (
-            Store::open(
-                &da.path().join("state/a.db"),
-                Box::new(FixtureClock::fixed(Timestamp(1))),
-                &[],
-            ),
-            Store::open(
-                &db.path().join("state/b.db"),
-                Box::new(FixtureClock::fixed(Timestamp(1))),
-                &[],
-            ),
-        ) else {
-            return;
-        };
+    let Some(outcome) = on_two_stores(|a, b| {
         let nested = a.read(|_| {
             Ok::<_, StorageError>(b.read(|_| Ok::<_, StorageError>(a.schema_version("storage"))))
         });
         let allowed = a.read(|_| Ok::<_, StorageError>(b.read(|_| Ok::<_, StorageError>(()))));
-        let _ = tx.send(format!("{nested:?} | {allowed:?}"));
-    });
-    let Ok(outcome) = rx.recv_timeout(DEADLINE) else {
+        format!("{nested:?} | {allowed:?}")
+    }) else {
         panic!("A → B → A: no answer within {DEADLINE:?} (deadlock)");
     };
     assert_eq!(outcome, "Ok(Ok(Err(Reentrant))) | Ok(Ok(()))");
@@ -140,32 +157,13 @@ fn nested_stores_are_allowed_but_reentry_anywhere_in_the_nest_is_refused() {
 /// marker that pops the wrong entry.)
 #[test]
 fn reentry_after_an_inner_store_returns_is_still_refused() {
-    let (tx, rx) = mpsc::channel();
-    std::thread::spawn(move || {
-        let (Ok(da), Ok(db)) = (tempfile::tempdir(), tempfile::tempdir()) else {
-            return;
-        };
-        let (Ok(a), Ok(b)) = (
-            Store::open(
-                &da.path().join("state/a.db"),
-                Box::new(FixtureClock::fixed(Timestamp(1))),
-                &[],
-            ),
-            Store::open(
-                &db.path().join("state/b.db"),
-                Box::new(FixtureClock::fixed(Timestamp(1))),
-                &[],
-            ),
-        ) else {
-            return;
-        };
+    let Some(outcome) = on_two_stores(|a, b| {
         let after_b = a.read(|_| {
             b.read(|_| Ok::<_, StorageError>(()))?;
             Ok::<_, StorageError>(a.schema_version("storage"))
         });
-        let _ = tx.send(format!("{after_b:?}"));
-    });
-    let Ok(outcome) = rx.recv_timeout(DEADLINE) else {
+        format!("{after_b:?}")
+    }) else {
         panic!("re-entering A after B returned: no answer within {DEADLINE:?} (deadlock)");
     };
     assert_eq!(outcome, "Ok(Err(Reentrant))");
