@@ -94,6 +94,19 @@ struct Row {
     body: String,
 }
 
+/// How many objects, of any kind, belong to deletion unit `unit`, counted
+/// through the `objects_by_deletion_unit` index (storage migration 2).
+/// Forgetting a unit forgets every object in it, so the kernel refuses a
+/// new task whose unit is not its own (E1, ADR 0005).
+pub fn deletion_unit_size(tx: &Tx<'_>, unit: DeletionUnitId) -> Result<u64, StorageError> {
+    let n: i64 = tx.query_row(
+        "SELECT count(*) FROM objects WHERE deletion_unit_id = ?1",
+        params![unit.to_string()],
+        |r| r.get(0),
+    )?;
+    Ok(u64::try_from(n).unwrap_or(0))
+}
+
 const SELECT: &str = "SELECT id, kind, version, schema_version, privacy_class, deletion_unit_id,
     created_at_ms, updated_at_ms, body FROM objects";
 
@@ -241,7 +254,14 @@ impl<T: Entity> Repository<T> for SqliteRepository<T> {
             }
             Err(e) => return Err(e.into()),
         }
-        read_back(tx, &id, &body, 1)
+        let stored = read_back(tx, &id, &body, 1)?;
+        tx.note_write(crate::Written {
+            kind: T::KIND,
+            id,
+            before: None,
+            after: body,
+        });
+        Ok(stored)
     }
 
     fn update(
@@ -260,6 +280,14 @@ impl<T: Entity> Repository<T> for SqliteRepository<T> {
                 expected: expected_version,
                 actual: 0,
             })?;
+        // the body this update replaces, for the transaction's list of writes
+        let before: Option<String> = tx
+            .query_row(
+                "SELECT body FROM objects WHERE id = ?1 AND kind = ?2 AND version = ?3",
+                params![id, T::KIND, expected],
+                |r| r.get(0),
+            )
+            .optional()?;
         let changed = tx.execute(
             "UPDATE objects
                 SET version = version + 1, schema_version = ?1, privacy_class = ?2,
@@ -277,7 +305,14 @@ impl<T: Entity> Repository<T> for SqliteRepository<T> {
             ],
         )?;
         if changed == 1 {
-            return read_back(tx, &id, &body, expected_version + 1);
+            let stored = read_back(tx, &id, &body, expected_version + 1)?;
+            tx.note_write(crate::Written {
+                kind: T::KIND,
+                id,
+                before,
+                after: body,
+            });
+            return Ok(stored);
         }
         let actual: Option<i64> = tx
             .query_row(

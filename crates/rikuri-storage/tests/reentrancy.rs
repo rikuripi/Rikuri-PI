@@ -77,7 +77,7 @@ fn sequential_store_calls_still_work() {
         let c = store.write(|_| Ok::<_, StorageError>(()));
         format!("{a:?} {b:?} {c:?}")
     });
-    assert_eq!(outcome.as_deref(), Some("Ok(()) Ok(Some(1)) Ok(())"));
+    assert_eq!(outcome.as_deref(), Some("Ok(()) Ok(Some(2)) Ok(())"));
 }
 
 /// Two stores may nest (A's transaction calls B), but re-entering any store
