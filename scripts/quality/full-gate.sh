@@ -59,9 +59,11 @@ run_clippy() {
 # W1 (T00.07, T00.08, T00.12): kill -9 a crash-injection rikurid at every
 # Stage 00 crash point of every consequential command, restart, retry. Built
 # in its own target directory so the test build never replaces the
-# production target/debug/rikurid that smoke and owners run.
+# production target/debug/rikurid that smoke and owners run. Its scratch
+# homes go in the wrapper's TMPDIR, which must stay empty.
 run_crash_matrix() {
-  cargo test -p rikurid --features crash-injection --test crash_matrix --locked \
+  scripts/quality/no-temp-residue.sh \
+    cargo test -p rikurid --features crash-injection --test crash_matrix --locked \
     --target-dir "${CARGO_TARGET_DIR:-target}/crash-injection"
 }
 
@@ -71,9 +73,10 @@ step guard python3 -m unittest discover -s .claude/hooks -p 'test_*.py' -q
 step format cargo fmt --all --check
 step build cargo build --workspace --all-targets --locked
 step clippy run_clippy
-# with a private TMPDIR that must stay empty: a test cleans up after itself
+# test, smoke and the crash matrix with a private TMPDIR that must stay
+# empty: a test cleans up after itself
 step test scripts/quality/no-temp-residue.sh cargo test --workspace --locked
-step smoke scripts/quality/smoke.sh
+step smoke scripts/quality/no-temp-residue.sh scripts/quality/smoke.sh
 step crash-matrix run_crash_matrix
 step dependencies cargo deny --locked check
 step secrets scripts/quality/secret-scan.sh
