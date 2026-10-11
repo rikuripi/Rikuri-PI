@@ -5,6 +5,7 @@
 //! own thread with a deadline, so a deadlock fails the test instead of
 //! hanging the suite.
 
+use std::path::Path;
 use std::sync::mpsc;
 use std::time::Duration;
 
@@ -78,6 +79,24 @@ fn sequential_store_calls_still_work() {
         format!("{a:?} {b:?} {c:?}")
     });
     assert_eq!(outcome.as_deref(), Some("Ok(()) Ok(Some(1)) Ok(())"));
+}
+
+/// A case's thread owns its store and scratch directory, and both are gone
+/// by the time `on_a_thread` answers, so nothing outlives the test. Before
+/// 2026-10-10 the answer came first: the test process could exit while the
+/// thread was still cleaning up, and most runs left
+/// `/tmp/.tmp*/state/rikuri.db.lock` behind
+/// (docs/build-records/2026-10-10-test-temp-residue.md).
+#[test]
+fn a_case_leaves_no_scratch_directory_behind() {
+    let Some(db) = on_a_thread(|store| store.path().display().to_string()) else {
+        panic!("no answer within {DEADLINE:?}");
+    };
+    // <scratch>/state/rikuri.db
+    let Some(scratch) = Path::new(&db).ancestors().nth(2) else {
+        panic!("no scratch directory above {db}");
+    };
+    assert!(!scratch.exists(), "{} outlived the case", scratch.display());
 }
 
 /// Two stores may nest (A's transaction calls B), but re-entering any store

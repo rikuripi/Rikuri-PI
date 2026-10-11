@@ -71,7 +71,8 @@ step guard python3 -m unittest discover -s .claude/hooks -p 'test_*.py' -q
 step format cargo fmt --all --check
 step build cargo build --workspace --all-targets --locked
 step clippy run_clippy
-step test cargo test --workspace --locked
+# with a private TMPDIR that must stay empty: a test cleans up after itself
+step test scripts/quality/no-temp-residue.sh cargo test --workspace --locked
 step smoke scripts/quality/smoke.sh
 step crash-matrix run_crash_matrix
 step dependencies cargo deny --locked check
