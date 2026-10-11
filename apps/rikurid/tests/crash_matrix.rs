@@ -28,6 +28,7 @@
 //! --target-dir target/crash-injection`.
 #![cfg(unix)]
 
+use std::ffi::OsStr;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
@@ -130,12 +131,42 @@ impl Drop for Daemon {
     }
 }
 
-/// A scratch home under /tmp: a Unix socket path must stay short (about 104
-/// bytes on macOS), and $TMPDIR there is long.
+/// Scratch directories are `<parent>/rikuri-crash.XXXXXX`; the daemon's home
+/// is `home` inside one.
+const SCRATCH_PREFIX: &str = "rikuri-crash.";
+const SCRATCH_RAND: usize = 6;
+
+/// A scratch directory's parent: `$TMPDIR` when the daemon's socket path in
+/// a home there fits ([`server::MAX_SOCKET_PATH_BYTES`]), so the gate's
+/// `no-temp-residue.sh`, which runs this file with a short private TMPDIR,
+/// sees a home a killed run leaves behind. Otherwise /tmp: a `$TMPDIR` can
+/// be too long for a socket (macOS allows about 104 bytes), and an unset or
+/// relative one, or the root, is no place to look. `smoke.sh` follows the
+/// same rule, though it knows the root only as `/` or `//`.
+fn scratch_parent(tmpdir: Option<&OsStr>) -> PathBuf {
+    match tmpdir.map(Path::new) {
+        Some(dir)
+            if dir.is_absolute()
+                && dir != Path::new("/")
+                && scratch_socket(dir).as_os_str().len() <= server::MAX_SOCKET_PATH_BYTES =>
+        {
+            dir.to_path_buf()
+        }
+        _ => PathBuf::from("/tmp"),
+    }
+}
+
+/// The daemon's socket path in a scratch home under `parent`.
+fn scratch_socket(parent: &Path) -> PathBuf {
+    let dir = format!("{SCRATCH_PREFIX}{}", "X".repeat(SCRATCH_RAND));
+    server::socket_path(&parent.join(dir).join("home"))
+}
+
 fn scratch() -> TestResult<tempfile::TempDir> {
     Ok(tempfile::Builder::new()
-        .prefix("rikuri-crash.")
-        .tempdir_in("/tmp")?)
+        .prefix(SCRATCH_PREFIX)
+        .rand_bytes(SCRATCH_RAND)
+        .tempdir_in(scratch_parent(std::env::var_os("TMPDIR").as_deref()))?)
 }
 
 fn ok(r: &Response, what: &str) -> TestResult<Value> {
@@ -659,6 +690,67 @@ fn an_armed_crash_injection_build_says_it_is_armed() -> TestResult {
             .as_str()
             .is_some_and(|d| d.contains("crash injection armed")),
         "{build}"
+    );
+    Ok(())
+}
+
+/// Scratch homes go under a short `$TMPDIR`, such as the private one the
+/// gate's `no-temp-residue.sh` gives this step (/tmp/rikuri-tests.XXXXXX),
+/// so a home a killed run leaves fails the gate; until 2026-10-10 they went
+/// to /tmp, outside that check, and 8 left by killed runs were found there.
+/// The daemon's socket path must still fit, so a `$TMPDIR` too long for it,
+/// none, a relative one or the root keeps /tmp.
+#[test]
+fn scratch_homes_go_under_a_short_tmpdir_with_a_socket_that_fits() -> TestResult {
+    let tmp = Path::new("/tmp");
+    let parent = |dir: &Path| scratch_parent(Some(dir.as_os_str()));
+
+    let wrapper = Path::new("/tmp/rikuri-tests.AbC123");
+    assert_eq!(parent(wrapper), wrapper);
+    let socket = scratch_socket(wrapper);
+    assert!(
+        socket.as_os_str().len() <= server::MAX_SOCKET_PATH_BYTES,
+        "{} is {} bytes",
+        socket.display(),
+        socket.as_os_str().len()
+    );
+
+    // the limit: a socket path of exactly MAX_SOCKET_PATH_BYTES fits
+    let at_limit = PathBuf::from(format!("/{}", "d".repeat(60)));
+    assert_eq!(
+        scratch_socket(&at_limit).as_os_str().len(),
+        server::MAX_SOCKET_PATH_BYTES
+    );
+    assert_eq!(parent(&at_limit), at_limit);
+    let over = PathBuf::from(format!("/{}", "d".repeat(61)));
+    assert_eq!(parent(&over), tmp);
+
+    assert_eq!(scratch_parent(None), tmp);
+    assert_eq!(parent(Path::new("relative-tmp")), tmp);
+    assert_eq!(parent(Path::new("/")), tmp);
+
+    // and the home this run makes, with the TMPDIR it was given: where the
+    // rule says, with a socket exactly as long as the rule measured
+    let chosen = scratch_parent(std::env::var_os("TMPDIR").as_deref());
+    let dir = scratch()?;
+    let real = server::socket_path(&dir.path().join("home"));
+    assert!(
+        dir.path().starts_with(&chosen),
+        "{} is not under {}",
+        dir.path().display(),
+        chosen.display()
+    );
+    assert_eq!(
+        real.as_os_str().len(),
+        scratch_socket(&chosen).as_os_str().len(),
+        "{} is not the length the rule measured",
+        real.display()
+    );
+    assert!(
+        real.as_os_str().len() <= server::MAX_SOCKET_PATH_BYTES,
+        "{} is {} bytes",
+        real.display(),
+        real.as_os_str().len()
     );
     Ok(())
 }
