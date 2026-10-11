@@ -1,0 +1,480 @@
+diff --git a/apps/rikurid/src/health.rs b/apps/rikurid/src/health.rs
+index d6ecebd..fa45a14 100644
+--- a/apps/rikurid/src/health.rs
++++ b/apps/rikurid/src/health.rs
+@@ -505,3 +505,70 @@ fn check_run(run: &Run, events: &HashMap<EventId, Event>, problems: &mut Vec<Str
+         },
+     }
+ }
++
++/// E1 spike (scratch): the same comparisons, scoped to the tasks a command
++/// touched: their own events (indexed by task), their runs, their counts.
++pub(crate) fn consistency_for_tasks(
++    tx: &Tx<'_>,
++    touched: &[TaskId],
++) -> Result<Vec<String>, StorageError> {
++    let mut problems = vec![];
++    let mut events: HashMap<EventId, Event> = HashMap::new();
++    let mut tasks_owned = vec![];
++    let mut runs: HashMap<RunId, Run> = HashMap::new();
++    let runs_repo = SqliteRepository::<Run>::new();
++    for &id in touched {
++        let evs = rikuri_ledger::by_task(tx, id).map_err(|e| StorageError::Corrupt {
++            kind: "event",
++            id: id.to_string(),
++            reason: e.to_string(),
++        })?;
++        let (mut created, mut stepped, mut started) = (0u32, 0u32, 0u32);
++        for e in &evs {
++            match e.event_type.as_str() {
++                "task.created" => created += 1,
++                "task.stepped" => stepped += 1,
++                "run.started" => started += 1,
++                _ => {}
++            }
++            if let Some(r) = e.run_id
++                && !runs.contains_key(&r)
++                && let Some(run) = runs_repo.get(tx, r)?
++            {
++                runs.insert(r, run.value);
++            }
++            events.insert(e.event_id, e.clone());
++        }
++        let Some(task) = SqliteRepository::<Task>::new().get(tx, id)? else {
++            problems.push(format!("ledger references task {id}, which does not exist"));
++            continue;
++        };
++        let task = task.value;
++        if created != 1 {
++            problems.push(format!("task {id} has {created} task.created events, expected 1"));
++        }
++        if stepped != task.steps_completed {
++            problems.push(format!("task {id} records {} steps but the ledger has {stepped}", task.steps_completed));
++        }
++        if started != task.runs {
++            problems.push(format!("task {id} records {} runs but the ledger has {started}", task.runs));
++        }
++        for r in [task.current_run, task.last_run].into_iter().flatten() {
++            if !runs.contains_key(&r)
++                && let Some(run) = runs_repo.get(tx, r)?
++            {
++                runs.insert(r, run.value);
++            }
++        }
++        tasks_owned.push(task);
++    }
++    for run in runs.values() {
++        check_run(run, &events, &mut problems);
++    }
++    check_run_events(&runs, &events, &mut problems);
++    let tasks: HashMap<TaskId, &Task> = tasks_owned.iter().map(|t| (t.id, t)).collect();
++    // runs of these tasks only: a run whose task is outside the scope is not ours to judge
++    let ours: HashMap<RunId, Run> = runs.into_iter().filter(|(_, r)| tasks.contains_key(&r.task_id)).collect();
++    check_task_runs(&tasks, &ours, &mut problems);
++    Ok(problems)
++}
+diff --git a/apps/rikurid/src/kernel.rs b/apps/rikurid/src/kernel.rs
+index 1f3744e..474da9e 100644
+--- a/apps/rikurid/src/kernel.rs
++++ b/apps/rikurid/src/kernel.rs
+@@ -375,6 +375,8 @@ impl Kernel {
+             let now = self.store.now();
+             let planned = plan(tx, now)?;
+             at(CrashPoint::AfterStateWrite, facts(false)?)?;
++            let planned_tasks: std::collections::BTreeSet<rikuri_domain::TaskId> =
++                planned.events.iter().filter_map(|e| e.task_id).collect();
+             let mut primary = None;
+             for event in &planned.events {
+                 let stored = rikuri_ledger::append(tx, event, now)?;
+@@ -396,6 +398,25 @@ impl Kernel {
+                 result: planned.result,
+                 replayed: false,
+             };
++            if std::env::var("RIKURI_E1_PRECOMMIT").as_deref() == Ok("scoped") {
++                let touched: Vec<rikuri_domain::TaskId> =
++                    planned_tasks.iter().copied().collect();
++                let problems = crate::health::consistency_for_tasks(tx, &touched)?;
++                if let Some(first) = problems.first() {
++                    return Err(Fail::Api(ApiError::new(
++                        ErrorCode::Internal,
++                        format!("candidate refused before promotion: {first}"),
++                    )));
++                }
++            } else if std::env::var_os("RIKURI_E1_PRECOMMIT").is_some() {
++                let report = crate::health::consistency(tx)?;
++                if let Some(first) = report.problems.first() {
++                    return Err(Fail::Api(ApiError::new(
++                        ErrorCode::Internal,
++                        format!("candidate refused before promotion: {first}"),
++                    )));
++                }
++            }
+             Ok((applied, facts(recorded)?))
+         })?;
+         let done = Progress {
+@@ -615,7 +636,9 @@ impl Kernel {
+         run.completion_event_id = Some(completed.event_id);
+         run.verification_event_id = Some(verified.event_id);
+         task.status = TaskStatus::Completed;
+-        task.current_run = None;
++        if std::env::var_os("RIKURI_E1_DEFECT").is_none() {
++            task.current_run = None;
++        }
+         SqliteRepository::<Run>::new().update(
+             tx,
+             &run,
+diff --git a/apps/rikurid/tests/e1_spike.rs b/apps/rikurid/tests/e1_spike.rs
+new file mode 100644
+index 0000000..c2bc0e8
+--- /dev/null
++++ b/apps/rikurid/tests/e1_spike.rs
+@@ -0,0 +1,336 @@
++//! E1 spike harness (evidence, not product: applied from docs/build-records/evidence/2026-10-09-s00-11-e1/). Each experiment is a
++//! test run on its own with env switches and --nocapture; results print.
++#![allow(clippy::unwrap_used, clippy::expect_used, clippy::print_stdout)]
++
++use std::path::{Path, PathBuf};
++use std::time::Instant;
++
++use rikuri_api::{Request, Response, command};
++use rikuri_domain::{
++    ActorId, DeletionUnitId, EventId, PrivacyClass, ProjectId, RiskClass, SystemClock,
++    SystemIdSource, TaskId,
++};
++use rikuri_ledger::{EventStatus, EventType, IdempotencyCheck, IdempotencyKey, LedgerError, NewEvent};
++use rikuri_storage::rusqlite::{self, params};
++use rikuri_storage::{Repository, SqliteRepository};
++use rikurid::crash::NoCrash;
++use rikurid::entities::{Task, TaskStatus};
++use rikurid::{Idempotency, Kernel, KernelConfig};
++use serde_json::{Map, Value, json};
++
++fn open(home: &Path) -> Kernel {
++    Kernel::open(
++        home,
++        KernelConfig {
++            ids: Box::new(SystemIdSource::new()),
++            clock: Box::new(SystemClock),
++            crash: Box::new(NoCrash),
++            idempotency: Idempotency::Enforced,
++        },
++    )
++    .unwrap()
++}
++
++fn bench_home(name: &str) -> PathBuf {
++    let root = PathBuf::from(std::env::var("E1_DISK").expect("E1_DISK: a directory on a real disk"));
++    let home = root.join(name);
++    let _ = std::fs::remove_dir_all(&home);
++    std::fs::create_dir_all(&root).unwrap();
++    home
++}
++
++fn keyed(k: &Kernel, cmd: &str, params: Value, key: &str) -> Response {
++    k.handle(&Request::new(cmd, params).with_idempotency_key(key))
++}
++
++fn res(r: &Response) -> Value {
++    r.result.clone().unwrap_or(Value::Null)
++}
++
++fn n(var: &str, default: usize) -> usize {
++    std::env::var(var).ok().and_then(|v| v.parse().ok()).unwrap_or(default)
++}
++
++// ---------------------------------------------------------------- exp 1
++/// A planted kernel defect (RIKURI_E1_DEFECT: completion leaves the task
++/// pointing at its run). Without RIKURI_E1_PRECOMMIT the bad candidate is
++/// promoted and caught afterwards; with it, it is refused before promotion.
++#[test]
++fn exp1_planted_defect() {
++    let dir = tempfile::tempdir().unwrap();
++    let k = open(&dir.path().join("home"));
++    k.handle(&Request::new(command::SYSTEM_INIT, json!({})));
++    let t = res(&keyed(&k, command::TASK_CREATE, json!({"title": "t"}), "key-create-0001"));
++    let s = res(&keyed(
++        &k,
++        command::TASK_START,
++        json!({"task_id": t["task_id"], "expected_version": t["version"]}),
++        "key-start-00001",
++    ));
++    let done = keyed(
++        &k,
++        command::TASK_COMPLETE,
++        json!({"task_id": s["task_id"], "run_id": s["run_id"], "expected_version": s["version"],
++               "outcome": "succeeded", "verification": "passed"}),
++        "key-done-000001",
++    );
++    let state = res(&k.handle(&Request::new(command::STATE_SHOW, json!({}))));
++    let task = &state["tasks"][0];
++    let report = k.check_consistency();
++    let next = keyed(&k, command::TASK_CREATE, json!({"title": "next"}), "key-create-0002");
++    println!(
++        "EXP1 precommit={} complete_ok={} complete_error={:?}",
++        std::env::var_os("RIKURI_E1_PRECOMMIT").is_some(),
++        done.error.is_none(),
++        done.error.as_ref().map(|e| e.message.clone())
++    );
++    println!(
++        "EXP1 authoritative task: status={} current_run={} | replay problems={:?} | quarantined={} | next write ok={} ({:?})",
++        task["status"],
++        task["current_run"],
++        report.problems,
++        k.quarantined().is_some(),
++        next.error.is_none(),
++        next.error.as_ref().map(|e| e.code.as_str().to_owned())
++    );
++}
++
++// ---------------------------------------------------------------- exp 2
++/// Cost of validating the candidate before promotion with the full replay
++/// (the simplest pre-commit check), as the ledger grows. Disk-backed.
++#[test]
++fn exp2_precommit_cost() {
++    let size = n("E1_N", 1000);
++    let home = bench_home(&format!("exp2-{size}"));
++    let k = open(&home);
++    k.handle(&Request::new(command::SYSTEM_INIT, json!({})));
++    // grow without the check (unset it while growing if set? env is process-wide:
++    // the harness is run twice, with and without RIKURI_E1_PRECOMMIT, on the same size)
++    for i in 0..size {
++        let r = keyed(&k, command::TASK_CREATE, json!({"title": format!("t{i}")}), &format!("key-grow-{i:08}"));
++        assert!(r.error.is_none(), "{r:?}");
++    }
++    let m = 50;
++    let start = Instant::now();
++    for i in 0..m {
++        let r = keyed(&k, command::TASK_CREATE, json!({"title": format!("m{i}")}), &format!("key-meas-{i:08}"));
++        assert!(r.error.is_none(), "{r:?}");
++    }
++    let per = start.elapsed().as_secs_f64() * 1000.0 / m as f64;
++    println!(
++        "EXP2 precommit={} tasks_before={size} events_before={} ms_per_create={per:.3}",
++        std::env::var_os("RIKURI_E1_PRECOMMIT").is_some(),
++        size + 1
++    );
++}
++
++// ---------------------------------------------------------------- exp 3
++/// Design A: the kernel's one transaction (as shipped). Disk-backed.
++#[test]
++fn exp3_a_latency() {
++    let m = n("E1_M", 300);
++    let home = bench_home("exp3-a");
++    let k = open(&home);
++    k.handle(&Request::new(command::SYSTEM_INIT, json!({})));
++    let start = Instant::now();
++    for i in 0..m {
++        let r = keyed(&k, command::TASK_CREATE, json!({"title": format!("a{i}")}), &format!("key-a-{i:010}"));
++        assert!(r.error.is_none(), "{r:?}");
++    }
++    let per = start.elapsed().as_secs_f64() * 1000.0 / m as f64;
++    println!(
++        "EXP3 design=A sync={} creates={m} ms_per_create={per:.3} consistency_problems={}",
++        std::env::var("RIKURI_E1_SYNC").unwrap_or_else(|_| "FULL".into()),
++        k.check_consistency().problems.len()
++    );
++}
++
++const STAGE: &str = "CREATE TABLE IF NOT EXISTS e1_candidates (
++    key TEXT PRIMARY KEY NOT NULL, task TEXT NOT NULL, event_id TEXT NOT NULL)";
++
++fn owner(k: &Kernel) -> (ActorId, ProjectId) {
++    let s = res(&k.handle(&Request::new(command::STATE_SHOW, json!({}))));
++    (
++        serde_json::from_value(s["owner"]["actor_id"].clone()).unwrap(),
++        serde_json::from_value(s["owner"]["project_id"].clone()).unwrap(),
++    )
++}
++
++fn inv(e: impl std::fmt::Display) -> LedgerError {
++    LedgerError::Invalid(e.to_string())
++}
++
++/// Design B: explicit candidate/promotion for task.create. Commit 1 stages
++/// a complete candidate outside authoritative state; commit 2 reads it
++/// back, validates it, writes it (with the repository's own read-back),
++/// appends its event, records idempotency and retires the candidate.
++/// `crash` simulates a crash at a named point by returning early (after
++/// the named commit, or rolling back inside a transaction).
++fn b_create(k: &Kernel, who: (ActorId, ProjectId), title: &str, key: &str, crash: Option<&str>) -> Result<Value, String> {
++    let store = k.store();
++    let ids = SystemIdSource::new();
++    let key_id = IdempotencyKey::new(key).map_err(|e| e.to_string())?;
++    let params_v = json!({"title": title});
++    let hash = rikuri_ledger::request_hash("task.create", &params_v);
++    if crash == Some("before_stage") {
++        return Err("crash before_stage".into());
++    }
++    let replay = store
++        .write(|tx| -> Result<Option<Value>, LedgerError> {
++            tx.execute_batch(STAGE)?;
++            if let IdempotencyCheck::Replay(r) = rikuri_ledger::check(tx, &key_id, "task.create", &hash)? {
++                return Ok(Some(r.response));
++            }
++            let task = Task {
++                id: TaskId::generate(&ids).map_err(inv)?,
++                project_id: who.1,
++                title: title.to_owned(),
++                privacy_class: PrivacyClass::Normal,
++                deletion_unit_id: DeletionUnitId::generate(&ids).map_err(inv)?,
++                status: TaskStatus::Created,
++                steps_completed: 0,
++                runs: 0,
++                current_run: None,
++                last_run: None,
++            };
++            let event_id = EventId::generate(&ids).map_err(inv)?;
++            tx.execute(
++                "INSERT OR REPLACE INTO e1_candidates (key, task, event_id) VALUES (?1, ?2, ?3)",
++                params![key, serde_json::to_string(&task).map_err(inv)?, event_id.to_string()],
++            )?;
++            Ok(None)
++        })
++        .map_err(|e| e.to_string())?;
++    if let Some(r) = replay {
++        return Ok(r);
++    }
++    if crash == Some("after_stage") {
++        return Err("crash after_stage".into());
++    }
++    store
++        .write(|tx| -> Result<Value, LedgerError> {
++            let (task_json, event_id): (String, String) = tx.query_row(
++                "SELECT task, event_id FROM e1_candidates WHERE key = ?1",
++                params![key],
++                |r| Ok((r.get(0)?, r.get(1)?)),
++            )?;
++            // validate the candidate
++            let task: Task = serde_json::from_str(&task_json).map_err(inv)?;
++            if task.title.trim().is_empty() || task.status != TaskStatus::Created {
++                return Err(LedgerError::Invalid("candidate fails validation".into()));
++            }
++            let event_id: EventId = event_id.parse().map_err(inv)?;
++            let now = k.store().now();
++            let stored = SqliteRepository::<Task>::new().insert(tx, &task, now)?;
++            if crash == Some("mid_promote") {
++                return Err(LedgerError::Invalid("crash mid_promote".into()));
++            }
++            let e = NewEvent {
++                event_id,
++                event_type: EventType::new("task.created")?,
++                status: EventStatus::Succeeded,
++                risk: RiskClass::NovelModification,
++                actor_id: who.0,
++                project_id: Some(task.project_id),
++                task_id: Some(task.id),
++                run_id: None,
++                subject_ids: vec![task.id.into()],
++                input_refs: vec![],
++                result_refs: vec![],
++                security_decision_id: None,
++                cost_record_id: None,
++                idempotency_key: Some(key_id.clone()),
++                caused_by: None,
++                metadata: Map::new(),
++            };
++            let appended = rikuri_ledger::append(tx, &e, now)?;
++            let result = json!({"task_id": task.id, "version": stored.version, "event_id": appended.event_id});
++            rikuri_ledger::record(tx, &key_id, "task.create", &hash, appended.event_id, &result, now)?;
++            tx.execute("DELETE FROM e1_candidates WHERE key = ?1", params![key])?;
++            Ok(result)
++        })
++        .map_err(|e| e.to_string())
++}
++
++/// Design B's recovery at open: staged candidates are discarded (the retry
++/// stages again). The kernel has no such duty in design A.
++fn b_recover(k: &Kernel) -> usize {
++    k.store()
++        .write(|tx| -> Result<usize, LedgerError> {
++            tx.execute_batch(STAGE)?;
++            Ok(tx.execute("DELETE FROM e1_candidates", [])?)
++        })
++        .unwrap()
++}
++
++#[test]
++fn exp3_b_latency() {
++    let m = n("E1_M", 300);
++    let home = bench_home("exp3-b");
++    let k = open(&home);
++    k.handle(&Request::new(command::SYSTEM_INIT, json!({})));
++    let who = owner(&k);
++    let start = Instant::now();
++    for i in 0..m {
++        b_create(&k, who, &format!("b{i}"), &format!("key-b-{i:010}"), None).unwrap();
++    }
++    let per = start.elapsed().as_secs_f64() * 1000.0 / m as f64;
++    println!(
++        "EXP3 design=B sync={} creates={m} ms_per_create={per:.3} consistency_problems={}",
++        std::env::var("RIKURI_E1_SYNC").unwrap_or_else(|_| "FULL".into()),
++        k.check_consistency().problems.len()
++    );
++}
++
++fn counts(k: &Kernel) -> (usize, usize, i64) {
++    let s = res(&k.handle(&Request::new(command::STATE_SHOW, json!({}))));
++    let tail = res(&k.handle(&Request::new(command::LEDGER_TAIL, json!({"limit": 1000}))));
++    let created = tail["events"].as_array().unwrap().iter().filter(|e| e["event_type"] == "task.created").count();
++    let staged: i64 = k
++        .store()
++        .read(|tx| -> Result<i64, LedgerError> {
++            let exists: i64 = tx.query_row(
++                "SELECT count(*) FROM sqlite_master WHERE name = 'e1_candidates'",
++                [],
++                |r| r.get(0),
++            )?;
++            if exists == 0 {
++                return Ok(0);
++            }
++            Ok(tx.query_row("SELECT count(*) FROM e1_candidates", [], |r| r.get(0))?)
++        })
++        .unwrap();
++    (s["tasks"].as_array().unwrap().len(), created, staged)
++}
++
++/// Design B at its crash points: what state a restart finds, and whether
++/// the retry gives exactly one effect.
++#[test]
++fn exp3_b_crash_points() {
++    for point in ["before_stage", "after_stage", "mid_promote", "none"] {
++        let dir = tempfile::tempdir().unwrap();
++        let home = dir.path().join("home");
++        let k = open(&home);
++        k.handle(&Request::new(command::SYSTEM_INIT, json!({})));
++        let who = owner(&k);
++        let first = b_create(&k, who, "t", "key-b-crash-0001", Some(point).filter(|p| *p != "none"));
++        let before_restart = counts(&k);
++        drop(k);
++        let k = open(&home);
++        let after_restart = counts(&k);
++        let discarded = b_recover(&k);
++        let retry = b_create(&k, who, "t", "key-b-crash-0001", None);
++        let after_retry = counts(&k);
++        let problems = k.check_consistency().problems;
++        println!(
++            "EXP3B point={point} first_ok={} | crashed state (tasks, task.created, staged)={before_restart:?} | after restart={after_restart:?} \
++             | recovery discarded={discarded} | retry_ok={} | after retry={after_retry:?} | replay problems={}",
++            first.is_ok(),
++            retry.is_ok(),
++            problems.len()
++        );
++    }
++}
++
++#[allow(dead_code)]
++fn _unused(_: rusqlite::Error) {}
+diff --git a/crates/rikuri-storage/src/store.rs b/crates/rikuri-storage/src/store.rs
+index c86c0f8..952cc87 100644
+--- a/crates/rikuri-storage/src/store.rs
++++ b/crates/rikuri-storage/src/store.rs
+@@ -198,7 +198,7 @@ impl Store {
+         }
+         // FULL: a committed transaction survives power loss, not only a
+         // process crash. The kernel's promise is "committed means durable".
+-        conn.pragma_update(None, "synchronous", "FULL")?;
++        conn.pragma_update(None, "synchronous", std::env::var("RIKURI_E1_SYNC").unwrap_or_else(|_| "FULL".into()))?;
+         conn.pragma_update(None, "foreign_keys", true)?;
+         // Defense in depth for append-only tables: REPLACE then fires DELETE
+         // triggers on this connection. The tables' own BEFORE INSERT guards
