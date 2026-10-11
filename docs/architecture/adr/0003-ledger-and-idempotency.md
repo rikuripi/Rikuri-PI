@@ -50,6 +50,8 @@ Events and idempotency responses carry no content, so audit history does not bec
 
 `ledger` v1. Event rows carry their own schema version for later evolution.
 
+Note 2026-10-10: `ledger` v2 adds one index, `events_by_task_type` on `(task_id, event_type)`, so `rikurid`'s pre-commit candidate check counts a task's events without reading them ([ADR 0005](0005-e1-transactional-state-evolution-for-kernel-transactions.md), clarification 2026-10-10). It is additive: no row is rewritten, and a version-1 store upgrades at open (`migration_2_adds_the_task_type_index_and_upgrades_a_version_1_store`).
+
 ## Rollback or reversal path
 
 Before user data exists, change freely. Afterwards, ledger changes are additive migrations; existing rows are never rewritten.

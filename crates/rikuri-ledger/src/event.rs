@@ -8,6 +8,7 @@ use rikuri_storage::rusqlite::{self, OptionalExtension, params};
 use rikuri_storage::{StorageError, StoreFailure, Tx};
 use serde::Serialize;
 use serde_json::{Map, Value};
+use std::collections::HashMap;
 use thiserror::Error;
 
 use crate::idempotency::IdempotencyKey;
@@ -355,6 +356,39 @@ pub fn tail(tx: &Tx<'_>, limit: u32) -> Result<Vec<Event>, LedgerError> {
     ))?;
     let rows = stmt.query_map(params![limit], raw)?;
     rows.map(|r| decode(r?)).collect()
+}
+
+/// The events appended after sequence number `seq` (every event when
+/// `None`), oldest first. Read through `seq`, the table's key. The kernel
+/// reads what a command appended from here, inside its transaction, rather
+/// than trusting the command's own list (E1, ADR 0005).
+pub fn after(tx: &Tx<'_>, seq: Option<u64>) -> Result<Vec<Event>, LedgerError> {
+    // `seq` starts at 1; none can exceed i64::MAX, so nothing follows that
+    let from = seq.map_or(0, |s| i64::try_from(s).unwrap_or(i64::MAX));
+    let mut stmt = tx.prepare(&format!("{SELECT} WHERE seq > ?1 ORDER BY seq"))?;
+    let rows = stmt.query_map(params![from], raw)?;
+    rows.map(|r| decode(r?)).collect()
+}
+
+/// How many events of each type the ledger holds for `task`, counted
+/// through the `(task_id, event_type)` index without decoding any event.
+/// The kernel compares a written task's counts with these before it
+/// commits (E1, ADR 0005).
+pub fn task_counts(tx: &Tx<'_>, task: TaskId) -> Result<HashMap<String, u64>, LedgerError> {
+    let mut stmt = tx.prepare(
+        "SELECT event_type, count(*) FROM events WHERE task_id = ?1 GROUP BY event_type",
+    )?;
+    let rows = stmt.query_map(params![task.to_string()], |r| {
+        Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?))
+    })?;
+    let mut counts = HashMap::new();
+    for row in rows {
+        let (kind, n) = row?;
+        let n = u64::try_from(n)
+            .map_err(|_| LedgerError::Corrupt(format!("negative count for {kind}")))?;
+        counts.insert(kind, n);
+    }
+    Ok(counts)
 }
 
 /// Every event of one task, in ledger order.

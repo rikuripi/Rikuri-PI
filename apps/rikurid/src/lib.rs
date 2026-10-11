@@ -4,6 +4,7 @@
 //! socket ([`server`]) or in-process ([`kernel::Kernel::handle`]); both run
 //! the same kernel code. See `README.md` for the Module Contract.
 
+mod candidate;
 pub mod crash;
 pub mod entities;
 pub mod health;

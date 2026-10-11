@@ -143,6 +143,51 @@ pub fn check(
     }
 }
 
+/// A mark of the newest idempotency record (none when there is none yet),
+/// for `records_after`: its rowid. Records are append-only, so every record
+/// written later has a larger one. The kernel takes it when a command
+/// begins and checks the records the command wrote (E1, ADR 0005).
+pub fn record_mark(tx: &Tx<'_>) -> Result<Option<i64>, LedgerError> {
+    Ok(tx.query_row("SELECT max(rowid) FROM idempotency", [], |r| r.get(0))?)
+}
+
+/// The idempotency records written after `mark` (every record when `None`),
+/// oldest first, read through the rowid.
+pub fn records_after(
+    tx: &Tx<'_>,
+    mark: Option<i64>,
+) -> Result<Vec<IdempotencyRecord>, LedgerError> {
+    let mut stmt = tx.prepare(
+        "SELECT idempotency_key, command, request_hash, event_id, response, recorded_at_ms
+           FROM idempotency WHERE rowid > ?1 ORDER BY rowid",
+    )?;
+    let rows = stmt.query_map(params![mark.unwrap_or(0)], |r| {
+        Ok((
+            r.get::<_, String>(0)?,
+            r.get::<_, String>(1)?,
+            r.get::<_, String>(2)?,
+            r.get::<_, String>(3)?,
+            r.get::<_, String>(4)?,
+            r.get::<_, i64>(5)?,
+        ))
+    })?;
+    rows.map(|row| {
+        let (key, command, request_hash, event_id, response, at) = row?;
+        Ok(IdempotencyRecord {
+            event_id: event_id
+                .parse()
+                .map_err(|e| LedgerError::Corrupt(format!("idempotency {key}: {e}")))?,
+            response: serde_json::from_str(&response)
+                .map_err(|e| LedgerError::Corrupt(format!("idempotency {key}: {e}")))?,
+            recorded_at: Timestamp(at),
+            command,
+            request_hash,
+            key,
+        })
+    })
+    .collect()
+}
+
 /// Records `key` with the response to return on replay, in the same
 /// transaction as the command's effects and its event. The command must be a
 /// short name and the response an object of small facts (see the module
