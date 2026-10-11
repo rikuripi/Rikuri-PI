@@ -340,6 +340,7 @@ impl Kernel {
             };
             let changes_at_start = tx.total_changes();
             let newest_at_start = newest_event()?;
+            let records_at_start = rikuri_ledger::record_mark(tx)?;
             let facts = |recorded: bool| -> Result<Progress, Fail> {
                 Ok(Progress {
                     state_written: tx.total_changes() > changes_at_start,
@@ -392,6 +393,66 @@ impl Kernel {
             } else {
                 false
             };
+            // Transactional State Evolution's "validate candidate" step
+            // (ADR 0005 and its 2026-10-10 clarification): before the commit,
+            // what this command wrote must agree with the events it appended,
+            // with each written task's history, and with the command's own
+            // exact effect (candidate.rs, candidate/spec.rs). Both are
+            // read from the transaction (the write list, and the ledger after
+            // its newest event at the start), not from the plan, so a write
+            // or append the plan does not list is checked too. system.init
+            // writes the owner and project, which the task rules do not cover,
+            // into an empty store, so it gets the full replay and its own spec;
+            // any other command, including a future one, goes through the
+            // write-set rules and its spec, which refuse what they do not
+            // cover. The idempotency records written are read from the ledger
+            // too, by the idempotency mode rather than by the flag above: with
+            // it enforced, exactly this command's own record, storing the
+            // response it returns; with it off, none. A disagreement refuses
+            // this command and leaves the last known-good state authoritative,
+            // instead of promoting it and quarantining the daemon afterwards.
+            let mut problems = if command == command::SYSTEM_INIT {
+                let mut p = health::consistency(tx)?.problems;
+                p.extend(crate::candidate::check_init(
+                    tx,
+                    key.as_str(),
+                    newest_at_start,
+                )?);
+                p
+            } else {
+                crate::candidate::check_command(tx, command, key.as_str(), newest_at_start)?
+            };
+            let enforced = self.idempotency == Idempotency::Enforced;
+            if enforced {
+                problems.extend(crate::candidate::check_recorded(
+                    tx,
+                    command,
+                    key,
+                    &hash,
+                    newest_at_start,
+                )?);
+            }
+            problems.extend(crate::candidate::check_answer(
+                tx,
+                command,
+                &planned.result,
+                newest_at_start,
+            )?);
+            problems.extend(crate::candidate::check_record_written(
+                tx,
+                enforced.then_some((key, &planned.result)),
+                records_at_start,
+            )?);
+            if let Some(first) = problems.first() {
+                return Err(Fail::Api(ApiError::new(
+                    ErrorCode::Internal,
+                    format!(
+                        "candidate refused before promotion ({} disagreement(s) with history): {}",
+                        problems.len(),
+                        brief(first)
+                    ),
+                )));
+            }
             let applied = Applied {
                 result: planned.result,
                 replayed: false,

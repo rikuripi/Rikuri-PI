@@ -570,3 +570,247 @@ fn ledger_rows_refuse_replace_on_a_raw_connection() {
         other => panic!("expected the original record to replay, got {other:?}"),
     }
 }
+
+/// Per-task counts by event type, read through the `(task_id, event_type)`
+/// index without decoding events: the kernel's candidate check compares a
+/// written task's own counts with these before committing (E1, ADR 0005).
+#[test]
+fn task_counts_count_one_tasks_events_by_type() -> TestResult {
+    let f = fixture()?;
+    let (a, b, untouched) = (
+        TaskId::generate(&f.ids)?,
+        TaskId::generate(&f.ids)?,
+        TaskId::generate(&f.ids)?,
+    );
+    let mut events = vec![];
+    for (n, (task, kind)) in [
+        (a, "task.created"),
+        (a, "task.stepped"),
+        (a, "task.stepped"),
+        (a, "run.started"),
+        (b, "task.created"),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let mut e = event(
+            &f,
+            kind,
+            RiskClass::KnownRepair,
+            Some(&format!("key-count-{n:04}")),
+        )?;
+        e.task_id = Some(task);
+        events.push(e);
+    }
+    let unrelated = event(&f, "system.observed", RiskClass::ObserveReadOnly, None)?;
+    f.store.write(|tx| {
+        for e in events.iter().chain([&unrelated]) {
+            rikuri_ledger::append(tx, e, now())?;
+        }
+        Ok::<_, LedgerError>(())
+    })?;
+    let counts = f.store.read(|tx| {
+        Ok::<_, LedgerError>((
+            rikuri_ledger::task_counts(tx, a)?,
+            rikuri_ledger::task_counts(tx, b)?,
+            rikuri_ledger::task_counts(tx, untouched)?,
+        ))
+    })?;
+    let as_vec = |m: &std::collections::HashMap<String, u64>| {
+        let mut v: Vec<(String, u64)> = m.iter().map(|(k, n)| (k.clone(), *n)).collect();
+        v.sort();
+        v
+    };
+    assert_eq!(
+        as_vec(&counts.0),
+        [
+            ("run.started".to_owned(), 1),
+            ("task.created".to_owned(), 1),
+            ("task.stepped".to_owned(), 2)
+        ]
+    );
+    assert_eq!(as_vec(&counts.1), [("task.created".to_owned(), 1)]);
+    assert!(counts.2.is_empty());
+    Ok(())
+}
+
+/// The events appended after a sequence number, oldest first: the kernel's
+/// candidate check reads what a command appended from the ledger itself,
+/// not from the command's own list (E1, ADR 0005).
+#[test]
+fn after_lists_the_events_appended_since_a_sequence_number() -> TestResult {
+    let f = fixture()?;
+    let first = event(&f, "system.observed", RiskClass::ObserveReadOnly, None)?;
+    let later = [
+        event(
+            &f,
+            "task.stepped",
+            RiskClass::KnownRepair,
+            Some("key-after-0001"),
+        )?,
+        event(
+            &f,
+            "task.stepped",
+            RiskClass::KnownRepair,
+            Some("key-after-0002"),
+        )?,
+    ];
+    let ids =
+        |events: &[rikuri_ledger::Event]| events.iter().map(|e| e.event_id).collect::<Vec<_>>();
+    f.store.write(|tx| {
+        assert!(rikuri_ledger::after(tx, None)?.is_empty());
+        let a = rikuri_ledger::append(tx, &first, now())?;
+        let mut last = a.seq;
+        for e in &later {
+            last = rikuri_ledger::append(tx, e, now())?.seq;
+        }
+        assert_eq!(
+            ids(&rikuri_ledger::after(tx, None)?),
+            [first.event_id, later[0].event_id, later[1].event_id]
+        );
+        assert_eq!(
+            ids(&rikuri_ledger::after(tx, Some(a.seq))?),
+            [later[0].event_id, later[1].event_id]
+        );
+        assert!(rikuri_ledger::after(tx, Some(last))?.is_empty());
+        Ok::<_, LedgerError>(())
+    })?;
+    Ok(())
+}
+
+/// The idempotency records written after a mark, oldest first: the kernel
+/// checks that a command wrote exactly its own record, read from the ledger
+/// rather than trusted (E1, verifier round 5: X2–X4).
+#[test]
+fn records_after_lists_the_records_written_since_a_mark() -> TestResult {
+    let f = fixture()?;
+    let events = [
+        event(
+            &f,
+            "task.created",
+            RiskClass::KnownRepair,
+            Some("key-mark-0001"),
+        )?,
+        event(
+            &f,
+            "task.created",
+            RiskClass::KnownRepair,
+            Some("key-mark-0002"),
+        )?,
+        event(
+            &f,
+            "task.created",
+            RiskClass::KnownRepair,
+            Some("key-mark-0003"),
+        )?,
+    ];
+    let keys = |records: &[rikuri_ledger::IdempotencyRecord]| {
+        records.iter().map(|r| r.key.clone()).collect::<Vec<_>>()
+    };
+    f.store.write(|tx| {
+        assert_eq!(rikuri_ledger::record_mark(tx)?, None);
+        assert!(rikuri_ledger::records_after(tx, None)?.is_empty());
+        let mut marks = vec![];
+        for (n, e) in events.iter().enumerate() {
+            let stored = rikuri_ledger::append(tx, e, now())?;
+            let key = IdempotencyKey::new(&format!("key-mark-000{}", n + 1))?;
+            rikuri_ledger::record(
+                tx,
+                &key,
+                "task.create",
+                "hash",
+                stored.event_id,
+                &json!({"n": n}),
+                now(),
+            )?;
+            marks.push(rikuri_ledger::record_mark(tx)?);
+        }
+        assert_eq!(
+            keys(&rikuri_ledger::records_after(tx, None)?),
+            ["key-mark-0001", "key-mark-0002", "key-mark-0003"]
+        );
+        let since_first = rikuri_ledger::records_after(tx, marks[0])?;
+        assert_eq!(keys(&since_first), ["key-mark-0002", "key-mark-0003"]);
+        assert_eq!(since_first[0].command, "task.create");
+        assert_eq!(since_first[0].response, json!({"n": 1}));
+        assert!(rikuri_ledger::records_after(tx, marks[2])?.is_empty());
+        Ok::<_, LedgerError>(())
+    })?;
+    Ok(())
+}
+
+/// Ledger migration 2 adds the `(task_id, event_type)` index, and a store
+/// at version 1 upgrades to it with its events intact.
+#[test]
+fn migration_2_adds_the_task_type_index_and_upgrades_a_version_1_store() -> TestResult {
+    let dir = tempfile::tempdir()?;
+    let path = dir.path().join("state/rikuri.db");
+    let v1 = rikuri_storage::Migrations {
+        component: "ledger",
+        list: &rikuri_ledger::MIGRATIONS.list[..1],
+    };
+    let ids = FixtureIds::sequential(T0);
+    let task = TaskId::generate(&ids)?;
+    {
+        let store = Store::open(&path, Box::new(FixtureClock::fixed(T0_TIME)), &[&v1])?;
+        let mut e = NewEvent {
+            event_id: EventId::generate(&ids)?,
+            event_type: EventType::new("task.created")?,
+            status: EventStatus::Succeeded,
+            risk: RiskClass::KnownRepair,
+            actor_id: ActorId::generate(&ids)?,
+            project_id: None,
+            task_id: None,
+            run_id: None,
+            subject_ids: vec![],
+            input_refs: vec![],
+            result_refs: vec![],
+            security_decision_id: None,
+            cost_record_id: None,
+            idempotency_key: Some(IdempotencyKey::new("key-before-upgrade")?),
+            caused_by: None,
+            metadata: Map::new(),
+        };
+        e.task_id = Some(task);
+        store.write(|tx| rikuri_ledger::append(tx, &e, now()))?;
+        assert_eq!(store.schema_version("ledger")?, Some(1));
+    }
+    let store = Store::open(
+        &path,
+        Box::new(FixtureClock::fixed(T0_TIME)),
+        &[&rikuri_ledger::MIGRATIONS],
+    )?;
+    assert_eq!(store.schema_version("ledger")?, Some(2));
+    let (index, counts) = store.read(|tx| {
+        let index: i64 = tx
+            .query_row(
+                "SELECT count(*) FROM sqlite_master WHERE type = 'index' AND name = 'events_by_task_type'",
+                [],
+                |r| r.get(0),
+            )
+            .map_err(StorageError::from)?;
+        Ok::<_, LedgerError>((index, rikuri_ledger::task_counts(tx, task)?))
+    })?;
+    assert_eq!(index, 1);
+    assert_eq!(counts.get("task.created"), Some(&1));
+    // the count is answered from the index alone (no event rows read)
+    let plan: Vec<String> = store.read(|tx| {
+        let mut stmt = tx
+            .prepare(
+                "EXPLAIN QUERY PLAN SELECT event_type, count(*) FROM events \
+                 WHERE task_id = ?1 GROUP BY event_type",
+            )
+            .map_err(StorageError::from)?;
+        let rows = stmt
+            .query_map([task.to_string()], |r| r.get::<_, String>(3))
+            .map_err(StorageError::from)?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| LedgerError::from(StorageError::from(e)))
+    })?;
+    assert!(
+        plan.iter()
+            .any(|step| step.contains("COVERING INDEX events_by_task_type")),
+        "{plan:?}"
+    );
+    Ok(())
+}

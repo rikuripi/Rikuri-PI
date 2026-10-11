@@ -28,13 +28,15 @@ Trusted kernel code inside `rikurid`. Treats stored rows as possibly damaged: a 
 
 ## Canonical data touched
 
-`objects` (all typed entities' current state) and `schema_migrations`. Other components' tables are created through their registered migrations.
+`objects` (all typed entities' current state) and `schema_migrations`. Other components' tables are created through their registered migrations. Storage migrations: version 1 (the object registry), version 2 (the `objects_by_deletion_unit` index, E1).
 
 ## Public contracts / interfaces
 
 - `Store::open(path, clock, &[&Migrations])`, `Store::write`, `Store::read`, `Store::health`, `Store::schema_version`, `Store::now`, `Store::path`, `Store::in_transaction` (whether this thread is inside one of this store's transactions; `rikurid`'s crash points use it, W1).
 - `pub use rusqlite`, so components that own tables use the same SQLite build.
 - `Tx::schema_version`, for reading a component's version inside a transaction.
+- `Tx::written` → `Vec<Written>` (`kind`, `id`, `before`, `after` bodies): every object the repository inserted or updated in this transaction, recorded after its read-back, in order. `rikurid`'s pre-commit candidate check validates exactly this list (ADR 0005, clarification 2026-10-10). Raw SQL through the `Tx` is not listed.
+- `deletion_unit_size(tx, unit)`: how many objects of any kind belong to a deletion unit, through the `objects_by_deletion_unit` index; `rikurid` refuses a new task whose unit is not its own (E1).
 - `Migration`, `Migrations`; `Entity` (kind, schema version, ID, privacy class, deletion unit); `Versioned<T>`; `Repository<T>` (`get`, `insert`, `update`, `list`); `SqliteRepository<T>`; `StorageError` (including `Reentrant` and `InUse`); `StoreFailure`, which every error type used with `read`/`write` implements; `StoreHealth`, `OpHealth`.
 - `Tx` dereferences to the SQLite connection so components that own tables write in the same transaction. Raw transaction control through it (`COMMIT`, `BEGIN`) is not yet refused: deferred to S00.07 ([record](../../docs/build-records/2026-10-08-storage-ledger-verifier-defects.md)).
 
@@ -89,8 +91,10 @@ A store that has done nothing has no `last_success` and must not be reported hea
 ## Required tests
 
 - [x] unit (via the integration suites; the crate is small)
-- [x] failure paths (conflict, not found, duplicate, rollback, tamper, failed/newer/divergent/gapped migrations, multi-component upgrade failure, shared files)
+- [x] failure paths (conflict, not found, duplicate, rollback, tamper, failed/newer/divergent/gapped migrations, multi-component upgrade failure, shared files), a write whose body or version does not read back as written rolls back with the last known-good row kept (`a_write_that_does_not_read_back_rolls_back`, `a_write_whose_version_does_not_read_back_rolls_back`, E1; each fails alone when its comparison is removed), and an insert that fails for any reason other than a constraint violation is not reported as `AlreadyExists` (`an_insert_that_fails_otherwise_is_not_reported_as_already_existing`)
 - [x] shared contract suite — T00.04 `tests/repository_contract.rs`, generic over `Repository<T>`
+- [x] a transaction lists each insert and update with the body it replaced, in order; a refused update is not listed, and every transaction starts with an empty list — `a_transaction_lists_what_it_wrote` (E1)
+- [x] a deletion unit's objects are counted, of any kind, through the `objects_by_deletion_unit` index (`EXPLAIN QUERY PLAN`) — `a_deletion_unit_counts_its_objects_through_its_index`; storage migration 2 upgrades a version-1 store with its objects intact — `storage_migration_2_adds_the_deletion_unit_index_to_a_version_1_store` (E1). The two tests that pin storage's schema version now expect 2 (owner-approved with the migration).
 - [x] invariant/property tests — model-based `versions_follow_the_model`
 - [ ] replay/golden fixtures — N/A (no nondeterministic path)
 - [x] re-entry refused, never deadlocked, and `in_transaction` true only inside a read or write — `tests/reentrancy.rs`
@@ -103,5 +107,5 @@ This file; ADR 0002; rustdoc.
 ## Known limitations / explicit debt
 
 - One connection serializes reads with writes; acceptable for one owner, revisit with measured contention.
-- `synchronous=FULL` write latency not yet measured on the reference installation.
+- `synchronous=FULL` costs about 3.3 ms per kernel command on the reference installation (one fsync per commit), against about 0.4 ms with `NORMAL`; kept, because `NORMAL` can lose the last commits on power loss (E1, [ADR 0005](../../docs/architecture/adr/0005-e1-transactional-state-evolution-for-kernel-transactions.md)). Power loss itself is not tested (Not yet proven).
 - Real caller arrives with `rikurid` (S00.07); until then this crate is not complete.

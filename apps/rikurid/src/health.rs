@@ -192,10 +192,10 @@ impl ConsistencyReport {
 }
 
 #[derive(Default)]
-struct TaskHistory {
-    created: u32,
-    stepped: u32,
-    started: u32,
+pub(crate) struct TaskHistory {
+    pub(crate) created: u32,
+    pub(crate) stepped: u32,
+    pub(crate) started: u32,
 }
 
 /// Replays every event and compares it with tasks and runs.
@@ -233,28 +233,7 @@ pub(crate) fn consistency(tx: &Tx<'_>) -> Result<ConsistencyReport, StorageError
     let tasks = SqliteRepository::<Task>::new().list(tx, u32::MAX)?;
     let task_ids: HashSet<TaskId> = tasks.iter().map(|t| t.value.id).collect();
     for t in &tasks {
-        let task = &t.value;
-        let h = by_task.get(&task.id);
-        let (created, stepped, started) =
-            h.map_or((0, 0, 0), |h| (h.created, h.stepped, h.started));
-        if created != 1 {
-            problems.push(format!(
-                "task {} has {created} task.created events, expected 1",
-                task.id
-            ));
-        }
-        if stepped != task.steps_completed {
-            problems.push(format!(
-                "task {} records {} steps but the ledger has {stepped} task.stepped events",
-                task.id, task.steps_completed
-            ));
-        }
-        if started != task.runs {
-            problems.push(format!(
-                "task {} records {} runs but the ledger has {started} run.started events",
-                task.id, task.runs
-            ));
-        }
+        check_task_history(&t.value, by_task.get(&t.value.id), &mut problems);
     }
     for task in by_task.keys() {
         if !task_ids.contains(task) {
@@ -280,6 +259,29 @@ pub(crate) fn consistency(tx: &Tx<'_>) -> Result<ConsistencyReport, StorageError
         events: replayed,
         problems,
     })
+}
+
+/// A task's own counts against its events in the ledger.
+pub(crate) fn check_task_history(task: &Task, h: Option<&TaskHistory>, problems: &mut Vec<String>) {
+    let (created, stepped, started) = h.map_or((0, 0, 0), |h| (h.created, h.stepped, h.started));
+    if created != 1 {
+        problems.push(format!(
+            "task {} has {created} task.created events, expected 1",
+            task.id
+        ));
+    }
+    if stepped != task.steps_completed {
+        problems.push(format!(
+            "task {} records {} steps but the ledger has {stepped} task.stepped events",
+            task.id, task.steps_completed
+        ));
+    }
+    if started != task.runs {
+        problems.push(format!(
+            "task {} records {} runs but the ledger has {started} run.started events",
+            task.id, task.runs
+        ));
+    }
 }
 
 /// The other direction (2026-10-08, crash matrix): every run event in the

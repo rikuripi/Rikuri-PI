@@ -14,8 +14,8 @@ mod store;
 
 pub use error::{StorageError, StoreFailure};
 pub use migrate::{Migration, Migrations};
-pub use repo::{Entity, Repository, SqliteRepository, Versioned};
-pub use store::{OpHealth, Store, StoreHealth, Tx};
+pub use repo::{Entity, Repository, SqliteRepository, Versioned, deletion_unit_size};
+pub use store::{OpHealth, Store, StoreHealth, Tx, Written};
 
 /// Re-exported so components that own tables (the ledger) write SQL against
 /// the same connection type the store uses.

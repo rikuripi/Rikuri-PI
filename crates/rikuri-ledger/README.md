@@ -11,7 +11,8 @@ The append-only record of what happened, and the idempotency records that make a
 - The `events` and `idempotency` tables (its own `ledger` migrations) and their append-only triggers: UPDATE, DELETE and REPLACE (including `INSERT OR REPLACE` and upserts) are refused by the schema on any connection. Schema changes such as `DROP TABLE` are outside this protection; only migrations change the schema.
 - Event validation: dotted lowercase type, a key for every consequential event, metadata of small scalars only (keys and strings ≤ 200 characters, ≤ 4096 bytes), existing `caused_by`, no duplicate event ID.
 - Idempotency: key format, command name (1–64 bytes of `a–z 0–9 . _ -`), request fingerprint (BLAKE3 of command + canonical parameters), `Fresh` / `Replay` / `Conflict` check, recording in the caller's transaction. A stored response is an object of small facts validated like metadata, because idempotency rows can never be deleted and content there could never be forgotten.
-- Reads: `get`, `tail` (oldest first), `by_task`, `replay` (every event in `seq` order).
+- Reads: `get`, `tail` (oldest first), `after` (the events after a sequence number, oldest first, through the table's key; `rikurid` reads what a command appended from here, E1), `by_task`, `task_counts` (one task's events counted by type, through the `events_by_task_type` index, so the count does not read event rows; `rikurid`'s pre-commit candidate check, ADR 0005), `replay` (every event in `seq` order).
+- Migrations: version 1 (tables and triggers), version 2 (the `events_by_task_type` index on `(task_id, event_type)`, E1).
 
 ## Must not own
 
@@ -30,7 +31,7 @@ Trusted kernel code inside `rikurid`. Stored rows are decoded defensively: an un
 
 ## Public contracts / interfaces
 
-`MIGRATIONS`; `NewEvent`, `Event`, `EventType`, `EventStatus`, `LedgerError` (implements `rikuri_storage::StoreFailure`: a storage failure or corrupt row counts against the store's health, a refused event does not); `append`, `get`, `tail`, `by_task`, `replay`; `IdempotencyKey`, `request_hash`, `check` → `IdempotencyCheck`, `record`, `IdempotencyRecord`; limits `MAX_METADATA_BYTES`, `MAX_METADATA_STRING`.
+`MIGRATIONS`; `EVENT_SCHEMA` (the schema version every appended event carries; `rikurid` checks it before commit, E1); `NewEvent`, `Event`, `EventType`, `EventStatus`, `LedgerError` (implements `rikuri_storage::StoreFailure`: a storage failure or corrupt row counts against the store's health, a refused event does not); `append`, `get`, `tail`, `after`, `by_task`, `task_counts`, `replay`; `IdempotencyKey`, `request_hash`, `check` → `IdempotencyCheck`, `record`, `IdempotencyRecord`, `record_mark` and `records_after` (the records written after a mark, oldest first, read by rowid; `rikurid` checks that a command wrote exactly its own record, E1); limits `MAX_METADATA_BYTES`, `MAX_METADATA_STRING`.
 
 ## Allowed dependencies
 
@@ -70,6 +71,9 @@ state / last_attempt / last_success / last_error / consecutive_failures / work_c
 - [x] unit/failure (validation, conflicts, references)
 - [x] shared contract suite — T00.05 `tests/ledger_contract.rs`
 - [x] invariant/property — committed vs rolled-back batches
+- [x] `after` lists exactly the events after a sequence number, oldest first (all of them for none, nothing after the newest) — `after_lists_the_events_appended_since_a_sequence_number` (E1)
+- [x] `record_mark` and `records_after` list exactly the idempotency records written after a mark, oldest first, with their command and response — `records_after_lists_the_records_written_since_a_mark` (E1)
+- [x] `task_counts` counts one task's events by type and nothing else's — `task_counts_count_one_tasks_events_by_type`; migration 2 upgrades a version-1 store and the count is answered from the covering index (`EXPLAIN QUERY PLAN`) — `migration_2_adds_the_task_type_index_and_upgrades_a_version_1_store` (E1)
 - [ ] replay/golden fixtures — T00.12 through `rikurid`
 - [ ] integration/smoke — through `rikurid` (S00.07)
 

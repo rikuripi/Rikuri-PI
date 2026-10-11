@@ -1,0 +1,531 @@
+diff --git a/apps/rikurid/src/kernel.rs b/apps/rikurid/src/kernel.rs
+index bd3339b..241d140 100644
+--- a/apps/rikurid/src/kernel.rs
++++ b/apps/rikurid/src/kernel.rs
+@@ -388,8 +388,31 @@ impl Kernel {
+                         "consequential command produced no event",
+                     ))
+                 })?;
+-                rikuri_ledger::record(tx, key, command, &hash, primary, &planned.result, now)?;
+-                true
++                let x4 = std::env::var_os("RIKURI_E1_X4").is_some() && command == "task.create";
++                if std::env::var_os("RIKURI_E1_N6").is_none() && !x4 {
++                    let as_command = if std::env::var_os("RIKURI_E1_N9").is_some() && command == "task.step" {
++                        "task.create"
++                    } else {
++                        command
++                    };
++                    let mut stored = planned.result.clone();
++                    if std::env::var_os("RIKURI_E1_X2").is_some() && command == "task.create" {
++                        let own = stored["task_id"].clone();
++                        if let Some(o) = SqliteRepository::<Task>::new()
++                            .list(tx, 10)?
++                            .into_iter()
++                            .find(|o| json!(o.value.id) != own)
++                        {
++                            stored["task_id"] = json!(o.value.id);
++                        }
++                    }
++                    rikuri_ledger::record(tx, key, as_command, &hash, primary, &stored, now)?;
++                    if std::env::var_os("RIKURI_E1_X3").is_some() && command == "task.create" {
++                        let other = IdempotencyKey::new(&format!("{}-x", key.as_str()))?;
++                        rikuri_ledger::record(tx, &other, as_command, &hash, primary, &stored, now)?;
++                    }
++                }
++                !x4
+             } else {
+                 false
+             };
+@@ -411,7 +434,10 @@ impl Kernel {
+             // response it returns; with it off, none. A disagreement refuses
+             // this command and leaves the last known-good state authoritative,
+             // instead of promoting it and quarantining the daemon afterwards.
+-            let mut problems = if command == command::SYSTEM_INIT {
++            let nocheck = std::env::var_os("RIKURI_E1_NOCHECK").is_some();
++            let mut problems = if nocheck {
++                vec![]
++            } else if command == command::SYSTEM_INIT {
+                 let mut p = health::consistency(tx)?.problems;
+                 p.extend(crate::candidate::check_init(
+                     tx,
+@@ -423,7 +449,7 @@ impl Kernel {
+                 crate::candidate::check_command(tx, command, key.as_str(), newest_at_start)?
+             };
+             let enforced = self.idempotency == Idempotency::Enforced;
+-            if enforced {
++            if enforced && !nocheck {
+                 problems.extend(crate::candidate::check_recorded(
+                     tx,
+                     command,
+@@ -432,17 +458,21 @@ impl Kernel {
+                     newest_at_start,
+                 )?);
+             }
+-            problems.extend(crate::candidate::check_answer(
+-                tx,
+-                command,
+-                &planned.result,
+-                newest_at_start,
+-            )?);
+-            problems.extend(crate::candidate::check_record_written(
+-                tx,
+-                enforced.then_some((key, &planned.result)),
+-                records_at_start,
+-            )?);
++            if !nocheck {
++                problems.extend(crate::candidate::check_answer(
++                    tx,
++                    command,
++                    &planned.result,
++                    newest_at_start,
++                )?);
++            }
++            if !nocheck {
++                problems.extend(crate::candidate::check_record_written(
++                    tx,
++                    enforced.then_some((key, &planned.result)),
++                    records_at_start,
++                )?);
++            }
+             if let Some(first) = problems.first() {
+                 return Err(Fail::Api(ApiError::new(
+                     ErrorCode::Internal,
+@@ -516,7 +546,11 @@ impl Kernel {
+         let project = Project {
+             id: owner.project_id,
+             name: "Inbox".into(),
+-            trust: ProjectTrust::default(),
++            trust: if std::env::var_os("RIKURI_E1_N8").is_some() {
++                ProjectTrust::TrustedScopedExecute
++            } else {
++                ProjectTrust::default()
++            },
+             intent: ExecutionIntent::default(),
+         };
+         SqliteRepository::<Owner>::new().insert(tx, &owner, now)?;
+@@ -526,7 +560,15 @@ impl Kernel {
+         e.subject_ids = vec![owner.id.into(), project.id.into()];
+         e.result_refs = e.subject_ids.clone();
+         Ok(Planned {
+-            result: json!({"actor_id": owner.id, "project_id": project.id, "event_id": e.event_id}),
++            result: json!({
++                "actor_id": owner.id,
++                "project_id": if std::env::var_os("RIKURI_E1_R3").is_some() {
++                    ProjectId::generate(ids).map_err(id_failure)?
++                } else {
++                    project.id
++                },
++                "event_id": e.event_id
++            }),
+             events: vec![e],
+         })
+     }
+@@ -555,7 +597,13 @@ impl Kernel {
+             project_id: owner.project_id,
+             title: title.to_owned(),
+             privacy_class: p.privacy_class.unwrap_or(PrivacyClass::Normal),
+-            deletion_unit_id: DeletionUnitId::generate(ids).map_err(id_failure)?,
++            deletion_unit_id: match (
++                std::env::var_os("RIKURI_E1_N5").is_some(),
++                SqliteRepository::<Task>::new().list(tx, 1)?.into_iter().next(),
++            ) {
++                (true, Some(o)) => o.value.deletion_unit_id,
++                _ => DeletionUnitId::generate(ids).map_err(id_failure)?,
++            },
+             status: TaskStatus::Created,
+             steps_completed: 0,
+             runs: 0,
+@@ -569,7 +617,16 @@ impl Kernel {
+         e.subject_ids = vec![task.id.into()];
+         e.result_refs = vec![task.id.into()];
+         Ok(Planned {
+-            result: json!({"task_id": task.id, "version": stored.version, "event_id": e.event_id}),
++            result: json!({
++                "task_id": match (
++                    std::env::var_os("RIKURI_E1_R1").is_some(),
++                    SqliteRepository::<Task>::new().list(tx, 10)?.into_iter().find(|o| o.value.id != task.id),
++                ) {
++                    (true, Some(o)) => o.value.id,
++                    _ => task.id,
++                },
++                "version": stored.version, "event_id": e.event_id
++            }),
+             events: vec![e],
+         })
+     }
+@@ -583,7 +640,7 @@ impl Kernel {
+     ) -> Result<Planned, Fail> {
+         let owner = owner(tx)?.ok_or_else(not_initialized)?;
+         let mut task = load_task(tx, p.task_id, p.expected_version)?;
+-        if task.status == TaskStatus::Running {
++        if task.status == TaskStatus::Running && std::env::var_os("RIKURI_E1_D4").is_none() {
+             return Err(ApiError::new(
+                 ErrorCode::InvalidState,
+                 "the task already has a running run",
+@@ -595,7 +652,7 @@ impl Kernel {
+         let run = Run {
+             id: RunId::generate(self.ids.as_ref()).map_err(id_failure)?,
+             task_id: task.id,
+-            attempt: task.runs + 1,
++            attempt: task.runs + 1 + u32::from(std::env::var_os("RIKURI_E1_V4").is_some()),
+             status: RunStatus::Running,
+             steps: 0,
+             outcome: None,
+@@ -605,10 +662,19 @@ impl Kernel {
+             verification_event_id: None,
+         };
+         SqliteRepository::<Run>::new().insert(tx, &run, now)?;
++        if std::env::var_os("RIKURI_E1_D2").is_some() {
++            let extra = Run {
++                id: RunId::generate(self.ids.as_ref()).map_err(id_failure)?,
++                ..run.clone()
++            };
++            SqliteRepository::<Run>::new().insert(tx, &extra, now)?;
++        }
+         task.status = TaskStatus::Running;
+         task.runs += 1;
+         task.current_run = Some(run.id);
+-        task.last_run = Some(run.id);
++        if std::env::var_os("RIKURI_E1_V5").is_none() {
++            task.last_run = Some(run.id);
++        }
+         let stored = SqliteRepository::<Task>::new().update(tx, &task, p.expected_version, now)?;
+         e.project_id = Some(task.project_id);
+         e.task_id = Some(task.id);
+@@ -634,6 +700,63 @@ impl Kernel {
+         let mut run = running_run(tx, &task, p.run_id)?;
+         run.steps += 1;
+         task.steps_completed += 1;
++        // D3: also step another task, which no event accounts for
++        if std::env::var_os("RIKURI_E1_D3").is_some() {
++            let others = SqliteRepository::<Task>::new().list(tx, 10)?;
++            if let Some(o) = others.into_iter().find(|o| o.value.id != task.id) {
++                let mut other = o.value;
++                other.steps_completed += 1;
++                SqliteRepository::<Task>::new().update(tx, &other, o.version, now)?;
++            }
++        }
++        // V1: the step rewrites its own task's title and privacy class
++        if std::env::var_os("RIKURI_E1_V1").is_some() {
++            task.title = "overwritten by its own step".into();
++            task.privacy_class = PrivacyClass::Normal;
++        }
++        // V2: the step replaces its own task's deletion unit
++        if std::env::var_os("RIKURI_E1_V2").is_some() {
++            task.deletion_unit_id = DeletionUnitId::generate(self.ids.as_ref()).map_err(id_failure)?;
++        }
++        // V3: the step moves its own task to a new project
++        if std::env::var_os("RIKURI_E1_V3").is_some() {
++            task.project_id = ProjectId::generate(self.ids.as_ref()).map_err(id_failure)?;
++        }
++        // V8: the step changes its run's attempt
++        if std::env::var_os("RIKURI_E1_V8").is_some() {
++            run.attempt += 10;
++        }
++        // D5: the running run gains a verification link
++        if std::env::var_os("RIKURI_E1_D5").is_some() {
++            run.verification_event_id = Some(run.started_event_id);
++        }
++        // D6: the step is applied twice, with two events under one key
++        let double = std::env::var_os("RIKURI_E1_D6").is_some();
++        let twin = std::env::var_os("RIKURI_E1_V11").is_some();
++        if double || twin {
++            run.steps += 1;
++            task.steps_completed += 1;
++        }
++        // D8: another task's privacy class and title are rewritten, no event
++        if std::env::var_os("RIKURI_E1_D8").is_some() {
++            let others = SqliteRepository::<Task>::new().list(tx, 10)?;
++            if let Some(o) = others.into_iter().find(|o| o.value.id != task.id) {
++                let mut other = o.value;
++                other.privacy_class = PrivacyClass::Normal;
++                other.title = "overwritten by a step".into();
++                SqliteRepository::<Task>::new().update(tx, &other, o.version, now)?;
++            }
++        }
++        // D7: an event about another task appended directly, outside the plan
++        if std::env::var_os("RIKURI_E1_D7").is_some() {
++            let others = SqliteRepository::<Task>::new().list(tx, 10)?;
++            if let Some(o) = others.into_iter().find(|o| o.value.id != task.id) {
++                let mut x = self.new_event("task.stepped", owner.id, key)?;
++                x.task_id = Some(o.value.id);
++                x.project_id = Some(o.value.project_id);
++                rikuri_ledger::append(tx, &x, now)?;
++            }
++        }
+         SqliteRepository::<Run>::new().update(
+             tx,
+             &run,
+@@ -648,13 +771,57 @@ impl Kernel {
+         e.subject_ids = vec![task.id.into(), run.id.into()];
+         e.metadata
+             .insert("steps_completed".into(), json!(task.steps_completed));
++        if std::env::var_os("RIKURI_E1_V7").is_some() {
++            e.status = EventStatus::Failed;
++            e.metadata.insert("steps_completed".into(), json!(999));
++        }
++        let mut events = vec![e.clone()];
++        if twin {
++            let mut e2 = self.new_event("task.stepped", owner.id, key)?;
++            e2.idempotency_key = Some(IdempotencyKey::new(&format!("{}-twin", key.as_str()))?);
++            e2.project_id = e.project_id;
++            e2.task_id = e.task_id;
++            e2.run_id = e.run_id;
++            e2.subject_ids = e.subject_ids.clone();
++            events.push(e2);
++        }
++        // V9: the step also creates a hidden task under its own key
++        if std::env::var_os("RIKURI_E1_V9").is_some() {
++            let hidden = Task {
++                id: TaskId::generate(self.ids.as_ref()).map_err(id_failure)?,
++                project_id: task.project_id,
++                title: "hidden".into(),
++                privacy_class: PrivacyClass::Normal,
++                deletion_unit_id: DeletionUnitId::generate(self.ids.as_ref()).map_err(id_failure)?,
++                status: TaskStatus::Created,
++                steps_completed: 0,
++                runs: 0,
++                current_run: None,
++                last_run: None,
++            };
++            SqliteRepository::<Task>::new().insert(tx, &hidden, now)?;
++            let mut h = self.new_event("task.created", owner.id, key)?;
++            h.project_id = Some(hidden.project_id);
++            h.task_id = Some(hidden.id);
++            h.subject_ids = vec![hidden.id.into()];
++            h.result_refs = vec![hidden.id.into()];
++            events.push(h);
++        }
++        if double {
++            let mut e2 = self.new_event("task.stepped", owner.id, key)?;
++            e2.project_id = e.project_id;
++            e2.task_id = e.task_id;
++            e2.run_id = e.run_id;
++            e2.subject_ids = e.subject_ids.clone();
++            events.push(e2);
++        }
+         Ok(Planned {
+             result: json!({
+                 "task_id": task.id, "run_id": run.id,
+                 "steps_completed": task.steps_completed, "version": stored.version,
+                 "event_id": e.event_id
+             }),
+-            events: vec![e],
++            events,
+         })
+     }
+
+@@ -676,7 +843,12 @@ impl Kernel {
+         run.completion_event_id = Some(completed.event_id);
+         run.verification_event_id = Some(verified.event_id);
+         task.status = TaskStatus::Completed;
+-        task.current_run = None;
++        if std::env::var_os("RIKURI_E1_V6").is_some() {
++            task.status = TaskStatus::Created;
++        }
++        if std::env::var_os("RIKURI_E1_D1").is_none() {
++            task.current_run = None;
++        }
+         SqliteRepository::<Run>::new().update(
+             tx,
+             &run,
+@@ -952,6 +1124,9 @@ fn running_run(tx: &Tx<'_>, task: &Task, run_id: RunId) -> Result<Run, Fail> {
+                 .with_details(json!({"id": run_id}))
+         })?
+         .value;
++    if std::env::var_os("RIKURI_E1_N1").is_some() {
++        return Ok(run);
++    }
+     if run.task_id != task.id {
+         return Err(ApiError::new(
+             ErrorCode::InvalidState,
+diff --git a/apps/rikurid/tests/e1_defects.rs b/apps/rikurid/tests/e1_defects.rs
+new file mode 100644
+index 0000000..04b0701
+--- /dev/null
++++ b/apps/rikurid/tests/e1_defects.rs
+@@ -0,0 +1,171 @@
++//! E1 evidence harness (not part of the product; applied from
++//! docs/build-records/evidence/2026-10-09-s00-11-e1/). Planted kernel
++//! defects D1-D8 (switches in kernel.rs) and the cost of the write-set
++//! check on one long task.
++#![allow(clippy::unwrap_used, clippy::print_stdout)]
++use std::path::{Path, PathBuf};
++use std::time::Instant;
++
++use rikuri_api::{Request, Response, command};
++use rikuri_domain::{SystemClock, SystemIdSource};
++use rikurid::crash::NoCrash;
++use rikurid::{Idempotency, Kernel, KernelConfig};
++use serde_json::{Value, json};
++
++fn open(home: &Path) -> Kernel {
++    Kernel::open(
++        home,
++        KernelConfig {
++            ids: Box::new(SystemIdSource::new()),
++            clock: Box::new(SystemClock),
++            crash: Box::new(NoCrash),
++            idempotency: Idempotency::Enforced,
++        },
++    )
++    .unwrap()
++}
++
++fn keyed(k: &Kernel, c: &str, p: Value, key: &str) -> Response {
++    k.handle(&Request::new(c, p).with_idempotency_key(key))
++}
++
++fn res(r: &Response) -> Value {
++    r.result.clone().unwrap_or(Value::Null)
++}
++
++fn said(r: &Response) -> String {
++    match &r.error {
++        None => "ok".into(),
++        Some(e) => format!("refused ({}): {}", e.code.as_str(), e.message),
++    }
++}
++
++/// Task a (normal) and task b (private). Start a, try to start it again
++/// (a legitimate kernel refuses this), step a, complete a. With a defect
++/// switched on, the command that carries it should be refused before
++/// promotion, nothing quarantined, and task b unchanged.
++#[test]
++fn defects() {
++    let dir = tempfile::tempdir().unwrap();
++    let k = open(&dir.path().join("home"));
++    k.handle(&Request::new(command::SYSTEM_INIT, json!({})));
++    let a = res(&keyed(&k, command::TASK_CREATE, json!({"title": "a"}), "key-create-a001"));
++    keyed(
++        &k,
++        command::TASK_CREATE,
++        json!({"title": "b secret title", "privacy_class": "private"}),
++        "key-create-b001",
++    );
++    let task_b = |k: &Kernel| {
++        let s = res(&k.handle(&Request::new(command::STATE_SHOW, json!({}))));
++        let b = s["tasks"]
++            .as_array()
++            .and_then(|t| t.iter().find(|t| t["task_id"] != a["task_id"]).cloned())
++            .unwrap_or(Value::Null);
++        format!("privacy={} title={}", b["privacy_class"], b["title"])
++    };
++    let b_before = task_b(&k);
++    let s = keyed(
++        &k,
++        command::TASK_START,
++        json!({"task_id": a["task_id"], "expected_version": a["version"]}),
++        "key-start-a0001",
++    );
++    println!("DEF start: {}", said(&s));
++    if s.error.is_none() {
++        let s = res(&s);
++        let again = keyed(
++            &k,
++            command::TASK_START,
++            json!({"task_id": s["task_id"], "expected_version": s["version"]}),
++            "key-start-a0002",
++        );
++        println!("DEF second start: {}", said(&again));
++        let s = if again.error.is_none() { res(&again) } else { s };
++        let st = keyed(
++            &k,
++            command::TASK_STEP,
++            json!({"task_id": s["task_id"], "run_id": s["run_id"], "expected_version": s["version"]}),
++            "key-step-a00001",
++        );
++        println!("DEF step: {}", said(&st));
++        let cur = if st.error.is_none() { res(&st) } else { s };
++        let d = keyed(
++            &k,
++            command::TASK_COMPLETE,
++            json!({"task_id": cur["task_id"], "run_id": cur["run_id"],
++                   "expected_version": cur["version"],
++                   "outcome": "succeeded", "verification": "passed"}),
++            "key-done-a00001",
++        );
++        println!("DEF complete: {}", said(&d));
++    }
++    let report = k.check_consistency();
++    let next = keyed(&k, command::TASK_CREATE, json!({"title": "c"}), "key-create-c001");
++    let b_after = task_b(&k);
++    println!(
++        "DEF after: replay problems={} quarantined={} next create {} | task b {}",
++        report.problems.len(),
++        k.quarantined().is_some(),
++        said(&next),
++        if b_after == b_before {
++            format!("unchanged ({b_after})")
++        } else {
++            format!("CHANGED from {b_before} to {b_after}")
++        }
++    );
++}
++
++fn disk(name: &str) -> PathBuf {
++    let root = PathBuf::from(std::env::var("E1_DISK").expect("E1_DISK: a directory on a real disk"));
++    let h = root.join(name);
++    let _ = std::fs::remove_dir_all(&h);
++    std::fs::create_dir_all(&root).unwrap();
++    h
++}
++
++/// ms per `task.step` after `E1_N` earlier steps on one task. With
++/// `E1_NO_INDEX` the ledger's `events_by_task_type` index is dropped first.
++#[test]
++fn long_task_cost() {
++    let n: usize = std::env::var("E1_N").ok().and_then(|v| v.parse().ok()).unwrap_or(1000);
++    let k = open(&disk(&format!("long-{n}")));
++    k.handle(&Request::new(command::SYSTEM_INIT, json!({})));
++    let t = res(&keyed(&k, command::TASK_CREATE, json!({"title": "long"}), "key-create-long1"));
++    let mut cur = res(&keyed(
++        &k,
++        command::TASK_START,
++        json!({"task_id": t["task_id"], "expected_version": t["version"]}),
++        "key-start-long01",
++    ));
++    let step = |k: &Kernel, cur: &Value, key: String| {
++        res(&keyed(
++            k,
++            command::TASK_STEP,
++            json!({"task_id": cur["task_id"], "run_id": cur["run_id"], "expected_version": cur["version"]}),
++            &key,
++        ))
++    };
++    for i in 0..n {
++        cur = step(&k, &cur, format!("key-grow-{i:09}"));
++    }
++    let index = std::env::var_os("E1_NO_INDEX").is_none();
++    if !index {
++        k.store()
++            .write(|tx| {
++                tx.execute_batch("DROP INDEX events_by_task_type")
++                    .map_err(rikuri_storage::StorageError::from)
++            })
++            .unwrap();
++    }
++    let m = 50;
++    let start = Instant::now();
++    for i in 0..m {
++        cur = step(&k, &cur, format!("key-meas-{i:09}"));
++        assert!(!cur.is_null(), "a measured step failed");
++    }
++    println!(
++        "COST steps_before={n} index={index} ms_per_step={:.3}",
++        start.elapsed().as_secs_f64() * 1000.0 / f64::from(m)
++    );
++}
+diff --git a/crates/rikuri-ledger/src/event.rs b/crates/rikuri-ledger/src/event.rs
+index 3b92b19..8bb33da 100644
+--- a/crates/rikuri-ledger/src/event.rs
++++ b/crates/rikuri-ledger/src/event.rs
+@@ -226,7 +226,7 @@ pub fn append(tx: &Tx<'_>, e: &NewEvent, now: Timestamp) -> Result<Event, Ledger
+          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17)",
+         params![
+             e.event_id.to_string(),
+-            EVENT_SCHEMA.get(),
++            if std::env::var_os("RIKURI_E1_S1").is_some() { 7 } else { EVENT_SCHEMA.get() },
+             now.millis(),
+             e.event_type.as_str(),
+             e.status.as_str(),
