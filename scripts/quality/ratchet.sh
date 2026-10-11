@@ -5,8 +5,8 @@
 #
 #   ratchet.sh [root]            check against the baseline
 #   ratchet.sh --update [root]   print current counts as JSON (a baseline change
-#                                is a reviewed change; the fix-lock makes it
-#                                read-only)
+#                                is a reviewed change; an engaged fix-lock
+#                                makes it read-only)
 set -euo pipefail
 update=0
 if [ "${1:-}" = "--update" ]; then update=1; shift; fi
