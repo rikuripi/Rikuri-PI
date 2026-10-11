@@ -9,7 +9,7 @@
 | Commits | this PR's commits on the branch |
 | Stage Gate | [Stage 00](../stage-gates/foundation0/00-bootstrap-kernel.md); S00.08; S00.09 (testkit Module Contract); closes the [crash matrix record](2026-10-08-stage-00-crash-matrix.md)'s row "S00.08 `CrashInjector`" |
 | Related ADR / requirement | Stage Plan S00.08 (as resequenced 2026-10-05: `FakeModelAdapter` → S02.07, `FakeTool` → S04.01); AGENTS.md (real callers, no unexplained alternate implementation) |
-| Status | COMPLETE locally (verifier round 1 PASS; full gate PASS); CI Not yet proven |
+| Status | COMPLETE: merged in PR #24 (`48bb7ee`); CI [run 37974583233](https://github.com/rikuripi/Rikuri-PI/actions/runs/37974583233) (PR) and [run 38006747795](https://github.com/rikuripi/Rikuri-PI/actions/runs/38006747795) (`main`, Ubuntu and macOS) |
 
 ## 1. Plan
 
@@ -48,7 +48,7 @@
 ## 5. Close Out
 
 - [x] Full gate after the round-1 responses: `RESULT: PASS (15 steps)` (contracts and crate policy check 7 crates; the new self-tests run in the gate's self-test step). Scrap Sweep: untracked files are this change's new files and the owner's `rikurinode.code-workspace`; no mutants.out, no proptest-regressions, scratch outside the repository.
-- [ ] Commits and PR (owner, 2026-10-09: "Commit and PR, I'll merge"; the owner merges); after CI: tick S00.08 and the "Module Contracts for … testkit" engineering gate in the Stage Gate Record, and replace its line "S00.08 `rikuri-testkit` is not built yet".
+- [x] Commits and PR (owner, 2026-10-09: "Commit and PR, I'll merge"): PR #24, merged by the owner as `48bb7ee`. CI: [run 37974583233](https://github.com/rikuripi/Rikuri-PI/actions/runs/37974583233) on the PR (the job log, read through the API because `gh run view --log` returned nothing for it, shows the three crate-policy self-tests, the ADR 0001 property test, `CONTRACT checked 7 crate(s)`, `POLICY checked 7 crate(s)`, `RESULT: PASS (15 steps)`) and [run 38006747795](https://github.com/rikuripi/Rikuri-PI/actions/runs/38006747795) on `main` (Ubuntu and macOS; macOS ran the kit's tests and the crash matrix). The Stage Gate Record's S00.08, S00.09, "all stage modules wired" and "Module Contracts" items are ticked with these runs.
 - [x] Protected-path risk note (REVIEW.md): `AGENTS.md` (the repository paragraph names five library crates), `scripts/quality/crate-policy.sh` (rule 5) and `scripts/quality/tests/crate-checks.sh` (its self-tests), and ADR 0001 (a dated note on a follow-up, the decision unchanged). Risk: a policy rule that refuses legitimate manifests, or a self-test that cannot fail. Mitigation: the rule reads only `[dependencies]`/`[build-dependencies]` (and target tables), the real workspace passes it, and its self-tests include both an accepted and two refused manifests; no existing rule or step changed.
 
 ## Skipped / Deferred / Resequenced

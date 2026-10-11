@@ -32,6 +32,16 @@ maturity" and look at the tree: what exists decides which gate applies.
    changed that the Plan did not name, planned files that did not change,
    and every claim (a gate passed, a stage done, a feature working) that
    the evidence does not support.
+4. **For a defect fix, check the test was not weakened**: the failing test
+   was shown red before the fix (a red commit, or a red run recorded in the
+   Build Record), and every change to test code or baselines from that red
+   state to the change's last commit has a reason in the Build Record
+   (`git diff <red> <head>`; test code includes `tests/` files, inline
+   `#[cfg(test)]` modules, `rikuri-testkit` and gate self-tests). To see the
+   red commit fail, build it in its own target directory: a shared one can
+   rerun a stale binary. A test or baseline loosened to reach green, without
+   a reason that holds, is a Fail. While the fix-lock is off by default
+   (AGENTS.md > Deterministic gates), this check is what stands in for it.
 
 Rules:
 - Never search or read secret files (`.env`, `*.env`, keys, cookies,

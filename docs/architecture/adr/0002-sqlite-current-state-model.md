@@ -43,8 +43,8 @@ The kernel needs a canonical store for current state that survives a killed proc
 
 - JSON bodies are not efficiently queryable; acceptable while lookups are by ID. Stage 01 adds typed tables and FTS5 where search needs them.
 - A single connection serializes reads with writes. Fine for one owner; revisit with measured contention.
-- `synchronous=FULL` costs write latency; measured cost is not yet recorded (Not yet proven).
-- E1 (simplest implementation of Transactional State Evolution) is answered for single-transaction kernel changes by SQLite's atomic commit plus read-back; the crash matrix (T00.07) is the evidence. Multi-store transformations (backup/restore, Stage 01) still need explicit candidate/promotion.
+- `synchronous=FULL` costs write latency; measured cost is not yet recorded (Not yet proven). *Measured 2026-10-09 (E1, [ADR 0005](0005-e1-transactional-state-evolution-for-kernel-transactions.md)): about 3.3 ms per kernel command against 0.4 ms with `NORMAL` on the reference installation (one fsync per commit); kept.*
+- E1 (simplest implementation of Transactional State Evolution) is answered for single-transaction kernel changes by SQLite's atomic commit plus read-back; the crash matrix (T00.07) is the evidence. Multi-store transformations (backup/restore, Stage 01) still need explicit candidate/promotion. *Clarified 2026-10-09 by [ADR 0005](0005-e1-transactional-state-evolution-for-kernel-transactions.md): E1 compared both designs; one transaction stays, and the kernel adds a candidate check scoped to what a command touches before the commit (TSE's "validate candidate" step, which read-back alone did not cover). Clarified 2026-10-10 by ADR 0005's clarification: the check now validates what each command wrote and appended, read from the transaction.*
 
 ## Security / privacy impact
 
@@ -54,6 +54,8 @@ The database file and its directory are owner-only on Unix, enforced at open (se
 
 First schema: `storage` v1 (object registry), `ledger` v1 (ADR 0003). No user data exists yet.
 
+Note 2026-10-10: `storage` v2 adds one index, `objects_by_deletion_unit` on `(deletion_unit_id)`, so the kernel's pre-commit check can count a deletion unit's objects without scanning the table ([ADR 0005](0005-e1-transactional-state-evolution-for-kernel-transactions.md), clarification 2026-10-10, N5). It is additive: no row is rewritten, and a version-1 store upgrades at open (`storage_migration_2_adds_the_deletion_unit_index_to_a_version_1_store`).
+
 ## Rollback or reversal path
 
 Before Stage 01 data exists, change freely. Afterwards, a different engine or layout is a versioned migration through backup → upgrade → restore (T01.12), with the old database kept until the new one verifies.
@@ -61,4 +63,4 @@ Before Stage 01 data exists, change freely. Afterwards, a different engine or la
 ## Follow-up tests
 
 - T00.07 kernel crash matrix through the real daemon; T00.06 property across injected crashes.
-- Measure `synchronous=FULL` write latency on the reference installation.
+- Measure `synchronous=FULL` write latency on the reference installation. *Done 2026-10-09 (ADR 0005).*

@@ -18,10 +18,11 @@ use crate::{StorageError, StoreFailure};
 /// (Architecture §21.1) holding every typed entity's current state.
 pub(crate) const STORAGE_MIGRATIONS: Migrations = Migrations {
     component: "storage",
-    list: &[Migration {
-        version: 1,
-        name: "object registry",
-        sql: "
+    list: &[
+        Migration {
+            version: 1,
+            name: "object registry",
+            sql: "
 CREATE TABLE objects (
     id               TEXT    PRIMARY KEY NOT NULL,
     kind             TEXT    NOT NULL,
@@ -36,16 +37,48 @@ CREATE TABLE objects (
 ) STRICT;
 CREATE INDEX objects_by_kind ON objects (kind, id);
 ",
-    }],
+        },
+        Migration {
+            version: 2,
+            name: "objects counted by deletion unit",
+            // the kernel refuses a new task whose deletion unit is not its own
+            // (E1, ADR 0005); counting through this index keeps that check
+            // from scanning every object
+            sql: "CREATE INDEX objects_by_deletion_unit ON objects (deletion_unit_id);",
+        },
+    ],
 };
 
 /// A transaction. Dereferences to the connection, so components that own
 /// tables run their SQL inside the same transaction as everyone else.
 pub struct Tx<'a> {
     inner: rusqlite::Transaction<'a>,
+    written: std::cell::RefCell<Vec<Written>>,
+}
+
+/// One object a transaction wrote through a repository, with its stored
+/// body before (none for an insert) and after. The kernel validates its
+/// candidate against exactly these before committing (Transactional State
+/// Evolution's "validate candidate" step; E1, ADR 0005).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Written {
+    pub kind: &'static str,
+    pub id: String,
+    pub before: Option<String>,
+    pub after: String,
 }
 
 impl Tx<'_> {
+    /// Every object this transaction wrote through a repository, in order.
+    /// Writes a repository refused are not listed.
+    pub fn written(&self) -> Vec<Written> {
+        self.written.borrow().clone()
+    }
+
+    pub(crate) fn note_write(&self, w: Written) {
+        self.written.borrow_mut().push(w);
+    }
+
     /// The newest applied migration version of `component`, read inside this
     /// transaction. Use this, not `Store::schema_version`, from inside a
     /// `read` or `write` closure.
@@ -273,7 +306,10 @@ impl Store {
             let inner = conn
                 .transaction_with_behavior(behavior)
                 .map_err(StorageError::from)?;
-            let tx = Tx { inner };
+            let tx = Tx {
+                inner,
+                written: std::cell::RefCell::new(vec![]),
+            };
             let value = f(&tx)?;
             match behavior {
                 TransactionBehavior::Deferred => tx.inner.rollback().map_err(StorageError::from)?,

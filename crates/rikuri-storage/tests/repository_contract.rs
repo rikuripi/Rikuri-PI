@@ -3,8 +3,11 @@
 //! the `Repository` trait so every implementation runs the same suite.
 
 use proptest::prelude::*;
-use rikuri_domain::{PrivacyClass, ProjectId, SchemaVersion, Timestamp};
-use rikuri_storage::{Entity, Repository, SqliteRepository, StorageError, Store, Versioned};
+use rikuri_domain::{DeletionUnitId, PrivacyClass, ProjectId, SchemaVersion, Timestamp};
+use rikuri_storage::{
+    Entity, Repository, SqliteRepository, StorageError, Store, Versioned, Written,
+    deletion_unit_size,
+};
 use rikuri_testkit::{FixtureClock, FixtureIds, T0, T0_TIME};
 use serde::{Deserialize, Serialize};
 
@@ -455,4 +458,236 @@ fn corrupt_row_errors_are_bounded() {
     let err = store.read(|tx| repo.get(tx, a.id)).unwrap_err();
     let shown = err.to_string();
     assert!(shown.len() < 1024, "error message is {} bytes", shown.len());
+}
+
+/// Transactional State Evolution (Architecture §43; E1): the read-back step
+/// bites. When what the store holds after a write differs from what was
+/// meant to be written (a trigger rewrites the row here, standing for a
+/// layer below that changes data), the write fails, the whole transaction
+/// rolls back, and the last known-good state stays authoritative.
+#[test]
+fn a_write_that_does_not_read_back_rolls_back() -> TestResult {
+    let dir = tempfile::tempdir()?;
+    let store = open(&dir)?;
+    let repo = SqliteRepository::<Thing>::new();
+    let ids = FixtureIds::sequential(T0);
+    let kept = thing(&ids, "kept")?;
+    store.write(|tx| repo.insert(tx, &kept, T0_TIME))?;
+    store.write(|tx| {
+        tx.execute_batch(
+            "CREATE TRIGGER rewrite_insert AFTER INSERT ON objects BEGIN \
+               UPDATE objects SET body = json_set(body, '$.name', 'rewritten') \
+               WHERE id = NEW.id; END; \
+             CREATE TRIGGER rewrite_update AFTER UPDATE OF version ON objects \
+               WHEN json_extract(NEW.body, '$.name') <> 'rewritten' BEGIN \
+               UPDATE objects SET body = json_set(body, '$.name', 'rewritten') \
+               WHERE id = NEW.id; END;",
+        )
+        .map_err(StorageError::from)
+    })?;
+    let read_back_failed = |got: &Result<Versioned<Thing>, StorageError>| matches!(got, Err(StorageError::Corrupt { reason, .. }) if reason.contains("read-back"));
+
+    // an insert that does not read back is not promoted
+    let fresh = thing(&ids, "fresh")?;
+    let got = store.write(|tx| repo.insert(tx, &fresh, T0_TIME));
+    assert!(read_back_failed(&got), "{got:?}");
+    assert!(store.read(|tx| repo.get(tx, fresh.id))?.is_none());
+
+    // nor is an update: the last known-good version stays
+    let changed = Thing {
+        name: "changed".into(),
+        ..kept.clone()
+    };
+    let got = store.write(|tx| repo.update(tx, &changed, 1, T0_TIME));
+    assert!(read_back_failed(&got), "{got:?}");
+    let now = current(&store, &repo, kept.id)?;
+    assert_eq!((now.version, now.value), (1, kept));
+    Ok(())
+}
+
+/// The read-back compares the version as well as the body: a row whose
+/// body reads back as written but whose version moved underneath (a
+/// trigger bumps it here) is not promoted either.
+#[test]
+fn a_write_whose_version_does_not_read_back_rolls_back() -> TestResult {
+    let dir = tempfile::tempdir()?;
+    let store = open(&dir)?;
+    let repo = SqliteRepository::<Thing>::new();
+    let ids = FixtureIds::sequential(T0);
+    let kept = thing(&ids, "kept")?;
+    store.write(|tx| repo.insert(tx, &kept, T0_TIME))?;
+    store.write(|tx| {
+        tx.execute_batch(
+            "CREATE TRIGGER bump_insert AFTER INSERT ON objects BEGIN \
+               UPDATE objects SET version = version + 1 WHERE id = NEW.id; END; \
+             CREATE TRIGGER bump_update AFTER UPDATE OF body ON objects \
+               WHEN NEW.version = OLD.version + 1 BEGIN \
+               UPDATE objects SET version = version + 1 WHERE id = NEW.id; END;",
+        )
+        .map_err(StorageError::from)
+    })?;
+    let version_differs = |got: &Result<Versioned<Thing>, StorageError>| matches!(got, Err(StorageError::Corrupt { reason, .. }) if reason.contains("read-back version"));
+
+    let fresh = thing(&ids, "fresh")?;
+    let got = store.write(|tx| repo.insert(tx, &fresh, T0_TIME));
+    assert!(version_differs(&got), "{got:?}");
+    assert!(store.read(|tx| repo.get(tx, fresh.id))?.is_none());
+
+    let changed = Thing {
+        name: "changed".into(),
+        ..kept.clone()
+    };
+    let got = store.write(|tx| repo.update(tx, &changed, 1, T0_TIME));
+    assert!(version_differs(&got), "{got:?}");
+    let now = current(&store, &repo, kept.id)?;
+    assert_eq!((now.version, now.value), (1, kept));
+    Ok(())
+}
+
+/// A transaction lists what it wrote through repositories, in order, with
+/// each object's body before (none for an insert) and after; a refused
+/// write is not listed, and every transaction starts empty. The kernel
+/// checks its candidate against exactly this before committing (E1,
+/// ADR 0005).
+#[test]
+fn a_transaction_lists_what_it_wrote() -> TestResult {
+    let dir = tempfile::tempdir()?;
+    let store = open(&dir)?;
+    let repo = SqliteRepository::<Thing>::new();
+    let ids = FixtureIds::sequential(T0);
+    let a = thing(&ids, "a")?;
+    let b = thing(&ids, "b")?;
+    store.write(|tx| repo.insert(tx, &a, T0_TIME))?;
+    let renamed = Thing {
+        name: "a2".into(),
+        ..a.clone()
+    };
+    let written = store.write(|tx| -> Result<Vec<Written>, StorageError> {
+        assert!(tx.written().is_empty(), "a transaction starts empty");
+        repo.insert(tx, &b, T0_TIME)?;
+        repo.update(tx, &renamed, 1, T0_TIME)?;
+        let refused = repo.update(tx, &renamed, 1, T0_TIME);
+        assert!(matches!(refused, Err(StorageError::VersionConflict { .. })));
+        Ok(tx.written())
+    })?;
+    assert_eq!(written.len(), 2, "{written:?}");
+    assert_eq!(written[0].kind, "project");
+    assert_eq!(written[0].id, b.id.to_string());
+    assert!(written[0].before.is_none());
+    assert_eq!(serde_json::from_str::<Thing>(&written[0].after)?, b);
+    assert_eq!(written[1].id, a.id.to_string());
+    let before = written[1]
+        .before
+        .as_deref()
+        .ok_or("an update lists its before")?;
+    assert_eq!(serde_json::from_str::<Thing>(before)?, a);
+    assert_eq!(serde_json::from_str::<Thing>(&written[1].after)?, renamed);
+    assert!(store.read(|tx| Ok::<_, StorageError>(tx.written().is_empty()))?);
+    Ok(())
+}
+
+/// Only a constraint violation on insert means the row already exists; any
+/// other failure (here SQLite's integer overflow, raised by a trigger) is
+/// reported as what it is, never as `AlreadyExists`.
+#[test]
+fn an_insert_that_fails_otherwise_is_not_reported_as_already_existing() -> TestResult {
+    let dir = tempfile::tempdir()?;
+    let store = open(&dir)?;
+    let repo = SqliteRepository::<Thing>::new();
+    let ids = FixtureIds::sequential(T0);
+    store.write(|tx| {
+        tx.execute_batch(
+            "CREATE TRIGGER overflow BEFORE INSERT ON objects \
+             BEGIN SELECT abs(-9223372036854775808); END;",
+        )
+        .map_err(StorageError::from)
+    })?;
+    let x = thing(&ids, "x")?;
+    let got = store.write(|tx| repo.insert(tx, &x, T0_TIME));
+    let e = got.err().ok_or("the insert should fail")?;
+    assert!(!matches!(e, StorageError::AlreadyExists { .. }), "{e:?}");
+    Ok(())
+}
+
+/// An object whose content is forgotten with its deletion unit.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Held {
+    id: ProjectId,
+    unit: DeletionUnitId,
+}
+
+impl Entity for Held {
+    type Id = ProjectId;
+    const KIND: &'static str = "held";
+    const SCHEMA: SchemaVersion = SchemaVersion::V1;
+    fn id(&self) -> ProjectId {
+        self.id
+    }
+    fn privacy_class(&self) -> PrivacyClass {
+        PrivacyClass::Private
+    }
+    fn deletion_unit(&self) -> Option<DeletionUnitId> {
+        Some(self.unit)
+    }
+}
+
+/// How many objects of any kind belong to a deletion unit, counted through
+/// its index: the kernel refuses a new task whose unit is not its own,
+/// since forgetting one object must not forget another's content (E1,
+/// verifier round 4, N5).
+#[test]
+fn a_deletion_unit_counts_its_objects_through_its_index() -> TestResult {
+    let dir = tempfile::tempdir()?;
+    let store = open(&dir)?;
+    let ids = FixtureIds::sequential(T0);
+    let (shared, single, empty) = (
+        DeletionUnitId::generate(&ids)?,
+        DeletionUnitId::generate(&ids)?,
+        DeletionUnitId::generate(&ids)?,
+    );
+    let held = SqliteRepository::<Held>::new();
+    let things = SqliteRepository::<Thing>::new();
+    let objects = [
+        Held {
+            id: ProjectId::generate(&ids)?,
+            unit: shared,
+        },
+        Held {
+            id: ProjectId::generate(&ids)?,
+            unit: shared,
+        },
+        Held {
+            id: ProjectId::generate(&ids)?,
+            unit: single,
+        },
+    ];
+    let unitless = thing(&ids, "no unit")?;
+    store.write(|tx| {
+        for o in &objects {
+            held.insert(tx, o, T0_TIME)?;
+        }
+        things.insert(tx, &unitless, T0_TIME).map(|_| ())
+    })?;
+    let counts = store.read(|tx| {
+        Ok::<_, StorageError>((
+            deletion_unit_size(tx, shared)?,
+            deletion_unit_size(tx, single)?,
+            deletion_unit_size(tx, empty)?,
+        ))
+    })?;
+    assert_eq!(counts, (2, 1, 0));
+    let plan = store.read(|tx| {
+        let mut stmt = tx.prepare(
+            "EXPLAIN QUERY PLAN SELECT count(*) FROM objects WHERE deletion_unit_id = ?1",
+        )?;
+        let rows = stmt.query_map([shared.to_string()], |r| r.get::<_, String>(3))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(StorageError::from)
+    })?;
+    assert!(
+        plan.iter()
+            .any(|step| step.contains("INDEX objects_by_deletion_unit")),
+        "{plan:?}"
+    );
+    Ok(())
 }
