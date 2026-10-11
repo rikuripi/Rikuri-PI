@@ -33,6 +33,8 @@
                  "fixtures/*", "*/fixtures/*", "golden/*", "*/golden/*",
                  "*baseline*.json", "*baseline*.txt", "*baseline*.toml",
                  "*baseline*.yaml", "*baseline*.yml", "*baseline*.csv"],
+  "_inline_tests_doc": "Tests written inside a source file are tests too. Rust keeps unit tests in a `#[cfg(test)] mod tests` block at the end of the file (11 of 53 tracked .rs files, 2026-10-10): from a file's first marker (`#[cfg(test)]`, or a test-only helper under `#[cfg(any(test, …))]`/`all(test, …)`; never `cfg(not(test))`) to its end is read-only under the fix-lock. Attribute and comment lines directly above the first marker (across blank lines) belong to it: a `#[cfg(any())]` there switches the tests off. Lines that make production code act differently under test (cfg(test)/cfg!(test)/cfg_attr(test,…), or an assert-macro shadow) may not be added, removed or changed anywhere in the file while locked. Edits there must match exactly, and shell writes to any .rs file are refused while locked (use Edit/Write). The rule is AISecurity's and rikurinode's, copied unchanged (lesson gate 2026-09-28, rikurinode docs/build-records/2026-09-28-fix-lock-covers-inline-tests.md); this repository had no Rust code then and gained the rule 2026-10-10 (docs/build-records/2026-10-10-fix-lock-covers-inline-tests.md). The inline-test examples quote crates/rikuri-domain/src/time.rs exactly: when that file changes, update them, since an old_string that no longer matches is denied for that reason instead and the example stops testing the rule.",
+  "inline_tests": [{"glob": "*.rs", "starts_at": "^[ \\t\\f\\v\\r\u200b-\u200f\u2060\ufeff]*#\\s*\\[\\s*cfg\\s*\\(\\s*(?:test|(?:any|all)\\s*\\((?:.*[(,]\\s*)?(?<!not\\()test(?=\\s*[,)]).*\\))\\s*\\)\\s*\\]", "attached_above": "^[ \\t\\f\\v\\r\u200b-\u200f\u2060\ufeff]*(#\\s*\\[|//|/\\*|\\*)", "guarded_lines": "cfg(?:_attr)?\\s*!?\\s*\\(.*\\btest\\b|macro_rules!\\s*(?:assert\\w*|debug_assert\\w*|panic|unreachable|todo)\\b"}],
 
   "funds_patterns": [
     {"regex": "\\bgh\\s+pr\\s+merge\\b",
@@ -142,6 +144,20 @@
     {"tool": "Write", "input": {"file_path": "docs/build-records/2026-10-02-ratchet-baseline-fix.md"}, "lock": true, "expect": "allow"},
     {"tool": "Write", "input": {"file_path": "docs/build-records/2026-10-03-ratchet-baseline.md"}, "lock": true, "expect": "allow"},
     {"tool": "Bash", "input": {"command": "cargo test -p rikuri-kernel"}, "lock": true, "expect": "allow"},
-    {"tool": "Bash", "input": {"command": "./scripts/quality/ratchet.sh --update > scripts/quality/ratchet-baseline.json"}, "lock": true, "expect": "deny"}
+    {"tool": "Bash", "input": {"command": "./scripts/quality/ratchet.sh --update > scripts/quality/ratchet-baseline.json"}, "lock": true, "expect": "deny"},
+
+    {"tool": "Edit", "input": {"file_path": "crates/rikuri-domain/src/time.rs", "old_string": "assert!(now.millis() > 1_767_225_600_000, \"{now}\");", "new_string": "assert!(now.millis() >= 0, \"{now}\");"}, "lock": true, "expect": "deny"},
+    {"tool": "Edit", "input": {"file_path": "crates/rikuri-domain/src/time.rs", "old_string": "assert!(now.millis() > 1_767_225_600_000, \"{now}\");", "new_string": "assert!(now.millis() >= 0, \"{now}\");"}, "lock": false, "expect": "allow"},
+    {"tool": "Edit", "input": {"file_path": "crates/rikuri-domain/src/time.rs", "old_string": "write!(f, \"{}ms\", self.0)", "new_string": "write!(f, \"{} ms\", self.0)"}, "lock": true, "expect": "allow"},
+    {"tool": "Edit", "input": {"file_path": "crates/rikuri-domain/src/time.rs", "old_string": "#[cfg(test)]\nmod tests {", "new_string": "#[cfg(any())]\n#[cfg(test)]\nmod tests {"}, "lock": true, "expect": "deny"},
+    {"tool": "Edit", "input": {"file_path": "crates/rikuri-domain/src/time.rs", "old_string": "        Timestamp(millis)\n", "new_string": "        if cfg!(test) { Timestamp(0) } else { Timestamp(millis) }\n"}, "lock": true, "expect": "deny"},
+    {"tool": "Bash", "input": {"command": "sed -i 's/1_767_225_600_000/0/' crates/rikuri-domain/src/time.rs"}, "lock": true, "expect": "deny"},
+    {"tool": "Bash", "input": {"command": "sed -i 's/1_767_225_600_000/0/' crates/rikuri-domain/src/time.rs"}, "lock": false, "expect": "allow"},
+    {"tool": "Bash", "input": {"command": "cd crates/rikuri-domain && sed -i 's/a/b/' src/time.rs"}, "lock": true, "expect": "deny"},
+    {"tool": "Bash", "input": {"command": "python3 - <<'EOF'\nopen('crates/rikuri-domain/src/time.rs', 'a').write('// x\\n')\nEOF"}, "lock": true, "expect": "deny"},
+    {"tool": "Write", "input": {"file_path": "crates/rikuri-domain/src/guard_example_only.rs", "content": "pub fn two() -> u8 {\n    2\n}\n\n#[cfg(test)]\nmod tests {}\n"}, "lock": true, "expect": "deny"},
+    {"tool": "Write", "input": {"file_path": "crates/rikuri-domain/src/guard_example_only.rs", "content": "pub fn two() -> u8 {\n    2\n}\n"}, "lock": true, "expect": "allow"},
+    {"tool": "Write", "input": {"file_path": "crates/rikuri-domain/src/guard_example_only.rs", "content": "#[cfg(not(test))]\npub fn two() -> u8 {\n    2\n}\n"}, "lock": true, "expect": "deny"},
+    {"tool": "Write", "input": {"file_path": "crates/rikuri-domain/src/guard_example_only.rs", "content": "macro_rules! assert_eq { ($($t:tt)*) => {}; }\n"}, "lock": true, "expect": "deny"}
   ]
 }

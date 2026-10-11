@@ -49,12 +49,12 @@ fn fresh_open_applies_and_reopen_is_a_no_op() {
     let c = comp(&[V1]);
     let s = open(&dir, &c).unwrap();
     assert_eq!(s.schema_version("fixture").unwrap(), Some(1));
-    assert_eq!(s.schema_version("storage").unwrap(), Some(1));
+    assert_eq!(s.schema_version("storage").unwrap(), Some(2));
     drop(s);
     let s = open(&dir, &c).unwrap();
     assert_eq!(
         count(&s, "SELECT COUNT(*) FROM schema_migrations").unwrap(),
-        2
+        3
     );
 }
 
@@ -330,5 +330,45 @@ fn recorded_versions_must_be_contiguous() {
     assert!(
         matches!(err, StorageError::InvalidMigrations { .. }),
         "{err:?}"
+    );
+}
+
+/// Storage migration 2 adds the index that counts a deletion unit's
+/// objects (E1, N5). A store whose storage component is still at version 1
+/// (rebuilt here by removing the index and its migration record) upgrades
+/// at open with its objects intact.
+#[test]
+fn storage_migration_2_adds_the_deletion_unit_index_to_a_version_1_store() {
+    let dir = tempfile::tempdir().unwrap();
+    let c = comp(&[V1]);
+    let path = dir.path().join("state/rikuri.db");
+    drop(open(&dir, &c).unwrap());
+    let raw = rikuri_storage::rusqlite::Connection::open(&path).unwrap();
+    raw.execute_batch(
+        "INSERT INTO objects (id, kind, version, schema_version, privacy_class, deletion_unit_id,
+                              created_at_ms, updated_at_ms, body)
+         VALUES ('held_1', 'held', 1, 1, 'private', 'dunit_1', 1, 1, '{}');
+         DROP INDEX objects_by_deletion_unit;
+         DELETE FROM schema_migrations WHERE component = 'storage' AND version = 2;",
+    )
+    .unwrap();
+    drop(raw);
+    let s = open(&dir, &c).unwrap();
+    assert_eq!(s.schema_version("storage").unwrap(), Some(2));
+    assert_eq!(
+        count(
+            &s,
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'objects_by_deletion_unit'"
+        )
+        .unwrap(),
+        1
+    );
+    assert_eq!(
+        count(
+            &s,
+            "SELECT COUNT(*) FROM objects WHERE deletion_unit_id = 'dunit_1'"
+        )
+        .unwrap(),
+        1
     );
 }

@@ -86,9 +86,10 @@ jobs:
           cache-bin: false
       - name: Build
         run: cargo build --workspace --all-targets --locked
-      # Through the gate's wrapper, as on Ubuntu: a private TMPDIR that must
-      # stay empty. This runner keeps its files, so leaks would pile up here.
+      # Both through the gate's wrapper, as on Ubuntu: a private TMPDIR that
+      # must stay empty (the crash matrix's scratch homes go in it). This
+      # runner keeps its files, so leaks would pile up here.
       - name: Unit and contract tests
         run: scripts/quality/no-temp-residue.sh cargo test --workspace --locked
       - name: Crash matrix (W1; SQLite recovery after SIGKILL is platform-neutral core)
-        run: cargo test -p rikurid --features crash-injection --test crash_matrix --locked --target-dir target/crash-injection
+        run: scripts/quality/no-temp-residue.sh cargo test -p rikurid --features crash-injection --test crash_matrix --locked --target-dir target/crash-injection

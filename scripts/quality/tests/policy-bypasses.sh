@@ -29,6 +29,17 @@ here="$(cd "$(dirname "$0")/.." && pwd)"
 tmp="$(mktemp -d)"
 cleanup() { [ -n "$tmp" ] && [ -d "$tmp" ] && rm -rf -- "$tmp"; }
 trap cleanup EXIT
+# Git looks for a repository no higher than the fixture, which is not a work
+# tree until round 3 makes it one. In a work tree crate-policy.sh judges only
+# tracked sources: with TMPDIR inside another repository (its ignored
+# target/), the build scripts below went unjudged and two refusals passed
+# (2026-10-10).
+GIT_CEILING_DIRECTORIES="$(dirname "$tmp")"
+export GIT_CEILING_DIRECTORIES
+if git -C "$tmp" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "BYPASS FAIL: the fixture ${tmp} is inside a git work tree; the cases before round 3 need it outside one"
+  exit 1
+fi
 
 workspace() { # workspace [<extra [workspace] keys>]
   printf '[workspace]\nresolver = "3"\nmembers = ["crates/*"]\n%s\n\n[workspace.lints.rust]\nunsafe_code = "forbid"\n' "${1:-}" > "$tmp/Cargo.toml"
