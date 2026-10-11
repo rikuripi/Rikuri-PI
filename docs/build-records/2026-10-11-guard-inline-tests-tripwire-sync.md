@@ -6,10 +6,10 @@
 | Date | 2026-10-11 |
 | Author / agent session | Claude Code (Opus 5.5) for Henry Chen; side session `musing-khayyam-31764d`, started from a Rikuri-PI session |
 | Branch | `claude/musing-khayyam-31764d` (worktree), from `main` at `be979e3` |
-| Commits | one commit on this branch, this record included (owner, 2026-10-11: "Commit in rikuripi/rikurinode, and one sync commit per repository"); its PR waits for PR #31 |
+| Commits | one commit on this branch, this record included (owner, 2026-10-11: "Commit in rikuripi/rikurinode, and one sync commit per repository"); its PR opened at the owner's request ("Create PR", 2026-10-11) after PR #31 merged |
 | Stage Gate | N/A: working rules; no Stage 00 item, interface or gate status changes |
 | Related ADR / requirement | AGENTS.md > Deterministic gates; the owner's rule that `guard.py`, `guard_base.py` and `test_guard.py` stay identical across the Full-tier repositories; the deferred class tripwire in [2026-10-10-fix-lock-covers-inline-tests.md](2026-10-10-fix-lock-covers-inline-tests.md) (PR #31) |
-| Status | COMPLETE locally — verified in a clean clone and by the origin's verifier; committed; the PR, full gate and CI wait for PR #31 |
+| Status | PR open — verified in a clean clone and by the origin's verifier; PR #31 has merged; this branch is not yet merged up to `main` (see Verify); CI on the PR is the full gate: Not yet proven |
 
 **Risk note (protected paths):** `.claude/hooks/guard.py` and `test_guard.py` are the AI-session guard. The hook's verdicts do not change; `fix-lock on` gains a warning and loses a claim that was false here. `guard_base.py` and `guard-config.json` are unchanged by this record.
 
@@ -38,20 +38,22 @@ All runs in a clean clone of `main` at `be979e3`, inside the outer test-safety l
 - [x] Real entry point: `python3 .claude/hooks/guard.py fix-lock on …` in that clone (`rpi-fix-lock-on.out`): the old guard says "test files, inline tests and baselines are now read-only" with no rule; the new one says "test files and baselines" and warns that the tests inside 11 tracked files are NOT read-only; with PR #31's rule it says "test files, inline tests and baselines" and warns nothing.
 - [x] Recovery/fallback: N/A — none changes; a guard crash still asks.
 - [x] The origin's independent verifier: round 1 FAIL — `fix-lock on` crashed on a tracked `.rs` file whose name is not UTF-8, and evidence carried trailing spaces; both fixed in round 2 with tests first (22 of 22 mutants red). Round 2 **PASS** on the stacked files, including this worktree's copy (`cmp`) and this repository's clone (red on `main` only on the tripwire, naming 11 files; 118 OK on 3.14 and 3.9.25 with PR #31's rule, its head `8e2ddc2`). Round 3 (these unstacked files): **PASS**, including this worktree's copy (`cmp`). It also noted that `origin/main` has since moved to `5bc2948`, where the tripwire finds 13 uncovered files (new `.rs` files since `be979e3`) and 0 with PR #31's rule: the red/green pair holds there too. Not yet proven: Python 3.12, CI. Its one note for this record: the link to `2026-10-10-fix-lock-covers-inline-tests.md` resolves only once PR #31 merges, which is the planned order.
-- [ ] Full gate on this branch (`scripts/quality/full-gate.sh`): not run — it would be red until PR #31 is in `main`. Run after merging `main` once #31 has landed.
+- [x] **With `main` after PR #31** (`658e5ed`, which has the rule): this branch merged into it in a scratch clone (`00a783d`, clean; the three guard files land unchanged): guard suite 107 OK on Python 3.14 and on 3.9.25, inside the safety layer, lnd unchanged; the tripwire finds 0 uncovered of 56 tracked `.rs` files.
+- [ ] This branch merged up to `main`: not done here. The app's merge (`sync_with_base_branch`) refused: the merge brings in `.claude/hooks/guard-config.json`, and the app takes protected files only from an origin the owner has confirmed (Help → Troubleshooting → Review Pinned Git Origins). The ruleset needs the branch up to date before merging: GitHub's "Update branch", or the app's merge once the origin is confirmed.
+- [ ] Full gate (`scripts/quality/full-gate.sh`): not run locally; CI's `Full gate (Ubuntu)` on the PR runs it against the PR's merge with `main`. Not yet proven.
 - [ ] CI: Not yet proven.
 
 ## 5. Close Out
 
 - [x] Scrap Sweep: nothing created in this repository but this record; the clone lives in the session scratchpad.
 - [x] Docs: `guard.py`'s header describes the tripwire. No document here quotes the old `fix-lock on` message; AGENTS.md ("makes tests and baselines read-only") stays true.
-- [x] Commit: made on this branch at the owner's request (2026-10-11), the two files and this record. Then: PR #31 merges; this branch merges `main`, `cmp` against the origin again, runs the full gate and opens its PR. The line-continuation sync (`chore/guard-line-continuation`) is re-applied on top of this change afterwards.
+- [x] Commit: made on this branch at the owner's request (2026-10-11), the two files and this record; PR opened at the owner's request after PR #31 merged. Before merging: update the branch with `main`, CI green. The line-continuation sync (`chore/guard-line-continuation`) is re-applied on top of this change afterwards.
 
 ## Skipped / Deferred / Resequenced — visible, never silent
 
 | Item | Disposition | Reason | Dependency impact | Owner | New stage/ordinal | Reactivation / acceptance condition |
 |---|---|---|---|---|---|---|
-| PR, full gate and CI for this sync | Resequenced (owner, 2026-10-11) | On today's `main` the new test is red by design until PR #31's rule is in | None for Stage 00 work | Henry Chen | After PR #31 | Branch merged up to `main`; `cmp` equal to the origin; full gate and CI green |
+| Branch update with `main`, full gate and CI for this sync | Open (PR #31 merged; PR opened) | The app's merge needs the pinned origin confirmed; CI runs on the PR | None for Stage 00 work | Henry Chen | Before this PR merges | Branch merged up to `main`; `cmp` equal to the origin; full gate and CI green |
 | `#[cfg(any(test, …))]`-only files are not flagged | Accepted limitation (recorded in the origin) | Every rule in use covers those forms; no repository has such a file without a plain `#[cfg(test)]` | None | Henry Chen | — | Revisit if one appears |
 
 ## Evidence log
