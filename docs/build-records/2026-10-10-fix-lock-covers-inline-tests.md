@@ -6,7 +6,7 @@
 | Date | 2026-10-10 |
 | Author / agent session | Claude Code session for Henry Chen (side session started from the Stage 00 session) |
 | Branch | `claude/brave-kowalevski-a0588b` (worktree) |
-| Commits | fill at close-out |
+| Commits | `1cd71be` (rule, examples, this record), close-out commit; PR #31 |
 | Stage Gate | N/A: guard policy only; no Stage 00 item, interface or gate status changes |
 | Related ADR / requirement | AGENTS.md "Deterministic gates" ("Tests and baselines become read-only"); lesson gate rikurinode `docs/build-records/2026-09-28-fix-lock-covers-inline-tests.md` |
 | Status | COMPLETE locally (verifier round 1: NOT YET PROVEN, only for one uninterrupted gate run, which is CI's); PR opened at the owner's request 2026-10-11; CI and the owner's merge Not yet proven |
