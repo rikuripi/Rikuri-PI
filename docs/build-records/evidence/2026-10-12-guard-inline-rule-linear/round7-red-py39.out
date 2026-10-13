@@ -1,0 +1,5 @@
+# ROUND 7 RED a695576 (test extended, old rule), started 2026-10-13 08:16:39: Python 3.9.25; guard.py 240c4cc0…, test_guard.py e6f51df8…, guard_base.py 1ef6f5cc…, guard-config.json 172f79c8…; safe-run; exit 1; 17 s; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)
+FAIL: test_inline_rules_take_linear_time (test_guard.GenericPolicy)
+AssertionError: 3.163123369216919 not less than 0.25 : ('starts_at', '#[cfg(any((t')
+Ran 152 tests in 17.253s
+FAILED (failures=1)

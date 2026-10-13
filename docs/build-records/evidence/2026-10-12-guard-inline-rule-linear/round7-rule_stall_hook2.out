@@ -1,0 +1,6 @@
+# started 2026-10-13 08:17:37, safe-run: python3 -B /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/docs/build-records/evidence/2026-10-12-guard-inline-rule-linear/verifier-probes/rule_stall_hook2.py /home/junc/claude-wip/guard-inline-rule-linear/hooks7 30000 20000
+# /home/junc/claude-wip/guard-inline-rule-linear/hooks7, lock held
+  S  MultiEdit: test 2->3 + '/*#[cfg(any(' + 30000 '(test)' */' (180016 bytes)   deny       0.07s  fix-lock is engaged: this changes the tests inside src/lib.rs (its first inline-
+  G0 Edit: production code gains `if cfg!(test) { return 3; }`                   deny       0.06s  fix-lock is engaged: this adds, removes or changes code in src/lib.rs that acts
+  G  MultiEdit: the same + '// ' + 20000 'cfg(' above everything (80003 bytes)   deny       0.07s  fix-lock is engaged: this adds, removes or changes code in src/lib.rs that acts
+# ended 2026-10-13 08:17:38; exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

@@ -1,0 +1,68 @@
+# started 2026-10-12 20:05:33, safe-run: env CARGO_NET_OFFLINE=true bash -c cd /home/junc/claude-wip/guard-inline-rule-linear/gate && for c in 'cargo deny --locked --offline check' scripts/quality/secret-scan.sh scripts/quality/ratchet.sh scripts/quality/module-contracts.sh scripts/quality/crate-policy.sh scripts/quality/scrap-sweep.sh; do echo "[$c]"; $c 2>&1; echo "[$c] exit $?"; done
+[cargo deny --locked --offline check]
+warning[duplicate]: found 2 duplicate entries for crate 'hashbrown'
+   ┌─ /home/junc/claude-wip/guard-inline-rule-linear/gate/Cargo.lock:35:1
+   │
+35 │ ╭ hashbrown 0.16.1 registry+https://github.com/rust-lang/crates.io-index
+36 │ │ hashbrown 0.17.1 registry+https://github.com/rust-lang/crates.io-index
+   │ ╰──────────────────────────────────────────────────────────────────────┘ lock entries
+   │
+   ├ hashbrown v0.16.1
+     └── rsqlite-vfs v0.1.1
+         └── sqlite-wasm-rs v0.5.5
+             └── rusqlite v0.40.2
+                 └── rikuri-storage v0.1.0
+                     ├── rikuri-ledger v0.1.0
+                     │   └── rikurid v0.1.0
+                     │       └── (dev) rikuri-cli v0.1.0
+                     └── rikurid v0.1.0 (*)
+   ├ hashbrown v0.17.1
+     └── hashlink v0.12.2
+         └── rusqlite v0.40.2
+             └── rikuri-storage v0.1.0
+                 ├── rikuri-ledger v0.1.0
+                 │   └── rikurid v0.1.0
+                 │       └── (dev) rikuri-cli v0.1.0
+                 └── rikurid v0.1.0 (*)
+
+warning[license-not-encountered]: license was not encountered
+   ┌─ /home/junc/claude-wip/guard-inline-rule-linear/gate/deny.toml:17:6
+   │
+17 │     "BSD-2-Clause",
+   │      ━━━━━━━━━━━━ unmatched license allowance
+
+warning[license-not-encountered]: license was not encountered
+   ┌─ /home/junc/claude-wip/guard-inline-rule-linear/gate/deny.toml:18:6
+   │
+18 │     "BSD-3-Clause",
+   │      ━━━━━━━━━━━━ unmatched license allowance
+
+warning[license-not-encountered]: license was not encountered
+   ┌─ /home/junc/claude-wip/guard-inline-rule-linear/gate/deny.toml:19:6
+   │
+19 │     "ISC",
+   │      ━━━ unmatched license allowance
+
+advisories ok, bans ok, licenses ok, sources ok
+[cargo deny --locked --offline check] exit 0
+[scripts/quality/secret-scan.sh]
+8:05PM INF Unknown SCM platform. Use --platform to include links in findings. host=
+8:05PM INF 165 commits scanned.
+8:05PM INF scanned ~9232600 bytes (9.23 MB) in 538ms
+8:05PM INF no leaks found
+[scripts/quality/secret-scan.sh] exit 0
+[scripts/quality/ratchet.sh]
+RATCHET ignored_tests: 0 (baseline 0)
+RATCHET lint_suppressions: 0 (baseline 0)
+RATCHET todo_markers: 0 (baseline 0)
+[scripts/quality/ratchet.sh] exit 0
+[scripts/quality/module-contracts.sh]
+CONTRACT checked 7 crate(s)
+[scripts/quality/module-contracts.sh] exit 0
+[scripts/quality/crate-policy.sh]
+POLICY checked 7 crate(s)
+[scripts/quality/crate-policy.sh] exit 0
+[scripts/quality/scrap-sweep.sh]
+SCRAP clean
+[scripts/quality/scrap-sweep.sh] exit 0
+# ended 2026-10-12 20:05:35; exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

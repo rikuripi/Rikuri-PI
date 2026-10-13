@@ -1,0 +1,13 @@
+# Verifier round 3's own output (rikuripi/rikurinode guard-rust-test-layouts change, 2026-10-12), copied unchanged but for
+# trailing white space from its work folder (verifier3/out/rule_stall_hook2.out): hooks-rpi = Rikuri-PI's hooks then,
+# hooks-pre = the guard before that change. The source of the 16.55 s and 18.51 s the test's comment quotes.
+# /home/junc/claude-wip/guard-rust-test-layouts/verifier3/hooks-rpi, lock held
+  S  MultiEdit: test 2->3 + '/*#[cfg(any(' + 30000 '(test)' */' (180016 bytes)   deny      16.55s  <-- past the hook's 10 s timeout  fix-lock is engaged: this changes the tests inside src/lib.rs (its first inline-
+  G0 Edit: production code gains `if cfg!(test) { return 3; }`                   deny       0.08s  fix-lock is engaged: this adds, removes or changes code in src/lib.rs that acts
+  G  MultiEdit: the same + '// ' + 20000 'cfg(' above everything (80003 bytes)   deny      18.51s  <-- past the hook's 10 s timeout  fix-lock is engaged: this adds, removes or changes code in src/lib.rs that acts
+exit=0
+# /home/junc/claude-wip/guard-rust-test-layouts/verifier3/hooks-pre, lock held
+  S  MultiEdit: test 2->3 + '/*#[cfg(any(' + 30000 '(test)' */' (180016 bytes)   deny      17.07s  <-- past the hook's 10 s timeout  fix-lock is engaged: this changes the tests inside src/lib.rs (its first inline-
+  G0 Edit: production code gains `if cfg!(test) { return 3; }`                   deny       0.06s  fix-lock is engaged: this adds, removes or changes code in src/lib.rs that acts
+  G  MultiEdit: the same + '// ' + 20000 'cfg(' above everything (80003 bytes)   deny      18.65s  <-- past the hook's 10 s timeout  fix-lock is engaged: this adds, removes or changes code in src/lib.rs that acts
+exit=0

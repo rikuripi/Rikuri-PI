@@ -1,0 +1,8 @@
+# started 2026-10-12 20:01:38, safe-run: python3 -B /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/docs/build-records/evidence/2026-10-12-guard-inline-rule-linear/gl_variants.py /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.61.3/src/Windows/Win32/System/Diagnostics/Debug/Extensions/mod.rs
+/home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows-0.61.3/src/Windows/Win32/System/Diagnostics/Debug/Extensions/mod.rs: 52857 lines; 3.14.4
+  old rule (no commit, unanchored)                           all lines 0.0294 s (best of 5)   '// ' + 20,000 'cfg(' 8.2401 s   same decisions
+  cfg( branch anchored, macro_rules! branch not              all lines 0.0665 s (best of 5)   '// ' + 20,000 'cfg(' 0.0016 s   same decisions
+  first cfg( by an unrolled loop, macro_rules! not anchored  all lines 0.0509 s (best of 5)   '// ' + 20,000 'cfg(' 0.0016 s   same decisions
+  unrolled loop, both anchored                               all lines 0.0204 s (best of 5)   '// ' + 20,000 'cfg(' 0.0009 s   same decisions
+  both anchored (the rule now)                               all lines 0.0354 s (best of 5)   '// ' + 20,000 'cfg(' 0.0009 s   same decisions
+# ended 2026-10-12 20:02:37; exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

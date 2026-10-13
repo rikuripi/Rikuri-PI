@@ -1,0 +1,33 @@
+# started 2026-10-12 20:01:06, safe-run: python3 -B /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/docs/build-records/evidence/2026-10-12-guard-inline-rule-linear/test_texts_table.py /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/.claude/hooks/test_guard.py
+10 texts; one re.search(pattern, text, re.M) each, as the test makes it; limit 0.25 s; 3.14.4
+  '#                       '   40001 chars  starts_at      old   0.0014 s  new  0.0014 s
+  '#                       '   40001 chars  attached_above old   0.0014 s  new  0.0012 s
+  '#                       '   40001 chars  guarded_lines  old   0.0004 s  new  0.0006 s
+  '# !                     '   40003 chars  starts_at      old   0.0005 s  new  0.0005 s
+  '# !                     '   40003 chars  attached_above old   0.0005 s  new  0.0005 s
+  '# !                     '   40003 chars  guarded_lines  old   0.0002 s  new  0.0004 s
+  'cfg                     '   40003 chars  starts_at      old   0.0002 s  new  0.0002 s
+  'cfg                     '   40003 chars  attached_above old   0.0002 s  new  0.0002 s
+  'cfg                     '   40003 chars  guarded_lines  old   0.0011 s  new  0.0016 s
+  'cfg_attr !              '   40010 chars  starts_at      old   0.0002 s  new  0.0002 s
+  'cfg_attr !              '   40010 chars  attached_above old   0.0002 s  new  0.0002 s
+  'cfg_attr !              '   40010 chars  guarded_lines  old   0.0005 s  new  0.0008 s
+  '#[cfg(any(, , , , , , , '   40010 chars  starts_at      old   0.0010 s  new  0.0022 s
+  '#[cfg(any(, , , , , , , '   40010 chars  attached_above old   0.0000 s  new  0.0000 s
+  '#[cfg(any(, , , , , , , '   40010 chars  guarded_lines  old   0.0008 s  new  0.0008 s
+  '//                      '   40002 chars  starts_at      old   0.0002 s  new  0.0002 s
+  '//                      '   40002 chars  attached_above old   0.0000 s  new  0.0000 s
+  '//                      '   40002 chars  guarded_lines  old   0.0002 s  new  0.0005 s
+  '#[cfg(any((test)(test)(t'  120010 chars  starts_at      old   3.3458 s  new  0.0020 s  <-- old over the limit
+  '#[cfg(any((test)(test)(t'  120010 chars  attached_above old   0.0000 s  new  0.0000 s
+  '#[cfg(any((test)(test)(t'  120010 chars  guarded_lines  old   0.0000 s  new  0.0000 s
+  '#[cfg(any(,test,test,tes'  100010 chars  starts_at      old   0.7418 s  new  0.0015 s  <-- old over the limit
+  '#[cfg(any(,test,test,tes'  100010 chars  attached_above old   0.0000 s  new  0.0000 s
+  '#[cfg(any(,test,test,tes'  100010 chars  guarded_lines  old   0.0000 s  new  0.0000 s
+  '// cfg(cfg(cfg(cfg(cfg(c'   40003 chars  starts_at      old   0.0002 s  new  0.0002 s
+  '// cfg(cfg(cfg(cfg(cfg(c'   40003 chars  attached_above old   0.0000 s  new  0.0000 s
+  '// cfg(cfg(cfg(cfg(cfg(c'   40003 chars  guarded_lines  old   2.2284 s  new  0.0007 s  <-- old over the limit
+  'cfg!(cfg!(cfg!(cfg!(cfg!'   50000 chars  starts_at      old   0.0002 s  new  0.0002 s
+  'cfg!(cfg!(cfg!(cfg!(cfg!'   50000 chars  attached_above old   0.0002 s  new  0.0002 s
+  'cfg!(cfg!(cfg!(cfg!(cfg!'   50000 chars  guarded_lines  old   3.1321 s  new  0.0009 s  <-- old over the limit
+# ended 2026-10-12 20:01:16; exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)
