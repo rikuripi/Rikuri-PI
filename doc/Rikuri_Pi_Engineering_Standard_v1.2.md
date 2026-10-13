@@ -291,6 +291,19 @@ Rikuri is its own first Collaborative Intelligence research subject. Claims that
   uncommitted changes older than a day get dispositioned (finished, stashed,
   or deleted), never left ambient.
 
+### October 13, 2026 — bounded agent operation
+
+The owner replaced the repository's agent procedure with the [Bounded Agent Operating Standard](../AGENTS.md) (`AGENTS.md`). This Standard is unchanged in substance; the points below say how the two read together so an agent never receives conflicting instructions.
+
+- **Which governs what.** `AGENTS.md` governs how an agent carries out one assignment: the Task Contract, the limit of two repair cycles and two review rounds, the terminal outcomes `DONE`, `BLOCKED` and `NEEDS_OWNER_DECISION`, and the rule that a finished or blocked task stops. This Standard governs what each step must contain: the Per-Change Loop, the Scrap Taxonomy and the release gates. Where the two differ on how many times to try, `AGENTS.md`'s limits apply; where they differ on what counts as evidence, this Standard applies.
+- **Stop the line (Law 2) and bounded repair.** A red required gate still halts dependent work. It does not authorize unlimited repair: after the task's two repair cycles the agent reports `BLOCKED` with the exact failure and a proposed next task, and the owner decides. Disabling or weakening the check stays prohibited.
+- **The full gate at the boundary, not in the inner loop.** "Run the full gate … or the session isn't over" (Close Out) is the acceptance boundary of a coherent implementation change and the condition for claiming readiness. During implementation, targeted checks are enough. A documentation-only change runs the checks `AGENTS.md` §5.D names (links, versions, scope, `git diff --check`; the guard tests when `.claude/` changes). A `BLOCKED` session ends with an honest incomplete report; it does not need a green gate to end.
+- **Standard work (Law 3), scaled.** The checklists still apply to every change, in the brief form `AGENTS.md` allows for routine work (five Task Contract entries, a brief Build Record), without rereading the whole document set.
+- **Fix the class (Debug), within the task.** The sibling sweep is a search. Directly affected siblings are fixed in the task; other occurrences, cleanup and speculative improvements are recorded as backlog suggestions unless the Task Contract includes them. A newly discovered issue does not widen the task or renew its repair budget.
+- **Multi-session hygiene and stale state.** Uncommitted work older than a day, stashes, branches whose work landed and leftover worktrees are dispositioned by the owner. An agent reports them; it does not finish, stash, delete or reset another session's work without explicit authorization (`AGENTS.md` §2).
+- **Periodic loops** (weekly, monthly, quarterly) and drills are calendar-driven owner obligations. They are never an agent's self-assigned work during a task, and they never run against live user state without the owner's instruction.
+- **The guard** (`.claude/hooks/guard.py`, policy in `.claude/hooks/guard-config.json`) is unchanged by this clarification; its profiles and the fix-lock are described in `AGENTS.md` §4 and in the guard's own header. Reviews run per [REVIEW.md](../REVIEW.md).
+
 ---
 
 ## Security assurance and upstream maintenance
