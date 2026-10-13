@@ -125,12 +125,17 @@ class GenericPolicy(unittest.TestCase):
         # Verifier round 2, F1: `#\s*!?\s*\[` (and guarded_lines' `\s*!?\s*\(`)
         # took time growing with the square of a run of spaces — 1.3 s for
         # 40,000 inside one regex call, where no deadline can stop it — so a
-        # crafted file or edit held the hook past its 10 s limit. Every pattern
-        # of this repository's rules must stay fast on such text.
+        # crafted file or edit held the hook past its 10 s limit. Round 3, I5:
+        # the same for each `test` on a line tried against every `)` after it
+        # (`#[cfg(any(` and 30,000 `(test)`: 16.5 s through the hook), and for
+        # each `cfg(` on a line scanning the rest of it for `test` (20,000:
+        # 18.5 s). Every pattern of this repository's rules must stay fast on
+        # such text.
         import re
         import time
         texts = ("#" + " " * 40000, "# !" + " " * 40000, "cfg" + " " * 40000, "cfg_attr !" + " " * 40000,
-                 "#[cfg(any(" + ", " * 20000, "//" + " " * 40000)
+                 "#[cfg(any(" + ", " * 20000, "//" + " " * 40000, "#[cfg(any(" + "(test)" * 20000,
+                 "#[cfg(any(" + ",test" * 20000, "// " + "cfg(" * 10000, "cfg!(" * 10000)
         for r in CFG.get("inline_tests", []):
             for key in ("starts_at", "attached_above", "guarded_lines"):
                 for text in texts:
@@ -289,10 +294,14 @@ class InlineTests(unittest.TestCase):
     # The rule Rikuri-PI configures (test_marker_shapes pins it): rikurinode's and AISecurity's,
     # which since 2026-10-11 (owner, 2(a)) takes the inner attribute `#![cfg(test)]` too, written
     # `#\s*(?:!\s*)?\[`: `#\s*!?\s*\[` took time growing with the square of a run of
-    # spaces (verifier round 2, F1), as did guarded_lines' `\s*!?\s*\(`.
+    # spaces (verifier round 2, F1), as did guarded_lines' `\s*!?\s*\(`. Since 2026-10-12 the
+    # any()/all() branch commits to the first `test` on its line (or else one a line break
+    # away), and guarded_lines to a line's first `cfg(` (lookahead and backreference: an atomic
+    # group), where trying each against the rest of the line took time growing with the square
+    # of their number (verifier round 3, I5). They match exactly what they matched before.
     RUST = dict(CFG, inline_tests=[{"glob": "*.rs", "starts_at":
-                                    r"^[ \t\f\v\r​-‏⁠﻿]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*(?:test|(?:any|all)\s*\((?:.*[(,]\s*)?(?<!not\()test(?=\s*[,)]).*\))\s*\)\s*\]",
-                                    "guarded_lines": r"cfg(?:_attr)?\s*(?:!\s*)?\(.*\btest\b|macro_rules!\s*(?:assert\w*|debug_assert\w*|panic|unreachable|todo)\b",
+                                    r"^[ \t\f\v\r​-‏⁠﻿]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*(?:test|(?:any|all)\s*\((?:(?=(?P<t>(?:.*?[(,][^\S\n]*)??(?<!not\()test(?=\s*[,)])))(?P=t)|.*[(,][^\S\n]*\n\s*test(?=\s*[,)])).*\))\s*\)\s*\]",
+                                    "guarded_lines": r"^(?:(?=(?P<c>.*?cfg(?:_attr)?\s*(?:!\s*)?\())(?P=c).*\btest\b|.*macro_rules!\s*(?:assert\w*|debug_assert\w*|panic|unreachable|todo)\b)",
                                     "attached_above": r"^[ \t\f\v\r​-‏⁠﻿]*(#\s*(?:!\s*)?\[|//|/\*|\*)"}])
 
     def setUp(self):
