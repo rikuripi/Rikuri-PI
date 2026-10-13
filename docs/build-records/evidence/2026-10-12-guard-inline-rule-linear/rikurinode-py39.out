@@ -1,0 +1,3 @@
+# rikuripi/rikurinode fix/guard-inline-rule-linear on 97a2a8b (no inline_tests rule), started 2026-10-12 19:48:35: Python 3.9.25; guard.py c884a868…, test_guard.py 6a355d6d…, guard_base.py 1ef6f5cc…, guard-config.json 0021783a…; safe-run; exit 0; 24 s; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)
+Ran 142 tests in 23.984s
+OK

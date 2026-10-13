@@ -1,0 +1,16 @@
+# started 2026-10-12 17:28:50, safe-run: bash -c cd /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/docs/build-records/evidence/2026-10-12-guard-inline-rule-linear && for s in 1 2 3; do python3 -B differential.py 60 $s || exit 1; done && python3 -B fuzz_power.py 15
+seed 1, 60 s: 8065306 texts (234736 with a starts_at match), 30844309 lines (1926998 guarded): no difference
+seed 2, 60 s: 7834837 texts (228724 with a starts_at match), 29961808 lines (1869967 guarded): no difference
+seed 3, 60 s: 7725629 texts (225980 with a starts_at match), 29540807 lines (1843647 guarded): no difference
+starts_at: no later-line branch                                KILLED after 20 texts: 'x\n\n\u200e#[cfg(any(not(\ntest)\t))]\n(\n))]\n))]'
+starts_at: later `test` before `test` right after any(         KILLED after 1043 texts: 'fn a() {}\n#[cfg(any(test))],test,(\u2028\n) )\n]'
+starts_at: last `test` on the line committed, not the first    KILLED after 1002 texts: 'x\n\n#[cfg(any(not( test))],test,not( testunix(\n(test,test))]) )\n]'
+starts_at: no not( lookbehind on the first line                KILLED after 151 texts: '#![cfg(any(not(test))]\n'
+starts_at: a later line may start with not(                    KILLED after 23266 texts: '# ! [ cfg (any ())test,()(\nnot(test))]'
+starts_at: later line without the line break                   KILLED after 20 texts: 'x\n\n\u200e#[cfg(any(not(\ntest)\t))]\n(\n))]\n))]'
+starts_at: `)` scan crosses lines                              KILLED after 80 texts: '\u200e#[cfg(any((test\n))]testx\u2028not( test ) )\n]'
+guarded_lines: last cfg( committed, not the first              KILLED after 323 texts: 'cfgtestcfg(test\x1c\xa0(assert,cfg(#![any))] cfg'
+guarded_lines: macro_rules! only at the line's start           KILLED after 106 texts: '"xcfgany(é!any!all// ,testx))]]macro_rules!panic\x0b))])paniccfg'
+guarded_lines: test before the first cfg( counts               KILLED after 13 texts: '(test)\x1ctestcfg(testx  ='
+guarded_lines: cfg_attr dropped                                KILLED after 1768 texts: '])]cfg_attr(test)#]//  \rx]\tcfgnot#![\t_))]cfg anynot(#cfg!\t"'
+# ended 2026-10-12 17:31:51; exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

@@ -1,0 +1,11 @@
+# started 2026-10-12 20:34:34, safe-run: python3 -B /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/docs/build-records/evidence/2026-10-12-guard-inline-rule-linear/survey_multiline.py /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library /home/junc/.cargo/registry/src
+/home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe: 56 .rs files, 0 with a multi-line any()/all() marker holding `test`
+/home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library: 1919 .rs files, 4 with a multi-line any()/all() marker holding `test`
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/process.rs:151
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/fs.rs:32
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/net/udp.rs:1
+/home/junc/.cargo/registry/src: 38084 .rs files, 23 with a multi-line any()/all() marker holding `test`
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tower-http-0.6.8/src/content_encoding.rs:243
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/half-2.7.1/src/leading_zeros.rs:27
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hickory-proto-0.25.2/src/h3/h3_client_stream.rs:470
+# ended 2026-10-12 20:34:44; exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

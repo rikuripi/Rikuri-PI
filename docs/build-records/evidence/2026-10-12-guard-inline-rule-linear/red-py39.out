@@ -1,0 +1,5 @@
+# RED: Rikuri-PI, test extended, rule as on f9f58c0, started 2026-10-12 19:47:38: Python 3.9.25; guard.py c884a868…, test_guard.py 6a355d6d…, guard_base.py 1ef6f5cc…, guard-config.json 172f79c8…; safe-run; exit 1; 14 s; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)
+FAIL: test_inline_rules_take_linear_time (test_guard.GenericPolicy)
+AssertionError: 3.2642011642456055 not less than 0.25 : ('starts_at', '#[cfg(any((t')
+Ran 142 tests in 13.587s
+FAILED (failures=1)

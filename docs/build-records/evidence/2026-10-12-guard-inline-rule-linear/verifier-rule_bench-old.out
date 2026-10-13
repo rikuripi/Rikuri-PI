@@ -1,0 +1,37 @@
+# started 2026-10-12 20:02:53, safe-run: python3 -B /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/docs/build-records/evidence/2026-10-12-guard-inline-rule-linear/verifier-probes/rule_bench.py /home/junc/claude-wip/guard-inline-rule-linear/hooks-old
+starts_at  '#[cfg(any(' + 2000 ',test' + 2000 ')' + 'x' (12011 chars)    0.118s -> False
+guarded_lines  '// ' + 10000 'cfg(' (40003 chars)                        2.051s -> False
+starts_at  '#[cfg(all(' + 10000 '('                                      0.000s -> False
+starts_at  '#[cfg(any(' + 4000 ',test' + 4000 ')' + 'x' (24011 chars)    0.476s -> False
+guarded_lines  '// ' + 20000 'cfg(' (80003 chars)                        8.241s -> False
+starts_at  '#[cfg(all(' + 20000 '('                                      0.001s -> False
+starts_at  '#[cfg(any(' + 8000 ',test' + 8000 ')' + 'x' (48011 chars)    1.820s -> False
+guarded_lines  '// ' + 40000 'cfg(' (160003 chars)                      33.321s -> False
+starts_at  '#[cfg(all(' + 40000 '('                                      0.001s -> False
+starts_at  '#[cfg(any(' + 20000 '(test)'                                 3.421s -> False
+starts_at  '#[cfg(any(' + 40000 '(test)'                                13.473s -> False
+RUST_SCAN on '\u{' + 100000 zeros                                        0.012s -> 0
+RUST_SCAN on 'r' + 100000 '#'                                            0.019s -> 0
+rust_file_modules on 'r#"' + 100000 '"'                                  0.002s -> 0
+rust_file_attrs / rust_file_modules on '#[' + 100000 '['                 0.068s -> (1, 0)
+rust_file_attrs on 100000 '/*'                                           0.015s -> 0
+rust_file_attrs on 100000 '#![a]'                                        0.115s -> 100000
+rust_file_attrs on '#!' + 100000 spaces                                  0.016s -> 0
+rust_file_attrs on '#![cfg(test)]' + 100000 U+200B                       0.019s -> 2
+rust_file_modules on 'mod' + 100000 '/**/' + 'x;'                        0.094s -> 1
+RUST_PATH.match on '#[path="' + 100000 '\\a'                             0.011s -> False
+RUST_PATH.match on '#[path="x"' + 100000 spaces + 'x'                    0.000s -> False
+RUST_PATH.match long path + trailing spaces                              0.010s -> False
+RUST_SCAN on '\u{' + 200000 zeros                                        0.024s -> 0
+RUST_SCAN on 'r' + 200000 '#'                                            0.045s -> 0
+rust_file_modules on 'r#"' + 200000 '"'                                  0.003s -> 0
+rust_file_attrs / rust_file_modules on '#[' + 200000 '['                 0.135s -> (1, 0)
+rust_file_attrs on 200000 '/*'                                           0.030s -> 0
+rust_file_attrs on 200000 '#![a]'                                        0.230s -> 200000
+rust_file_attrs on '#!' + 200000 spaces                                  0.031s -> 0
+rust_file_attrs on '#![cfg(test)]' + 200000 U+200B                       0.039s -> 2
+rust_file_modules on 'mod' + 200000 '/**/' + 'x;'                        0.189s -> 1
+RUST_PATH.match on '#[path="' + 200000 '\\a'                             0.029s -> False
+RUST_PATH.match on '#[path="x"' + 200000 spaces + 'x'                    0.001s -> False
+RUST_PATH.match long path + trailing spaces                              0.012s -> False
+# ended 2026-10-12 20:03:57; exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

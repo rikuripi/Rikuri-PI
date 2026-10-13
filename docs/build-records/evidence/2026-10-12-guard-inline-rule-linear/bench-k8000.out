@@ -1,0 +1,42 @@
+# started 2026-10-12 17:41:40, safe-run: python3 -B /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/docs/build-records/evidence/2026-10-12-guard-inline-rule-linear/bench.py 8000
+one call each; k = 8000 and 16000; 3.14.4
+
+starts_at
+  '#[cfg(any(' + k '(test)'   (verifier I5)        96010 chars  old   0.4862s   2.0198s (x  4.2)  new  0.0017s  0.0015s (x 0.9)  same
+  '#[cfg(any(' + k ',test'                         80010 chars  old   0.1057s   0.4279s (x  4.0)  new  0.0006s  0.0011s (x 1.9)  same
+  '#[cfg(any(test' + k ', test' + ')'              96015 chars  old   0.1339s   0.5733s (x  4.3)  new  0.0007s  0.0014s (x 2.0)  same
+  '#[cfg(any(' + k '(test))'                      112010 chars  old   1.4906s   5.8285s (x  3.9)  new  0.0012s  0.0029s (x 2.5)  same
+  '#[cfg(all(' + k '(test) ' + ')' * k            128010 chars  old   2.4187s   9.2961s (x  3.8)  new  0.0013s  0.0026s (x 2.0)  same
+  '#[cfg(any(test' + k ') '                        32014 chars  old   0.0005s   0.0010s (x  1.9)  new  0.0004s  0.0009s (x 2.0)  same
+  '#[cfg(any(,' + k newlines + 'test' + k ')'      32015 chars  old   0.0004s   0.0009s (x  2.0)  new  0.0004s  0.0008s (x 2.0)  same
+  '#[cfg(any(' + k '(test' + spaces               128010 chars  old   0.0014s   0.0028s (x  2.0)  new  0.0022s  0.0044s (x 2.0)  same
+  k/50 lines of '#[cfg(any(' + 50 '(test)'         99520 chars  old   0.0048s   0.0097s (x  2.0)  new  0.0009s  0.0017s (x 2.0)  same
+  sqrt lines: '#[cfg(any(' + m '(test)', m lines   94271 chars  old   0.0264s   0.0682s (x  2.6)  new  0.0008s  0.0015s (x 1.9)  same
+  '#' + k spaces            (round 5)              64001 chars  old   0.0008s   0.0017s (x  2.0)  new  0.0008s  0.0017s (x 2.0)  same
+  '# !' + k spaces          (round 5)              64003 chars  old   0.0004s   0.0008s (x  2.0)  new  0.0004s  0.0008s (x 2.0)  same
+  '#[cfg(any(' + k ', '      (round 5)             64010 chars  old   0.0009s   0.0017s (x  2.0)  new  0.0018s  0.0035s (x 2.0)  same
+  k '#\n'                                          64000 chars  old   0.0010s   0.0021s (x  2.0)  new  0.0010s  0.0021s (x 2.0)  same
+  '#[cfg(any(' + k 'not(test),'                   160010 chars  old   0.0013s   0.0026s (x  1.9)  new  0.0025s  0.0051s (x 2.0)  same
+  '#[cfg(any(' + k '(\ntest)'                     112010 chars  old   0.0003s   0.0005s (x  2.0)  new  0.0003s  0.0005s (x 2.0)  same
+
+guarded_lines
+  '// ' + k 'cfg('           (verifier I5)         64003 chars  old   1.2597s   5.0808s (x  4.0)  new  0.0006s  0.0007s (x 1.1)  same
+  k 'cfg_attr('                                   144000 chars  old   2.7222s  10.7849s (x  4.0)  new  0.0008s  0.0016s (x 2.0)  same
+  k 'cfg!('                                        80000 chars  old   1.8117s   6.7927s (x  3.7)  new  0.0005s  0.0010s (x 1.9)  same
+  k 'cfg ! ('                                     112000 chars  old   2.6003s  10.3478s (x  4.0)  new  0.0008s  0.0015s (x 2.0)  same
+  'test ' + k 'cfg('                               64005 chars  old   1.3672s   5.0989s (x  3.7)  new  0.0004s  0.0007s (x 1.9)  same
+  k 'cfg(tests '                                  160000 chars  old   3.4571s  13.4266s (x  3.9)  new  0.0010s  0.0019s (x 2.0)  same
+  'cfg' + k spaces + '!' + k spaces                64004 chars  old   0.0007s   0.0012s (x  1.9)  new  0.0008s  0.0015s (x 2.0)  same
+  'cfg(' + k 'atest'                               80004 chars  old   0.0005s   0.0011s (x  2.0)  new  0.0004s  0.0007s (x 2.0)  same
+  k 'macro_rules!'                                192000 chars  old   0.0010s   0.0019s (x  1.9)  new  0.0009s  0.0018s (x 2.0)  same
+  'macro_rules!' + k spaces                        64012 chars  old   0.0005s   0.0010s (x  2.0)  new  0.0005s  0.0010s (x 2.0)  same
+  'macro_rules!assert' + k 'x'                     64018 chars  old   0.0001s   0.0001s (x  nan)  new  0.0002s  0.0005s (x 1.9)  same
+
+attached_above  (unchanged: old = new)
+  k spaces + '#' + k spaces                        64001 chars  old   0.0010s   0.0016s (x  1.6)  new  0.0008s  0.0015s (x 2.0)  same
+  '#' + k spaces + '!' + k spaces                  64002 chars  old   0.0007s   0.0015s (x  2.0)  new  0.0007s  0.0015s (x 2.0)  same
+  k U+200B                                         64000 chars  old   0.0004s   0.0009s (x  2.1)  new  0.0004s  0.0009s (x 1.9)  same
+  k '\n#'                                          64000 chars  old   0.0014s   0.0027s (x  2.0)  new  0.0014s  0.0028s (x 2.0)  same
+
+slowest new call: 0.0051 s
+# ended 2026-10-12 17:43:09; exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)
