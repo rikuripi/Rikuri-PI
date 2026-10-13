@@ -106,8 +106,9 @@ class GenericPolicy(unittest.TestCase):
         # opts in through its own config; this checks it again on every run,
         # from the files git tracks here (InlineTestCoverage has the cases).
         gaps = guard.uncovered_inline_tests(guard.ROOT, CFG)
-        self.assertEqual(gaps, [], "tracked .rs files keep Rust tests (a #[cfg(test)] or #![cfg(test)] line, or a "
-                         "test module declared under cfg(test)) that the fix-lock does not cover: no inline_tests "
+        self.assertEqual(gaps, [], "tracked .rs files keep Rust tests (a #[cfg(test)] or #![cfg(test)] line, a "
+                         "cfg(any(test, …)) or cfg(all(test, …)) marker on one line or several, or a test module "
+                         "declared under one) that the fix-lock does not cover: no inline_tests "
                          "rule in guard-config.json covers them, or the guard cannot follow the test module's "
                          "declaration (rikurinode's and AISecurity's rules are the model): " + ", ".join(gaps))
 
@@ -121,6 +122,18 @@ class GenericPolicy(unittest.TestCase):
             if r["glob"].endswith(".rs"):
                 self.assertEqual(guard.inline_region(text, r["starts_at"], r.get("attached_above", "")), text, r)
 
+    def test_inline_rules_find_a_marker_written_over_lines(self):
+        # Owner, 2026-10-12 (widen the rule and the tripwire): rustfmt writes a
+        # long marker over several lines, `#[cfg(all(` alone on its line and
+        # `test,` on the next; the rule saw it nowhere, so the tests under it
+        # stayed editable while locked. Every rule this repository has for .rs
+        # files must find it, and still not take `not(test)` for a marker.
+        for r in CFG.get("inline_tests", []):
+            if r["glob"].endswith(".rs"):
+                for line, marker in InlineTests.MULTILINE:
+                    found = guard.inline_region("fn a() {}\n" + line + "\n", r["starts_at"]) is not None
+                    self.assertEqual(found, marker, line)
+
     def test_inline_rules_take_linear_time(self):
         # Verifier round 2, F1: `#\s*!?\s*\[` (and guarded_lines' `\s*!?\s*\(`)
         # took time growing with the square of a run of spaces — 1.3 s for
@@ -129,19 +142,26 @@ class GenericPolicy(unittest.TestCase):
         # the same for each `test` on a line tried against every `)` after it
         # (`#[cfg(any(` and 30,000 `(test)`: 16.5 s through the hook), and for
         # each `cfg(` on a line scanning the rest of it for `test` (20,000:
-        # 18.5 s). Every pattern of this repository's rules must stay fast on
-        # such text.
+        # 18.5 s). A marker written over several lines (2026-10-12) is read
+        # past its first line: one never closed, on every line, must not make
+        # each read the rest of the file. Every pattern of this repository's
+        # rules, and the tripwire's own marker, must stay fast on such text.
         import re
         import time
         texts = ("#" + " " * 40000, "# !" + " " * 40000, "cfg" + " " * 40000, "cfg_attr !" + " " * 40000,
                  "#[cfg(any(" + ", " * 20000, "//" + " " * 40000, "#[cfg(any(" + "(test)" * 20000,
-                 "#[cfg(any(" + ",test" * 20000, "// " + "cfg(" * 10000, "cfg!(" * 10000)
+                 "#[cfg(any(" + ",test" * 20000, "// " + "cfg(" * 10000, "cfg!(" * 10000,
+                 "#[cfg(any(\n" * 10000, "#[cfg(any(" + "\ntest," * 20000)
         for r in CFG.get("inline_tests", []):
             for key in ("starts_at", "attached_above", "guarded_lines"):
                 for text in texts:
                     t0 = time.time()
                     re.search(r.get(key, ""), text, re.M)
                     self.assertLess(time.time() - t0, 0.25, (key, text[:12]))
+        for text in texts:
+            t0 = time.time()
+            guard.RUST_INLINE_TEST.search(text)
+            self.assertLess(time.time() - t0, 0.25, ("RUST_INLINE_TEST", text[:12]))
 
     def test_the_guard_blocks_when_it_fails(self):
         # Owner, 2026-10-12 (verifier rounds 2 and 3): Claude Code lets a tool
@@ -281,6 +301,21 @@ class InlineTests(unittest.TestCase):
     SUPPORT = ('#[cfg(not(test))]\npub fn real() -> u8 {\n    1\n}\n\n'
                '#[cfg(any(test, feature = "test-helpers"))]\npub mod test_support {\n'
                '    pub fn fake() -> u8 {\n        2\n    }\n}\n\n#[cfg(test)]\nmod tests {}\n')
+    # Markers rustfmt writes over several lines (2026-10-12; std's process.rs and
+    # tower-http's content_encoding.rs hold the first two shapes), and look-alikes
+    # that are no marker: `not(test)`, a `test` past the attribute's `]`.
+    MULTILINE = (('#[cfg(all(\n    test,\n    feature = "compression-gzip",\n))]', True),
+                 ('#[cfg(all(\n    test,\n    not(any(\n        target_os = "emscripten",\n'
+                  '        target_os = "wasi",\n    ))\n))]', True),
+                 ('#[cfg(any(\n    feature = "test-helpers",\n    test,\n))]', True),
+                 ("#[cfg(any(\n    unix,\n    test\n))]", True),
+                 ('#[cfg(all(\n    unix,\n    any(test, feature = "x")\n))]', True),
+                 ('#[cfg(any(test, feature = "a",\n          feature = "b"))]', True),
+                 ("#![cfg(all(\n    test,\n    unix,\n))]", True),
+                 ('#[cfg(all(\n    not(test),\n    feature = "x",\n))]', False),
+                 ("#[cfg(all(\n    not(\n        test\n    ),\n    unix,\n))]", False),
+                 ('#[cfg(any(\n    unix,\n    feature = "test",\n))]', False),
+                 ("#[cfg(any(\n    unix,\n    windows,\n))]\nfn f() { g(1, test) }", False))
     # A comment directly above the marker (as in two real files).
     DOC = ("pub fn f() {}\n\n/// note ZQX\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn t() {\n"
            "        assert!(true);\n    }\n}\n")
@@ -410,7 +445,7 @@ class InlineTests(unittest.TestCase):
                              ('#[cfg(any(feature = "test-helpers", unix))]', False),
                              ("#[cfg(any(not(test), unix))]", False), ("#[cfg_attr(test, derive(Debug))]", False),
                              ("# [cfg(test)]", True), ("#[cfg (test)]", True), ("#[ cfg(test) ]", True),
-                             ("\u200e#[cfg(test)]", True), ("#[cfg(not (test))]", False)):
+                             ("\u200e#[cfg(test)]", True), ("#[cfg(not (test))]", False)) + self.MULTILINE:
             self.assertEqual(guard.inline_region("fn a() {}\n" + line + "\n", rx) is not None, marker, line)
 
     @classmethod
@@ -1450,6 +1485,27 @@ class InlineTestCoverage(unittest.TestCase):
                           "src/plain.rs": self.PLAIN, "src/tests.rs": self.TESTS_ONLY})
         self.assertEqual(self.gaps(root, self.RULES), [])
         self.assertEqual(self.gaps(root, None), ["src/lib.rs", "src/tests.rs"])
+
+    def test_an_any_or_all_marker_needs_a_rule(self):
+        # Owner, 2026-10-12: the tripwire knew `#[cfg(test)]` only, so a file
+        # whose tests sit under cfg(any(test, …)) or cfg(all(test, …)), on one
+        # line or written over several by rustfmt, was never named, whatever
+        # the rules found. `not(test)` is still production code.
+        root = self.repo({"src/ml.rs": 'pub fn f() {}\n\n#[cfg(all(\n    test,\n    feature = "x",\n))]\nmod tests {}\n',
+                          "src/one.rs": "pub fn f() {}\n\n#[cfg(any(test, unix))]\nmod tests {}\n",
+                          "src/not.rs": "#[cfg(all(\n    not(test),\n    unix,\n))]\npub fn f() {}\n",
+                          "src/lib.rs": "#[cfg(all(\n    test,\n    unix,\n))]\nmod tests;\n",
+                          "src/tests.rs": self.TESTS_ONLY})
+        named = ["src/lib.rs", "src/ml.rs", "src/one.rs", "src/tests.rs"]
+        self.assertEqual(sorted(self.gaps(root, None)), named)
+        self.assertEqual(self.gaps(root, self.RULES), [])
+        # A rule that knows `#[cfg(test)]` only covers none of them.
+        only = [dict(self.RULES[0], starts_at=r"^[ \t]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*test\s*\)\s*\]")]
+        self.assertEqual(sorted(self.gaps(root, only)), named)
+        rc, out, err = self.on(root, only)
+        self.assertEqual(rc, 0)
+        self.assertIn("src/ml.rs", err)
+        self.assertNotIn("src/not.rs", err)
 
     def test_a_test_module_the_check_cannot_read_is_named(self):
         root = self.repo({"src/lib.rs": self.DECLARES, "src/tests.rs": self.TESTS_ONLY})
