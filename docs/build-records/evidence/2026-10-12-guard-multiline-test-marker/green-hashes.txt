@@ -1,0 +1,4 @@
+897bc149  .claude/hooks/guard.py
+1ef6f5cc  .claude/hooks/guard_base.py
+c786c7b7  .claude/hooks/test_guard.py
+726a7257  .claude/hooks/guard-config.json

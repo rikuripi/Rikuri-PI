@@ -786,7 +786,16 @@ def test_file_declarations(rel: str, text: str, root: str, cfg: dict, deadline: 
 # through its own config, and nothing checked it again when Rikuri-PI adopted
 # Rust. A tracked .rs file with this marker needs a rule that finds its tests;
 # the inner attribute `#![cfg(test)]` makes a whole file tests (owner, 2(a)).
-RUST_INLINE_TEST = re.compile(r"^[ \t]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*test\s*\)\s*\]", re.M)
+# Owner, 2026-10-12: so does a test-only item under cfg(any(test, …)) or
+# cfg(all(test, …)), on one line or written over several by rustfmt
+# (`#[cfg(all(` alone, `test,` on the next line); `not(test)` is no marker.
+# From `any(`/`all(` it commits to the first `test` before the attribute's next
+# bracket (lookahead and backreference: an atomic group, which Python 3.9
+# lacks) and needs that bracket to be the `]` closing `))`. It never reads past
+# a `[` or `]`, so no text is read for two markers: linear in the file.
+RUST_INLINE_TEST = re.compile(r"^[ \t]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*(?:test|(?:any|all)\s*\("
+                              r"(?=(?P<m>(?:[^\[\]]*?(?:,|(?<!not)\())??\s*test(?=\s*[,)])))(?P=m)[^\[\]]*\))"
+                              r"\s*\)\s*\]", re.M)
 # The tripwire's own time: past it, it says it could not check (verifier round
 # 4, N5: a tracked 273 KB file of nested modules took it 32.5 s and 1 GB).
 TRIPWIRE_TIME_BUDGET = 30.0
@@ -804,7 +813,7 @@ def git_env() -> dict:
 
 
 def uncovered_inline_tests(root: str, cfg: dict) -> list:
-    """Tracked .rs files under `root` whose `#[cfg(test)]` tests no
+    """Tracked .rs files under `root` whose Rust tests (RUST_INLINE_TEST) no
     `inline_tests` rule covers: no rule's glob names the file, or no such
     rule's starts_at finds a region reaching the file's first marker. Then
     test modules (2026-10-11): one the lock does not protect (no rule's glob

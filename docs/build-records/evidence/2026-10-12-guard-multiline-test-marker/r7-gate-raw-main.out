@@ -1,0 +1,950 @@
+# 2026-10-13 08:21:00 safe-run: env CARGO_NET_OFFLINE=true bash -c cd /home/junc/claude-wip/guard-multiline-test-marker/gate2 && scripts/quality/full-gate.sh
+── GATE tools: tool_versions
+rustc: rustc 1.98.1 (48a229cea 2026-09-01)   gitleaks: 8.30.1   cargo-deny: 0.20.2
+── GATE tools: PASS
+── GATE gate-selftests: run_selftests
+self-test scripts/quality/tests/crate-checks.sh
+CRATES ok: a crate that opts into workspace lints is accepted
+CRATES ok: exact contract headings are accepted
+CRATES ok: a crate without [lints] workspace = true is refused
+CRATES ok: a crate overriding workspace lints is refused
+CRATES ok: rikuri-testkit as a dev-dependency is accepted
+CRATES ok: rikuri-testkit as a runtime dependency is refused
+CRATES ok: rikuri-testkit renamed as a build dependency is refused
+CRATES ok: '## Healthiness' does not count as '## Health'
+self-test scripts/quality/tests/policy-bypasses.sh
+BYPASS ok: a clean workspace passes
+BYPASS ok: a path dependency on another member passes
+BYPASS ok: an excluded crate used as a path dependency is refused
+BYPASS ok: a config [alias] that shadows clippy is refused
+BYPASS ok: an unrelated alias passes
+BYPASS ok: a config rustc-wrapper is refused
+BYPASS ok: [env] CLIPPY_ARGS is refused
+BYPASS ok: an unrelated [env] variable passes
+BYPASS ok: RUSTC_WRAPPER is refused
+BYPASS ok: an empty RUSTC_WRAPPER passes
+BYPASS ok: CARGO_ALIAS_CLIPPY is refused
+BYPASS ok: CARGO_BUILD_RUSTDOCFLAGS that allow lints are refused
+BYPASS ok: rustflags reading an @argfile are refused
+BYPASS ok: rustflags with --force-warn are refused
+BYPASS ok: RUSTFLAGS reading an @argfile are refused
+BYPASS ok: CARGO_BUILD_RUSTFLAGS with --force-warn are refused
+BYPASS ok: a build script that sets CLIPPY_ARGS is refused
+BYPASS ok: a build script that sets RUSTC_BOOTSTRAP is refused
+BYPASS ok: a build script that sets an unrelated variable passes
+BYPASS ok: a config test runner is refused
+BYPASS ok: CARGO_TARGET_<triple>_RUNNER is refused
+BYPASS ok: a config build.rustc is refused
+BYPASS ok: a config build.rustc-workspace-wrapper is refused
+BYPASS ok: a config build.rustdoc is refused
+BYPASS ok: [env] RUSTC_BOOTSTRAP is refused
+BYPASS ok: a config [alias] that shadows fmt is refused
+BYPASS ok: RUSTC is refused
+BYPASS ok: RUSTDOC is refused
+BYPASS ok: RUSTC_WORKSPACE_WRAPPER is refused
+BYPASS ok: CARGO_BUILD_RUSTC is refused
+BYPASS ok: CARGO_BUILD_RUSTC_WRAPPER is refused
+BYPASS ok: CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER is refused
+BYPASS ok: CARGO_BUILD_RUSTDOC is refused
+BYPASS ok: CLIPPY_ARGS is refused
+BYPASS ok: CARGO_ALIAS_FMT is refused
+BYPASS ok: CARGO_ALIAS_DENY is refused
+BYPASS ok: CARGO_ENCODED_RUSTDOCFLAGS that allow lints are refused
+BYPASS ok: an excluded crate inherited from [workspace.dependencies] is refused
+BYPASS ok: an excluded crate in [dev-dependencies] is refused
+BYPASS ok: an excluded crate in [build-dependencies] is refused
+BYPASS ok: an excluded crate in [target.'cfg(unix)'.dependencies] is refused
+BYPASS ok: an excluded crate under another name is refused
+BYPASS ok: a [patch] to a crate outside the workspace is refused
+BYPASS ok: a [patch] to a member passes
+BYPASS ok: a [replace] to a crate outside the workspace is refused
+BYPASS ok: a config [patch] to a crate outside the workspace is refused
+BYPASS ok: a config paths override is refused
+BYPASS ok: an unloadable workspace still names a weakening config
+BYPASS ok: a build script that sets RUSTC_VERSION passes
+BYPASS ok: [target.<triple>] rustflags that allow lints are refused
+BYPASS ok: build.rustdocflags that cap lints are refused
+BYPASS ok: an unreadable Cargo config is refused
+BYPASS ok: RUSTDOCFLAGS that allow lints are refused
+BYPASS ok: CARGO_TARGET_<triple>_RUSTFLAGS that cap lints are refused
+BYPASS ok: CARGO_ENCODED_RUSTFLAGS that allow lints are refused
+BYPASS ok: a CARGO_HOME config that caps lints is refused
+BYPASS ok: a parent directory's Cargo config that allows lints is refused
+BYPASS ok: an untracked build script is not judged (CI does not see it)
+BYPASS ok: a tracked build script that sets CLIPPY_ARGS is refused
+self-test scripts/quality/tests/pre-commit-large-change.sh
+HOOK ok: a misformatted Rust file staged alone is refused
+HOOK ok: a misformatted Rust file among 4,000 staged files is refused
+HOOK ok: a staged nested Rust file is refused
+HOOK ok: … with GIT_LITERAL_PATHSPECS=1 set
+HOOK ok: … with GIT_GLOB_PATHSPECS=1 set
+HOOK ok: … with GIT_NOGLOB_PATHSPECS=1 set
+self-test scripts/quality/tests/ratchet-and-paths.sh
+PATHS ok: a cfg_attr allow() suppression raises the ratchet
+PATHS ok: a key under docs/target/ fails the scan
+self-test scripts/quality/tests/ratchet-lexing.sh
+LEXING ok: a ")" in a string inside cfg_attr does not hide its allow
+LEXING ok: a ")" in a comment inside cfg_attr does not hide its allow
+LEXING ok: a ")" in a raw string inside cfg_attr does not hide its allow
+LEXING ok: cfg_attr(…, ignore) counts as an ignored test
+LEXING ok: a comment inside #[ignore] still counts
+LEXING ok: lifetimes, escaped quotes, char and byte literals do not derail the count
+LEXING ok: raw-identifier attribute names count (verification round 2)
+LEXING ok: attribute text inside comments and strings does not count
+self-test scripts/quality/tests/ratchet-wrapped.sh
+WRAPPED ok: wrapped cfg_attr(allow) and #[ignore] raise the ratchet
+self-test scripts/quality/tests/redaction-and-ignored-files.sh
+REDACT ok: no line of the key appears in the scan output
+REDACT ok: the finding is shown with the secret redacted
+IGNORED ok: a force-added ignored file fails the Scrap Sweep
+self-test scripts/quality/tests/scrap-sweep-excludes.sh
+EXCLUDES ok: personal and info/exclude rules do not fail the sweep
+self-test scripts/quality/tests/secret-scan-merge.sh
+MERGE ok: a key introduced in a merge commit fails the scan
+MERGE ok: no line of the key is printed
+MERGE ok: the finding is shown, redacted
+self-test scripts/quality/tests/secret-scan-scope.sh
+SCOPE ok: clean HEAD passes while another branch holds a secret
+SCOPE ok: a secret in HEAD's own history fails
+self-test scripts/quality/tests/secret-scan-target-history.sh
+TARGET ok: a key committed under target/ fails the scan, even after deletion
+self-test scripts/quality/tests/smoke-checks-content.sh
+SMOKE SELFTEST ok: correct content passes
+SMOKE SELFTEST ok: refused is caught
+SMOKE SELFTEST ok: no-content is caught
+SMOKE SELFTEST ok: leak is caught
+SMOKE SELFTEST ok: unhealthy is caught
+SMOKE SELFTEST ok: lost-after-restart is caught
+SMOKE SELFTEST ok: under the gate's wrapper, the home is in its TMPDIR
+SMOKE SELFTEST ok: a killed smoke's home fails the wrapped step and is named
+SMOKE SELFTEST ok: a TMPDIR too long for the socket keeps /tmp
+SMOKE SELFTEST ok: no TMPDIR keeps /tmp
+SMOKE SELFTEST ok: a relative TMPDIR keeps /tmp
+SMOKE SELFTEST ok: TMPDIR=/ keeps /tmp
+SMOKE SELFTEST ok: a TMPDIR whose socket path is 103 bytes is used
+SMOKE SELFTEST ok: one byte longer keeps /tmp
+self-test scripts/quality/tests/temp-residue.sh
+RESIDUE SELFTEST ok: a command that cleans up passes
+RESIDUE SELFTEST ok: the defect's tree is caught and named
+RESIDUE SELFTEST ok: a hidden file is caught and named
+RESIDUE SELFTEST ok: an empty directory is caught and named
+RESIDUE SELFTEST ok: an unreadable directory is caught and named
+RESIDUE SELFTEST ok: a command that removes its TMPDIR fails (nothing left to check)
+RESIDUE SELFTEST ok: a failing command that removes its TMPDIR keeps its status
+RESIDUE SELFTEST ok: a TMPDIR replaced by a symlink fails, and the link is not followed
+RESIDUE SELFTEST ok: a failing command's status is kept
+RESIDUE SELFTEST ok: a failing command's residue is named and its status kept
+self-test scripts/quality/tests/tmpdir-in-git-work-tree.sh
+TMPDIR-IN-GIT ok: crate-checks.sh
+TMPDIR-IN-GIT ok: policy-bypasses.sh
+TMPDIR-IN-GIT ok: pre-commit-large-change.sh
+TMPDIR-IN-GIT ok: ratchet-and-paths.sh
+TMPDIR-IN-GIT ok: ratchet-lexing.sh
+TMPDIR-IN-GIT ok: ratchet-wrapped.sh
+TMPDIR-IN-GIT ok: redaction-and-ignored-files.sh
+TMPDIR-IN-GIT ok: scrap-sweep-excludes.sh
+TMPDIR-IN-GIT ok: secret-scan-merge.sh
+TMPDIR-IN-GIT ok: secret-scan-scope.sh
+TMPDIR-IN-GIT ok: secret-scan-target-history.sh
+TMPDIR-IN-GIT ok: smoke-checks-content.sh
+TMPDIR-IN-GIT ok: temp-residue.sh
+TMPDIR-IN-GIT ok: workspace-policy.sh
+self-test scripts/quality/tests/workspace-policy.sh
+WORKSPACE ok: a clean workspace passes the crate policy
+WORKSPACE ok: a clean workspace passes the contract check
+WORKSPACE ok: a member outside crates/ and apps/ without workspace lints is refused
+WORKSPACE ok: a member outside crates/ and apps/ without a contract is refused
+WORKSPACE ok: a .cargo/config.toml that caps lints is refused
+WORKSPACE ok: RUSTFLAGS that cap lints are refused
+WORKSPACE ok: RUSTFLAGS that allow a lint are refused
+── GATE gate-selftests: PASS
+── GATE guard: python3 -m unittest discover -s .claude/hooks -p test_*.py -q
+fix-lock ENGAGED for docs/build-records/a.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmpr_pvglku failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock released (docs/build-records/a.md)
+fix-lock ENGAGED for docs/build-records/b.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmpr_pvglku failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock released (docs/build-records/b.md)
+fix-lock ENGAGED for docs/build-records/x.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp0akc3xdh failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+usage: guard.py fix-lock on <build-record> | off [--session <id> | --global] | status
+fix-lock NOT engaged — cannot read /tmp/tmpvrppvifk/guard-config.json: guard-config.json: 'fix_lock_preflight' must be a list of argv lists, e.g. [["node", "scripts/quality-ratchet.mjs"]]
+Nothing was changed. Fix it first, then engage.
+fix-lock NOT engaged — preflight /usr/bin/python3 -c import sys; sys.exit(3) failed (exit 3):
+
+Nothing was changed. Fix it first, then engage.
+fix-lock released (docs/build-records/x.md)
+fix-lock ENGAGED for docs/build-records/x.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp12m_a0kf failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/x.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp2clmhard failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/a.md (this session) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmpnzwkhx30 failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/a.md (this session) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp6bqqv3nt failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock released (docs/build-records/a.md)
+fix-lock ENGAGED for docs/build-records/a.md (this session) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp5ppeoy_v failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/b.md (this session) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp5ppeoy_v failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/owner.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp5ppeoy_v failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock released (docs/build-records/b.md)
+fix-lock released (docs/build-records/a.md)
+fix-lock released (docs/build-records/owner.md)
+fix-lock ENGAGED for docs/build-records/a.md (this session) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmpn8vewqiq failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/b.md (this session) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmpn8vewqiq failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/owner.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmpbz4ebp_q failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+usage: guard.py profile [stable | development]
+----------------------------------------------------------------------
+Ran 154 tests in 12.744s
+
+OK
+profile: stable
+profile: stable -> development
+profile: development -> stable
+── GATE guard: PASS
+── GATE format: cargo fmt --all --check
+── GATE format: PASS
+── GATE build: cargo build --workspace --all-targets --locked
+   Compiling libc v0.2.190
+   Compiling cfg-if v1.0.5
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.26
+   Compiling getrandom v0.4.3
+   Compiling rand_core v0.10.1
+   Compiling cpufeatures v0.3.1
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling thiserror v2.0.21
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.151
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling bitflags v2.13.2
+   Compiling vcpkg v0.2.15
+   Compiling chacha20 v0.10.2
+   Compiling pkg-config v0.3.34
+   Compiling rustix v1.1.5
+   Compiling getrandom v0.3.4
+   Compiling cc v1.6.0
+   Compiling linux-raw-sys v0.12.1
+   Compiling foldhash v0.2.0
+   Compiling fastrand v2.5.0
+   Compiling once_cell v1.21.4
+   Compiling hashbrown v0.17.1
+   Compiling arrayvec v0.7.8
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling constant_time_eq v0.4.2
+   Compiling smallvec v1.16.2
+   Compiling zerocopy v0.8.60
+   Compiling fallible-iterator v0.3.0
+   Compiling autocfg v1.5.1
+   Compiling fnv v1.0.7
+   Compiling bit-vec v0.8.0
+   Compiling quick-error v1.2.3
+   Compiling regex-syntax v0.8.11
+   Compiling unarray v0.1.4
+   Compiling utf8parse v0.2.2
+   Compiling anstyle-query v1.1.5
+   Compiling bit-set v0.8.0
+   Compiling anstyle-parse v1.0.0
+   Compiling anstyle v1.0.14
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling colorchoice v1.0.5
+   Compiling heck v0.5.0
+   Compiling clap_lex v1.1.1
+   Compiling strsim v0.11.1
+   Compiling anstream v1.0.0
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.6
+   Compiling hashlink v0.12.2
+   Compiling clap_builder v4.6.7
+   Compiling libsqlite3-sys v0.38.2
+   Compiling blake3 v1.8.7
+   Compiling wait-timeout v0.2.1
+   Compiling rand_core v0.9.5
+   Compiling rand v0.10.3
+   Compiling rand_xorshift v0.4.0
+   Compiling rand v0.9.5
+   Compiling tempfile v3.27.0
+   Compiling ulid v3.0.0
+   Compiling rusty-fork v0.3.1
+   Compiling thiserror-impl v2.0.21
+   Compiling serde_derive v1.0.229
+   Compiling clap_derive v4.6.7
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_chacha v0.9.0
+   Compiling proptest v1.11.0
+   Compiling clap v4.6.7
+   Compiling rikuri-domain v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-domain)
+   Compiling rikuri-testkit v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-testkit)
+   Compiling rikuri-api v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-api)
+   Compiling rikuri-cli v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/apps/rikuri-cli)
+   Compiling rusqlite v0.40.2
+   Compiling rikuri-storage v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-storage)
+   Compiling rikuri-ledger v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-ledger)
+   Compiling rikurid v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/apps/rikurid)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 15.54s
+── GATE build: PASS
+── GATE clippy: run_clippy
+    Checking cfg-if v1.0.5
+    Checking rand_core v0.10.1
+    Checking cpufeatures v0.3.1
+    Checking memchr v2.8.3
+    Checking itoa v1.0.18
+    Checking libc v0.2.190
+    Checking bitflags v2.13.2
+    Checking serde_core v1.0.229
+    Checking zmij v1.0.23
+    Checking foldhash v0.2.0
+    Checking linux-raw-sys v0.12.1
+    Checking once_cell v1.21.4
+    Checking fastrand v2.5.0
+    Checking libsqlite3-sys v0.38.2
+    Checking thiserror v2.0.21
+    Checking fallible-iterator v0.3.0
+    Checking arrayvec v0.7.8
+    Checking constant_time_eq v0.4.2
+    Checking fallible-streaming-iterator v0.1.9
+    Checking chacha20 v0.10.2
+    Checking smallvec v1.16.2
+    Checking hashbrown v0.17.1
+    Checking zerocopy v0.8.60
+    Checking quick-error v1.2.3
+    Checking bit-vec v0.8.0
+    Checking fnv v1.0.7
+    Checking num-traits v0.2.19
+    Checking regex-syntax v0.8.11
+    Checking unarray v0.1.4
+    Checking utf8parse v0.2.2
+    Checking is_terminal_polyfill v1.70.2
+    Checking blake3 v1.8.7
+    Checking anstyle v1.0.14
+    Checking anstyle-query v1.1.5
+    Checking anstyle-parse v1.0.0
+    Checking colorchoice v1.0.5
+    Checking clap_lex v1.1.1
+    Checking strsim v0.11.1
+    Checking bit-set v0.8.0
+    Checking rustix v1.1.5
+    Checking anstream v1.0.0
+    Checking clap_builder v4.6.7
+    Checking hashlink v0.12.2
+    Checking rusqlite v0.40.2
+    Checking getrandom v0.4.3
+    Checking getrandom v0.3.4
+    Checking wait-timeout v0.2.1
+    Checking rand_core v0.9.5
+    Checking rand v0.10.3
+    Checking rand_xorshift v0.4.0
+    Checking rand v0.9.5
+    Checking ulid v3.0.0
+    Checking tempfile v3.27.0
+    Checking serde v1.0.229
+    Checking serde_json v1.0.151
+    Checking rusty-fork v0.3.1
+    Checking clap v4.6.7
+    Checking rikuri-domain v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-domain)
+    Checking rikuri-storage v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-storage)
+    Checking rikuri-testkit v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-testkit)
+    Checking rikuri-api v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-api)
+    Checking rikuri-ledger v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-ledger)
+    Checking rikuri-cli v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/apps/rikuri-cli)
+    Checking rikurid v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/apps/rikurid)
+    Checking ppv-lite86 v0.2.21
+    Checking rand_chacha v0.9.0
+    Checking proptest v1.11.0
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.98s
+   Compiling syn v3.0.6
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.21
+    Checking thiserror v2.0.21
+    Checking serde v1.0.229
+    Checking rikuri-domain v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-domain)
+    Checking rikuri-storage v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-storage)
+    Checking rikuri-api v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-api)
+    Checking rikuri-testkit v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-testkit)
+    Checking rikuri-ledger v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-ledger)
+    Checking rikurid v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/apps/rikurid)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.92s
+── GATE clippy: PASS
+── GATE test: scripts/quality/no-temp-residue.sh cargo test --workspace --locked
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running unittests src/lib.rs (target/debug/deps/rikuri_api-64a5c72de3926e02)
+
+running 6 tests
+test command::tests::only_state_changing_commands_are_consequential ... ok
+test command::tests::outcome_and_verification_are_distinct_vocabularies ... ok
+test tests::missing_params_default_to_an_empty_object ... ok
+test tests::error_codes_are_stable_and_map_to_documented_exit_codes ... ok
+test command::tests::parameters_refuse_unknown_fields ... ok
+test tests::envelope_round_trips_and_refuses_unknown_fields ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/exit_codes.rs (target/debug/deps/exit_codes-1d3a06ebd554066c)
+
+running 1 test
+test every_error_code_has_its_documented_exit_code_and_retry_flag ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/rikuri-1ba21194da78894f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cli_exit_codes.rs (target/debug/deps/cli_exit_codes-b61c142bcb8ad86f)
+
+running 3 tests
+test a_usage_error_exits_2 ... ok
+test no_daemon_exits_4_with_daemon_unavailable ... ok
+test a_refused_write_exits_5 ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/t00_09_cli_matches_in_process.rs (target/debug/deps/t00_09_cli_matches_in_process-d3fcc54156fb733f)
+
+running 1 test
+test cli_and_in_process_adapters_give_the_same_envelopes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running unittests src/lib.rs (target/debug/deps/rikuri_domain-adbedf0b35c63358)
+
+running 28 tests
+test authority::tests::loaded_records_never_carry_authority ... ok
+test authority::tests::a_live_command_loses_its_authority_through_storage ... ok
+test authority::tests::only_a_live_user_command_has_authority ... ok
+test authority::tests::roundtrips_and_rejects_unknown_fields ... ok
+test authority::tests::stored_records_cannot_raise_authority ... ok
+test authority::tests::the_wire_carries_the_real_authority ... ok
+test deletion::tests::content_ref_serializes_ids_only ... ok
+test authority::tests::wire_names_are_stable ... ok
+test id::tests::any_id_deserializes_from_runtime_text ... ok
+test id::tests::any_id_keeps_kind_and_downcasts_only_to_it ... ok
+test id::tests::display_is_prefix_then_canonical_ulid ... ok
+test id::tests::nil_ulid_is_never_an_id ... ok
+test id::tests::prefixes_are_unique_lowercase_words ... ok
+test id::tests::non_canonical_and_malformed_text_is_rejected ... ok
+test id::tests::serde_uses_the_text_form_and_validates ... ok
+test privacy::tests::combining_never_lowers_restriction ... ok
+test id::tests::wrong_kind_is_rejected ... ok
+test privacy::tests::unclassified_is_conservative ... ok
+test privacy::tests::wire_names_are_stable ... ok
+test risk::tests::only_read_only_is_inconsequential ... ok
+test schema::tests::zero_is_refused_everywhere ... ok
+test trust::tests::new_projects_cannot_execute ... ok
+test risk::tests::wire_names_are_stable ... ok
+test time::tests::system_clock_is_after_2026_and_serializes_as_a_number ... ok
+test privacy::tests::unknown_values_are_refused ... ok
+test trust::tests::wire_names_are_stable ... ok
+test id::tests::errors_do_not_echo_unbounded_input ... ok
+test id::tests::system_source_is_monotonic ... ok
+
+test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/crash_progress.rs (target/debug/deps/crash_progress-e0a7c8bb88e848e9)
+
+running 2 tests
+test crash_points_keep_their_wire_names ... ok
+test progress_prints_each_field_in_its_place ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/id_properties.rs (target/debug/deps/id_properties-f8c1edb854741385)
+
+running 4 tests
+test every_registered_prefix_parses ... ok
+test text_order_matches_id_order ... ok
+test issued_ids_roundtrip_only_as_their_kind ... ok
+test parsing_is_total_and_canonical ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src/lib.rs (target/debug/deps/rikuri_ledger-47f79985c8f8a1d2)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/ledger_contract.rs (target/debug/deps/ledger_contract-30f7c3f7a099252a)
+
+running 18 tests
+test event_type_errors_are_bounded ... ok
+test consequential_events_need_an_idempotency_key ... ok
+test events_cannot_embed_content ... ok
+test idempotency_command_and_response_are_validated ... ok
+test idempotency_replays_the_same_request_and_refuses_a_changed_one ... ok
+test a_failed_transaction_appends_nothing ... ok
+test after_lists_the_events_appended_since_a_sequence_number ... ok
+test append_then_query_in_order ... ok
+test migration_2_adds_the_task_type_index_and_upgrades_a_version_1_store ... ok
+test ledger_rows_refuse_replace_on_a_raw_connection ... ok
+test metadata_keys_are_bounded ... ok
+test references_and_names_are_validated ... ok
+test ledger_rows_refuse_replace_too ... ok
+test records_after_lists_the_records_written_since_a_mark ... ok
+test replay_visits_every_event_in_order ... ok
+test ledger_rows_are_append_only_even_for_raw_sql ... ok
+test task_counts_count_one_tasks_events_by_type ... ok
+test ledger_holds_exactly_the_committed_events ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/store_failure.rs (target/debug/deps/store_failure-13c6d82420e6a1c7)
+
+running 1 test
+test ledger_errors_say_whether_the_store_failed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rikuri_storage-b97ff3fc514a7bac)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/files.rs (target/debug/deps/files-0f577f3789d0ac18)
+
+running 2 tests
+test database_and_directory_are_owner_only ... ok
+test shared_directory_or_database_is_refused ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/health_evidence.rs (target/debug/deps/health_evidence-1b34e5e908897a18)
+
+running 2 tests
+test storage_errors_say_whether_the_store_failed ... ok
+test reads_do_not_hide_write_failures_and_refusals_are_not_failures ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/migrations.rs (target/debug/deps/migrations-519d58188aac6c0f)
+
+running 11 tests
+test store_uses_wal_and_full_sync ... ok
+test changed_definition_of_an_applied_migration_is_refused ... ok
+test database_from_a_newer_build_is_refused ... ok
+test fresh_open_applies_and_reopen_is_a_no_op ... ok
+test upgrade_preserves_existing_data ... ok
+test storage_migration_2_adds_the_deletion_unit_index_to_a_version_1_store ... ok
+test failed_migration_leaves_the_last_good_version ... ok
+test failed_multi_component_upgrade_changes_nothing ... ok
+test refusal_in_one_component_upgrades_no_other ... ok
+test recorded_versions_must_be_contiguous ... ok
+test malformed_migration_lists_are_refused_before_any_table_exists ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/reentrancy.rs (target/debug/deps/reentrancy-51ed2786acc9785f)
+
+running 6 tests
+test in_transaction_is_true_only_inside_a_transaction ... ok
+test a_case_leaves_no_scratch_directory_behind ... ok
+test sequential_store_calls_still_work ... ok
+test nested_stores_are_allowed_but_reentry_anywhere_in_the_nest_is_refused ... ok
+test reentry_after_an_inner_store_returns_is_still_refused ... ok
+test store_calls_inside_its_own_transaction_are_refused_not_deadlocked ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/repository_contract.rs (target/debug/deps/repository_contract-5235f6612cff131c)
+
+running 14 tests
+test reads_never_commit ... ok
+test a_transaction_lists_what_it_wrote ... ok
+test store_health_tracks_success_and_failure ... ok
+test rows_of_another_kind_are_refused ... ok
+test tampered_rows_are_reported_not_trusted ... ok
+test a_deletion_unit_counts_its_objects_through_its_index ... ok
+test an_insert_that_fails_otherwise_is_not_reported_as_already_existing ... ok
+test a_write_that_does_not_read_back_rolls_back ... ok
+test sqlite_repository_meets_the_contract ... ok
+test a_write_whose_version_does_not_read_back_rolls_back ... ok
+test committed_state_survives_reopen ... ok
+test privacy_and_deletion_columns_must_match_the_body ... ok
+test corrupt_row_errors_are_bounded ... ok
+test versions_follow_the_model ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests/single_writer.rs (target/debug/deps/single_writer-80dcb4e7d825c73e)
+
+running 3 tests
+test the_lock_file_is_owner_only ... ok
+test a_second_open_reports_in_use ... ok
+test a_second_store_on_the_same_database_is_refused ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rikuri_testkit-d69730e5e1d94c50)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fixtures.rs (target/debug/deps/fixtures-bba3a8c575960635)
+
+running 8 tests
+test a_fixed_clock_never_moves_and_a_stepping_one_moves_by_its_step ... ok
+test a_point_armed_for_one_command_ignores_the_others ... ok
+test arming_again_replaces_a_pending_point ... ok
+test t0_is_one_time_for_clocks_and_ids ... ok
+test the_injector_records_every_point_it_reaches_in_order ... ok
+test an_armed_point_crashes_once_for_any_command_then_disarms ... ok
+test ids_are_sequential_at_a_fixed_time_and_can_be_switched_off ... ok
+test fixture_ids_keep_the_adr_0001_id_properties ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (target/debug/deps/rikurid-5ecd6b3b55ba7379)
+
+running 50 tests
+test candidate::spec::tests::a_new_task_has_a_deletion_unit_of_its_own ... ok
+test candidate::spec::tests::a_step_changes_no_field_of_its_run_beyond_the_step_count ... ok
+test candidate::spec::tests::a_command_without_a_spec_is_refused ... ok
+test candidate::spec::tests::a_new_task_is_the_owners_and_starts_empty ... ok
+test candidate::spec::tests::a_command_appends_exactly_its_own_events ... ok
+test candidate::spec::tests::a_command_writes_only_its_own_objects ... ok
+test candidate::spec::tests::a_start_moves_its_task_and_starts_its_run_exactly ... ok
+test candidate::spec::tests::a_completion_ends_its_task_and_run_exactly ... ok
+test candidate::spec::tests::a_completions_second_event_names_its_own_task_and_run ... ok
+test candidate::spec::tests::system_init_writes_one_owner_and_one_inbox_with_default_trust ... ok
+test candidate::tests::a_ledger_failure_stays_a_storage_failure_and_only_the_rest_is_corruption ... ok
+test candidate::spec::tests::system_inits_answer_names_what_it_wrote ... ok
+test candidate::tests::a_command_appends_each_effect_once ... ok
+test candidate::tests::a_command_writes_exactly_its_own_record ... ok
+test candidate::spec::tests::an_event_carries_the_ledgers_schema_version ... ok
+test candidate::spec::tests::a_command_changes_no_field_of_its_task_beyond_its_own ... ok
+test candidate::tests::a_commands_idempotency_record_is_its_own ... ok
+test candidate::spec::tests::each_command_built_as_the_kernel_builds_it_passes ... ok
+test candidate::tests::a_completion_appends_and_links_one_of_each_event ... ok
+test candidate::tests::a_completed_run_is_not_changed ... ok
+test candidate::tests::a_completion_records_what_its_events_say ... ok
+test candidate::tests::a_new_task_needs_exactly_one_creation_event ... ok
+test candidate::tests::a_current_run_exists_is_running_and_is_the_tasks_own ... ok
+test candidate::tests::a_new_run_needs_exactly_one_start_event ... ok
+test candidate::tests::a_new_run_links_its_own_start_and_starts_empty ... ok
+test candidate::tests::a_ledger_that_cannot_be_read_is_a_storage_failure_not_corruption ... ok
+test candidate::tests::a_new_task_starts_empty ... ok
+test candidate::tests::a_last_run_exists_is_the_tasks_own_and_runs_have_one ... ok
+test candidate::spec::tests::an_event_carries_exactly_the_commands_references_and_facts ... ok
+test candidate::tests::a_run_step_count_moves_with_its_step_events ... ok
+test candidate::tests::a_running_run_is_its_tasks_current_run ... ok
+test candidate::tests::a_running_task_has_a_current_run_and_a_finished_one_does_not ... ok
+test candidate::tests::a_task_step_count_moves_with_its_step_events ... ok
+test candidate::tests::a_task_that_leaves_its_current_run_ends_it ... ok
+test candidate::tests::a_running_run_has_no_completion_links_or_outcome ... ok
+test candidate::tests::a_task_run_count_moves_with_its_start_events ... ok
+test candidate::tests::a_written_object_that_does_not_decode_is_refused ... ok
+test candidate::tests::a_new_run_starts_empty_in_every_field ... ok
+test candidate::tests::a_written_tasks_counts_match_the_ledger ... ok
+test candidate::tests::an_existing_task_is_not_created_again ... ok
+test candidate::tests::completion_events_need_a_completion ... ok
+test candidate::tests::an_existing_task_written_is_named_by_an_event ... ok
+test candidate::tests::events_appended_outside_the_commands_list_are_checked_too ... ok
+test candidate::tests::an_existing_run_written_is_named_by_an_event ... ok
+test candidate::tests::writing_an_unknown_kind_or_event_is_refused ... ok
+test candidate::tests::an_existing_run_is_not_started_again_nor_moved ... ok
+test candidate::spec::tests::a_commands_answer_names_what_it_wrote ... ok
+test candidate::tests::each_command_done_right_passes ... ok
+test candidate::tests::every_event_is_about_something_the_command_wrote ... ok
+test candidate::spec::tests::a_step_or_completion_names_its_tasks_running_current_run ... ok
+
+test result: ok. 50 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running unittests src/main.rs (target/debug/deps/rikurid-853ce9d14f16a21b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/candidate_check.rs (target/debug/deps/candidate_check-2fc3dbbc55f5ccfd)
+
+running 8 tests
+test a_step_whose_count_disagrees_with_history_is_not_promoted ... ok
+test a_candidate_for_a_task_created_twice_is_not_promoted ... ok
+test a_candidate_with_disagreeing_task_pointers_is_not_promoted ... ok
+test a_refused_candidate_counts_as_a_failed_write ... ok
+test drift_in_an_earlier_run_is_left_to_the_replay ... ok
+test init_into_a_store_with_stray_state_is_not_promoted ... ok
+test a_start_whose_run_count_disagrees_is_not_promoted ... ok
+test drift_on_another_task_does_not_block_this_one ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/consistency_replay.rs (target/debug/deps/consistency_replay-4df45484ab42afe1)
+
+running 48 tests
+test a_missing_owner_project_is_reported ... ok
+test a_created_task_with_a_current_run_is_reported ... ok
+test a_finished_task_with_a_current_run_is_reported ... ok
+test a_consistent_lifecycle_has_no_problems ... ok
+test a_current_run_that_is_not_running_is_reported ... ok
+test a_completed_run_without_its_links_is_reported ... ok
+test a_ledger_the_check_cannot_read_is_reported ... ok
+test a_completed_run_without_its_verification_link_is_reported ... ok
+test a_last_run_of_another_task_is_reported ... ok
+test a_run_linking_another_runs_events_is_reported ... ok
+test a_completion_link_to_an_event_of_another_type_is_reported ... ok
+test a_current_run_of_another_task_is_reported ... ok
+test a_run_of_a_missing_task_is_reported ... ok
+test a_run_linking_an_event_of_the_wrong_type_is_reported ... ok
+test a_run_linking_an_event_about_another_task_is_reported ... ok
+test a_second_initialization_is_reported ... ok
+test a_duplicate_of_any_event_type_under_one_key_is_reported ... ok
+test a_run_step_count_that_differs_from_the_ledger_is_reported ... ok
+test a_running_run_its_task_does_not_point_at_is_reported ... ok
+test a_run_whose_links_are_not_in_the_ledger_is_reported ... ok
+test a_second_completion_with_the_same_outcome_is_reported ... ok
+test a_dropped_outcome_or_verification_is_reported ... ok
+test a_running_run_with_completion_links_is_reported ... ok
+test a_running_run_with_a_completion_link_is_reported ... ok
+test a_second_verification_with_the_same_result_is_reported ... ok
+test a_task_the_ledger_never_created_is_reported ... ok
+test a_second_task_created_event_is_reported ... ok
+test a_task_run_count_that_differs_from_the_ledger_is_reported ... ok
+test a_task_status_that_contradicts_its_current_run_is_reported ... ok
+test a_task_step_count_that_differs_from_the_ledger_is_reported ... ok
+test a_task_with_runs_but_no_last_run_is_reported ... ok
+test an_owner_replaced_by_another_actor_is_reported ... ok
+test a_verification_caused_by_the_start_is_reported ... ok
+test ledger_events_for_a_task_that_does_not_exist_are_reported ... ok
+test a_verification_that_does_not_follow_its_completion_is_reported ... ok
+test an_owner_that_disagrees_with_its_initialization_is_reported ... ok
+test an_owner_the_check_cannot_read_is_reported ... ok
+test a_verification_link_to_an_event_of_another_type_is_reported ... ok
+test a_task_pointing_at_a_missing_run_is_reported ... ok
+test an_unlinked_run_started_event_is_reported ... ok
+test completion_events_that_state_does_not_show_are_reported ... ok
+test run_events_for_a_run_that_does_not_exist_are_reported ... ok
+test owners_without_exactly_one_initialization_are_reported ... ok
+test a_step_or_start_missing_one_id_is_reported ... ok
+test an_outcome_that_differs_from_the_ledger_is_reported ... ok
+test legitimate_multi_run_histories_have_no_problems ... ok
+test verification_links_that_are_missing_or_not_this_runs_are_reported ... ok
+test completion_links_that_are_missing_or_not_this_runs_are_reported ... ok
+
+test result: ok. 48 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests/crash_point_placement.rs (target/debug/deps/crash_point_placement-b3d2c0ada8c9e192)
+
+running 2 tests
+test a_replay_reports_no_write ... ok
+test every_crash_point_sees_what_test_strategy_section_5_says ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/health_components.rs (target/debug/deps/health_components-34351666c22a911a)
+
+running 5 tests
+test store_thresholds_are_degraded_then_critical_at_three ... ok
+test a_successful_check_after_a_failure_resets_the_evidence ... ok
+test a_check_that_cannot_run_quarantines_writes ... ok
+test failing_reads_turn_the_store_unhealthy_then_critical ... ok
+test the_consistency_component_counts_consecutive_failures ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/s00_07_defects.rs (target/debug/deps/s00_07_defects-5854e8647d89a260)
+
+running 4 tests
+test a_shared_socket_directory_is_refused ... ok
+test socket_and_its_directory_are_owner_only ... ok
+test state_show_answers_in_process ... ok
+test state_show_answers_through_the_socket ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/s00_07_round2.rs (target/debug/deps/s00_07_round2-6b514f2e806f1300)
+
+running 10 tests
+test a_store_without_success_is_not_healthy ... ok
+test bind_never_deletes_a_file_that_is_not_a_socket ... ok
+test a_key_on_a_command_without_one_is_refused ... ok
+test one_kernel_per_home ... ok
+test parameter_errors_are_bounded ... ok
+test refused_requests_do_not_mark_the_store_failed ... ok
+test disagreeing_state_quarantines_writes ... ok
+test replay_and_conflict ... ok
+test state_show_reports_truncation ... ok
+test store_health_reports_failed_writes ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.02s
+
+     Running tests/s00_07_round3.rs (target/debug/deps/s00_07_round3-4d642821d7d77eca)
+
+running 4 tests
+test a_quarantined_daemon_still_replays_committed_requests ... ok
+test internal_failures_inside_writes_are_not_green ... ok
+test quarantine_keeps_health_critical_after_the_cause_clears ... ok
+test the_log_is_one_line_per_request_and_errors_stay_bounded ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/t00_06_no_duplicate_effects.rs (target/debug/deps/t00_06_no_duplicate_effects-c6c682d8922bd2c1)
+
+running 4 tests
+test a_kernel_without_idempotency_reports_its_build_critical ... ok
+test without_idempotency_the_oracle_reports_the_duplicate ... ok
+test every_point_of_every_command_recovers_with_one_effect ... ok
+test crashes_and_retries_never_duplicate_an_effect ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.49s
+
+   Doc-tests rikuri_api
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rikuri_domain
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rikuri_ledger
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rikuri_storage
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rikuri_testkit
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rikurid
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+RESIDUE none: TMPDIR stayed empty
+── GATE test: PASS
+── GATE smoke: scripts/quality/no-temp-residue.sh scripts/quality/smoke.sh
+SMOKE PASS: init, task create, state.show content, ledger and log without content, health, restart
+RESIDUE none: TMPDIR stayed empty
+── GATE smoke: PASS
+── GATE crash-matrix: run_crash_matrix
+   Compiling libc v0.2.190
+   Compiling cfg-if v1.0.5
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling rand_core v0.10.1
+   Compiling getrandom v0.4.3
+   Compiling quote v1.0.47
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling serde_core v1.0.229
+   Compiling cpufeatures v0.3.1
+   Compiling bitflags v2.13.2
+   Compiling thiserror v2.0.21
+   Compiling serde v1.0.229
+   Compiling pkg-config v0.3.34
+   Compiling vcpkg v0.2.15
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.151
+   Compiling foldhash v0.2.0
+   Compiling getrandom v0.3.4
+   Compiling cc v1.6.0
+   Compiling chacha20 v0.10.2
+   Compiling itoa v1.0.18
+   Compiling hashbrown v0.17.1
+   Compiling memchr v2.8.3
+   Compiling rustix v1.1.5
+   Compiling fallible-iterator v0.3.0
+   Compiling zerocopy v0.8.60
+   Compiling arrayvec v0.7.8
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling constant_time_eq v0.4.2
+   Compiling smallvec v1.16.2
+   Compiling autocfg v1.5.1
+   Compiling linux-raw-sys v0.12.1
+   Compiling once_cell v1.21.4
+   Compiling fastrand v2.5.0
+   Compiling fnv v1.0.7
+   Compiling bit-vec v0.8.0
+   Compiling quick-error v1.2.3
+   Compiling unarray v0.1.4
+   Compiling regex-syntax v0.8.11
+   Compiling bit-set v0.8.0
+   Compiling num-traits v0.2.19
+   Compiling hashlink v0.12.2
+   Compiling syn v3.0.6
+   Compiling libsqlite3-sys v0.38.2
+   Compiling blake3 v1.8.7
+   Compiling wait-timeout v0.2.1
+   Compiling rand_core v0.9.5
+   Compiling rand v0.10.3
+   Compiling rand v0.9.5
+   Compiling rand_xorshift v0.4.0
+   Compiling ulid v3.0.0
+   Compiling tempfile v3.27.0
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.21
+   Compiling rusty-fork v0.3.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_chacha v0.9.0
+   Compiling proptest v1.11.0
+   Compiling rikuri-domain v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-domain)
+   Compiling rikuri-api v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-api)
+   Compiling rikuri-testkit v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-testkit)
+   Compiling rusqlite v0.40.2
+   Compiling rikuri-storage v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-storage)
+   Compiling rikuri-ledger v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/crates/rikuri-ledger)
+   Compiling rikurid v0.1.0 (/home/junc/claude-wip/guard-multiline-test-marker/gate2/apps/rikurid)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.50s
+     Running tests/crash_matrix.rs (target/crash-injection/debug/deps/crash_matrix-17522989beb3bce9)
+
+running 7 tests
+test scratch_homes_go_under_a_short_tmpdir_with_a_socket_that_fits ... ok
+test a_crash_injection_build_without_idempotency_is_critical ... ok
+test an_armed_crash_injection_build_says_it_is_armed ... ok
+test an_unarmed_crash_injection_build_is_not_reported_as_production ... ok
+test t00_12_missing_references_are_refused_without_an_effect ... ok
+test t00_08_without_idempotency_the_same_crash_duplicates_and_w1_fails ... ok
+test t00_07_kill_9_at_every_point_of_every_command_then_one_effect ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+RESIDUE none: TMPDIR stayed empty
+── GATE crash-matrix: PASS
+── GATE dependencies: cargo deny --locked check
+2026-10-13 15:21:00 [ERROR] failed to fetch advisory database https://github.com/RustSec/advisory-db with cli: failed to fetch latest changes: ["-C", "/home/junc/.cargo/advisory-dbs/advisory-db-3157b0e258782691", "fetch", "--depth=1", "-u", "origin", "+main:main"]
+fatal: unable to access 'https://github.com/RustSec/advisory-db/': Could not resolve host: github.com
+
+── GATE dependencies: FAIL
+RESULT: FAIL (dependencies)
+# exit 1; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

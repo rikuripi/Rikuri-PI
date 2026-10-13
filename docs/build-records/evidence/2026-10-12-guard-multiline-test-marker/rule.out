@@ -1,0 +1,7 @@
+# 2026-10-12 23:03:41 safe-run: python3 -I /home/junc/claude-wip/guard-multiline-test-marker/tools/rule_ml.py
+config /home/junc/Rikuri-PI/.claude/worktrees/brave-jang-a82f4e/.claude/hooks/guard-config.json holds the new starts_at
+starts_at old "^[ \\t\\f\\v\\r\u200b-\u200f\u2060\ufeff]*#\\s*(?:!\\s*)?\\[\\s*cfg\\s*\\(\\s*(?:test|(?:any|all)\\s*\\((?:(?=(?P<t>(?:.*?[(,][^\\S\\n]*)??(?<!not\\()test(?=\\s*[,)])))(?P=t)|.*[(,][^\\S\\n]*\\n\\s*test(?=\\s*[,)])).*\\))\\s*\\)\\s*\\]"
+starts_at new "^[ \\t\\f\\v\\r\u200b-\u200f\u2060\ufeff]*#\\s*(?:!\\s*)?\\[\\s*cfg\\s*\\(\\s*(?:test|(?:any|all)\\s*\\((?:(?:(?=(?P<t>(?:.*?[(,][^\\S\\n]*)??(?<!not\\()test(?=\\s*[,)])))(?P=t)|.*[(,][^\\S\\n]*\\n\\s*test(?=\\s*[,)])).*\\)|(?=(?P<m>(?:[^\\[\\]]*?(?:,|(?<!not)\\())??\\s*test(?=\\s*[,)])))(?P=m)[^\\[\\]]*\\)))\\s*\\)\\s*\\]"
+RUST_INLINE_TEST old ^[ \t]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*test\s*\)\s*\]
+RUST_INLINE_TEST new ^[ \t]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*(?:test|(?:any|all)\s*\((?=(?P<m>(?:[^\[\]]*?(?:,|(?<!not)\())??\s*test(?=\s*[,)])))(?P=m)[^\[\]]*\))\s*\)\s*\]
+# exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

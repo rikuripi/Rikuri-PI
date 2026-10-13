@@ -1,0 +1,63 @@
+# 2026-10-12 23:02:47 safe-run: /home/junc/claude-wip/guard-multiline-test-marker/tools/suite.sh python3 /home/junc/claude-wip/guard-multiline-test-marker/rn-red
+Python 3.14.4
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+...fix-lock released (docs/build-records/a.md)
+fix-lock ENGAGED for docs/build-records/a.md (this session) — test files and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp1x10m84a failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/b.md (this session) — test files and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp1x10m84a failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/owner.md (EVERY session (global lock)) — test files and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp1x10m84a failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+...fix-lock released (docs/build-records/b.md)
+fix-lock released (docs/build-records/a.md)
+fix-lock released (docs/build-records/owner.md)
+fix-lock ENGAGED for docs/build-records/a.md (this session) — test files and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp3fx7yon0 failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/b.md (this session) — test files and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp3fx7yon0 failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+.fix-lock ENGAGED for docs/build-records/owner.md (EVERY session (global lock)) — test files and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmpfpwd8j3d failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+.......usage: guard.py profile [stable | development]
+..........................
+======================================================================
+FAIL: test_an_any_or_all_marker_needs_a_rule (test_guard.InlineTestCoverage.test_an_any_or_all_marker_needs_a_rule)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/junc/claude-wip/guard-multiline-test-marker/rn-red/.claude/hooks/test_guard.py", line 1331, in test_an_any_or_all_marker_needs_a_rule
+    self.assertEqual(sorted(self.gaps(root, None)), named)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['src/lib.rs', 'src/ml.rs', 'src/one.rs', 'src/tests.rs']
+
+Second list contains 4 additional elements.
+First extra element 0:
+'src/lib.rs'
+
+- []
++ ['src/lib.rs', 'src/ml.rs', 'src/one.rs', 'src/tests.rs']
+
+======================================================================
+FAIL: test_marker_shapes (test_guard.InlineTests.test_marker_shapes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/junc/claude-wip/guard-multiline-test-marker/rn-red/.claude/hooks/test_guard.py", line 449, in test_marker_shapes
+    self.assertEqual(guard.inline_region("fn a() {}\n" + line + "\n", rx) is not None, marker, line)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False != True : #[cfg(all(
+    test,
+    feature = "compression-gzip",
+))]
+
+----------------------------------------------------------------------
+Ran 144 tests in 20.573s
+
+FAILED (failures=2)
+profile: stable
+profile: stable -> development
+profile: development -> stable
+# exit 1; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

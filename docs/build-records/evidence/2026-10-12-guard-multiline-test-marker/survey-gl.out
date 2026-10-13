@@ -1,0 +1,13 @@
+# 2026-10-12 23:04:13 safe-run: python3 -I /home/junc/claude-wip/guard-multiline-test-marker/tools/survey_gl.py /home/junc/Rikuri-PI/.claude/worktrees/brave-jang-a82f4e /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library /home/junc/.cargo/registry/src
+/home/junc/Rikuri-PI/.claude/worktrees/brave-jang-a82f4e: 0 files with such attributes {}
+/home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library: 13 files with such attributes {'cfg_attr': 2372}
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sys/process/unix/common/tests.rs:16
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/stdarch/crates/core_arch/src/lib.rs:65
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/stdarch/crates/core_arch/src/x86/sse.rs:239
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/stdarch/crates/core_arch/src/x86/sse.rs:262
+/home/junc/.cargo/registry/src: 62 files with such attributes {'cfg_attr': 69, 'cfg': 8}
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zerofrom-0.1.7/src/lib.rs:7
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zerofrom-derive-0.1.7/src/lib.rs:7
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_normalizer-2.1.1/src/lib.rs:7
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/icu_collections-2.2.0/src/lib.rs:7
+# exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

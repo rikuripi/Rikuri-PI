@@ -1,0 +1,12 @@
+# 2026-10-12 23:04:25 safe-run: python3 -I /home/junc/claude-wip/guard-multiline-test-marker/tools/corpus.py /home/junc/Rikuri-PI/.claude/worktrees/brave-jang-a82f4e /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library /home/junc/.cargo/registry/src
+40059 .rs files, 22345921 lines
+starts_at: 53 positions only the new one matches (all multi-line: True)
+RUST_INLINE_TEST: 1097 positions only the new one matches
+superset and tripwire-within-rule violations: 0
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/process.rs:151 '#[cfg(all(\n    test,\n    not(any(\n        target_os = "emscripten",\n        target_os = "w'
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/fs.rs:32 '#[cfg(all(\n    test,\n    not(any(\n        target_os = "emscripten",\n        target_os = "w'
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/net/udp.rs:1 '#[cfg(all(\n    test,\n    not(any(\n        target_os = "emscripten",\n        all(target_os '
+  e.g. /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/net/tcp.rs:3 '#[cfg(all(\n    test,\n    not(any(\n        target_os = "emscripten",\n        all(target_os '
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tower-http-0.6.8/src/content_encoding.rs:243 '#[cfg(all(\n    test,\n    feature = "compression-gzip",\n    feature = "compression-deflate"'
+  e.g. /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/half-2.7.1/src/leading_zeros.rs:27 '#[cfg(any(\n    test,\n    all(\n        target_arch = "spirv",\n        not(all(\n            '
+# exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

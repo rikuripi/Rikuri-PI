@@ -1,0 +1,19 @@
+diff --git a/.claude/hooks/test_guard.py b/.claude/hooks/test_guard.py
+index b80699d..0646333 100644
+--- a/.claude/hooks/test_guard.py
++++ b/.claude/hooks/test_guard.py
+@@ -333,9 +333,13 @@ class InlineTests(unittest.TestCase):
+     # any()/all() branch commits to the first `test` on its line (or else one a line break
+     # away), and guarded_lines to a line's first `cfg(` (lookahead and backreference: an atomic
+     # group), where trying each against the rest of the line took time growing with the square
+-    # of their number (verifier round 3, I5). They match exactly what they matched before.
++    # of their number (verifier round 3, I5). They match exactly what they matched before. Also
++    # since 2026-10-12 (owner) a third any()/all() branch reads a marker written over several
++    # lines (MULTILINE): it commits to the first `test` before the attribute's next bracket and
++    # needs that bracket to be the `]` closing `))`; it never reads past a `[` or `]`, so no
++    # text is read for two markers. The tripwire's guard.RUST_INLINE_TEST uses the same branch.
+     RUST = dict(CFG, inline_tests=[{"glob": "*.rs", "starts_at":
+-                                    r"^[ \t\f\v\r​-‏⁠﻿]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*(?:test|(?:any|all)\s*\((?:(?=(?P<t>(?:.*?[(,][^\S\n]*)??(?<!not\()test(?=\s*[,)])))(?P=t)|.*[(,][^\S\n]*\n\s*test(?=\s*[,)])).*\))\s*\)\s*\]",
++                                    r"^[ \t\f\v\r​-‏⁠﻿]*#\s*(?:!\s*)?\[\s*cfg\s*\(\s*(?:test|(?:any|all)\s*\((?:(?:(?=(?P<t>(?:.*?[(,][^\S\n]*)??(?<!not\()test(?=\s*[,)])))(?P=t)|.*[(,][^\S\n]*\n\s*test(?=\s*[,)])).*\)|(?=(?P<m>(?:[^\[\]]*?(?:,|(?<!not)\())??\s*test(?=\s*[,)])))(?P=m)[^\[\]]*\)))\s*\)\s*\]",
+                                     "guarded_lines": r"^(?:(?=(?P<c>.*?cfg(?:_attr)?\s*(?:!\s*)?\())(?P=c).*\btest\b|.*macro_rules!\s*(?:assert\w*|debug_assert\w*|panic|unreachable|todo)\b)",
+                                     "attached_above": r"^[ \t\f\v\r​-‏⁠﻿]*(#\s*(?:!\s*)?\[|//|/\*|\*)"}])

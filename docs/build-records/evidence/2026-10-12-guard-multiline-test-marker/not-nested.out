@@ -1,0 +1,4 @@
+# 2026-10-12 23:09:20 safe-run: python3 -I /home/junc/claude-wip/guard-multiline-test-marker/tools/not_nested.py /home/junc/Rikuri-PI/.claude/worktrees/brave-jang-a82f4e /home/junc/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library /home/junc/.cargo/registry/src
+   /home/junc/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ahash-0.8.12/src/random_state.rs  #[cfg(all(feature = "runtime-rng", not(all(feature = "compile-time-rng", test))))]
+new-only tripwire matches: 1097 with the committed test inside not(...): 1
+# exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

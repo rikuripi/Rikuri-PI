@@ -1,0 +1,39 @@
+# 2026-10-12 23:05:18 safe-run: python3 -I /home/junc/claude-wip/guard-multiline-test-marker/tools/bench.py 4000
+shape                        pattern           seconds at k, 2k, 4k, 8k (k=4000)
+heads, never closed          starts_at         0.0014 0.0027 0.0060 0.0119  x2.1/doubling
+heads, never closed          RUST_INLINE_TEST  0.0011 0.0022 0.0047 0.0102  x2.1/doubling
+\ntest, repeated             starts_at         0.0003 0.0006 0.0012 0.0022  x2.0/doubling
+\ntest, repeated             RUST_INLINE_TEST  0.0003 0.0007 0.0013 0.0025  x2.0/doubling
+,test repeated               starts_at         0.0004 0.0009 0.0016 0.0033  x2.0/doubling
+,test repeated               RUST_INLINE_TEST  0.0002 0.0004 0.0007 0.0015  x2.0/doubling
+(test) repeated              starts_at         0.0006 0.0012 0.0024 0.0048  x2.0/doubling
+(test) repeated              RUST_INLINE_TEST  0.0003 0.0005 0.0011 0.0022  x2.0/doubling
+(\n repeated                 starts_at         0.0004 0.0008 0.0016 0.0033  x2.0/doubling
+(\n repeated                 RUST_INLINE_TEST  0.0004 0.0008 0.0017 0.0034  x2.0/doubling
+test) repeated               starts_at         0.0003 0.0005 0.0011 0.0021  x2.0/doubling
+test) repeated               RUST_INLINE_TEST  0.0003 0.0005 0.0010 0.0021  x2.0/doubling
+) ) repeated                 starts_at         0.0002 0.0004 0.0009 0.0018  x2.0/doubling
+) ) repeated                 RUST_INLINE_TEST  0.0002 0.0004 0.0009 0.0018  x2.0/doubling
+spaces then test             starts_at         0.0014 0.0028 0.0055 0.0110  x2.0/doubling
+spaces then test             RUST_INLINE_TEST  0.0014 0.0027 0.0055 0.0109  x2.0/doubling
+not(test), repeated          starts_at         0.0019 0.0038 0.0077 0.0154  x2.0/doubling
+not(test), repeated          RUST_INLINE_TEST  0.0019 0.0038 0.0077 0.0152  x2.0/doubling
+heads with tests, unclosed   starts_at         0.0015 0.0031 0.0062 0.0125  x2.0/doubling
+heads with tests, unclosed   RUST_INLINE_TEST  0.0013 0.0025 0.0051 0.0102  x2.0/doubling
+heads test at q              starts_at         0.0017 0.0034 0.0068 0.0136  x2.0/doubling
+heads test at q              RUST_INLINE_TEST  0.0010 0.0021 0.0042 0.0085  x2.0/doubling
+nested any(test, x)          starts_at         0.0008 0.0017 0.0033 0.0065  x2.0/doubling
+nested any(test, x)          RUST_INLINE_TEST  0.0008 0.0017 0.0033 0.0065  x2.0/doubling
+newlines then ]              starts_at         0.0016 0.0031 0.0063 0.0126  x2.0/doubling
+newlines then ]              RUST_INLINE_TEST  0.0017 0.0033 0.0066 0.0135  x2.0/doubling
+# and spaces                 starts_at         0.0009 0.0019 0.0037 0.0075  x2.0/doubling
+# and spaces                 RUST_INLINE_TEST  0.0010 0.0019 0.0037 0.0075  x2.0/doubling
+commas spaces                starts_at         0.0036 0.0072 0.0144 0.0283  x2.0/doubling
+commas spaces                RUST_INLINE_TEST  0.0017 0.0034 0.0068 0.0136  x2.0/doubling
+not( newline test            starts_at         0.0016 0.0033 0.0067 0.0133  x2.0/doubling
+not( newline test            RUST_INLINE_TEST  0.0017 0.0033 0.0068 0.0181  x2.2/doubling
+slowest single call: 0.0283 s
+M1 no commit (no lookahead+backreference)     0.003 6.999 5.307  CAUGHT
+M2 reads across brackets ([\s\S])             19.878 0.001 0.002  CAUGHT
+M3 stops at ] only ([^\]])                    20.211 0.001 0.002  CAUGHT
+# exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

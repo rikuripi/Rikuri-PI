@@ -1,0 +1,24 @@
+# 2026-10-12 23:07:10 safe-run: /home/junc/claude-wip/guard-multiline-test-marker/tools/hook_e2e.sh /home/junc/claude-wip/guard-multiline-test-marker/scratch/e2e /home/junc/Rikuri-PI/.claude/worktrees/awesome-brattain-7939fe/.claude/hooks /home/junc/Rikuri-PI/.claude/worktrees/brave-jang-a82f4e/.claude/hooks
+== before (guard.py c884a868, config 611e93b8)
+fix-lock ENGAGED for docs/build-records/x.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+  edit inside the tests: allow (no output)
+  marker's test, line -> unix,: allow (no output)
+  the fix, above the tests: allow (no output)
+  #[cfg(any())] added above the marker: allow (no output)
+  #[cfg(any(\n))] added above the marker: allow (no output)
+== tripwire-only (guard.py 897bc149, config 611e93b8)
+fix-lock ENGAGED for docs/build-records/x.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: the Rust tests in 1 tracked file are NOT read-only: no inline_tests rule in guard-config.json covers them, or the guard cannot follow the test module's declaration (a #[path] out of its folder, or no such file): src/lib.rs
+  edit inside the tests: allow (no output)
+  marker's test, line -> unix,: allow (no output)
+  the fix, above the tests: allow (no output)
+  #[cfg(any())] added above the marker: allow (no output)
+  #[cfg(any(\n))] added above the marker: allow (no output)
+== after (guard.py 897bc149, config 726a7257)
+fix-lock ENGAGED for docs/build-records/x.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+  edit inside the tests: deny
+  marker's test, line -> unix,: deny
+  the fix, above the tests: allow (no output)
+  #[cfg(any())] added above the marker: deny
+  #[cfg(any(\n))] added above the marker: allow (no output)
+# exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

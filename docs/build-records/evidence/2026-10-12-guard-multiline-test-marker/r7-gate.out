@@ -1,0 +1,23 @@
+# Full gate on a private clone of ae83f20 (35fe118 + red + fix + record; its .claude/hooks tree 11c336a2f876 is the fix commit's), never pushed; inside safe-run, no network
+── GATE tools: PASS
+── GATE gate-selftests: PASS
+── GATE guard: PASS
+── GATE format: PASS
+── GATE build: PASS
+── GATE clippy: PASS
+── GATE test: PASS
+SMOKE PASS: init, task create, state.show content, ledger and log without content, health, restart
+── GATE smoke: PASS
+── GATE crash-matrix: PASS
+── GATE dependencies: FAIL
+RESULT: FAIL (dependencies)
+# exit 1; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)
+# then the dependencies step offline and the five steps after it (r7-gate-raw-steps.out):
+advisories ok, bans ok, licenses ok, sources ok
+[cargo deny --locked --offline check] exit 0
+[scripts/quality/secret-scan.sh] exit 0
+[scripts/quality/ratchet.sh] exit 0
+[scripts/quality/module-contracts.sh] exit 0
+[scripts/quality/crate-policy.sh] exit 0
+[scripts/quality/scrap-sweep.sh] exit 0
+# exit 0; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)

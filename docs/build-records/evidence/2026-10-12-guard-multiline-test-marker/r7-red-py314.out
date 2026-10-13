@@ -1,0 +1,63 @@
+# 2026-10-13 08:18:16 safe-run: /home/junc/claude-wip/guard-multiline-test-marker/tools/suite.sh python3 /home/junc/claude-wip/guard-multiline-test-marker/re/a120fa9
+Python 3.14.4
+fix-lock released (docs/build-records/a.md)
+fix-lock released (docs/build-records/owner.md)
+fix-lock ENGAGED for docs/build-records/a.md (this session) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp3pusw_cx failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fix-lock ENGAGED for docs/build-records/b.md (this session) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmp3pusw_cx failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+.fix-lock ENGAGED for docs/build-records/owner.md (EVERY session (global lock)) — test files, inline tests and baselines are now read-only
+WARNING: could not check for inline tests that no inline_tests rule covers: git ls-files in /tmp/tmphmc2vcv3 failed: fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+.......usage: guard.py profile [stable | development]
+.................................
+======================================================================
+FAIL: test_inline_rules_find_a_marker_written_over_lines (test_guard.GenericPolicy.test_inline_rules_find_a_marker_written_over_lines)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/junc/claude-wip/guard-multiline-test-marker/re/a120fa9/.claude/hooks/test_guard.py", line 135, in test_inline_rules_find_a_marker_written_over_lines
+    self.assertEqual(found, marker, line)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False != True : #[cfg(all(
+    test,
+    feature = "compression-gzip",
+))]
+
+======================================================================
+FAIL: test_an_any_or_all_marker_needs_a_rule (test_guard.InlineTestCoverage.test_an_any_or_all_marker_needs_a_rule)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/junc/claude-wip/guard-multiline-test-marker/re/a120fa9/.claude/hooks/test_guard.py", line 1500, in test_an_any_or_all_marker_needs_a_rule
+    self.assertEqual(sorted(self.gaps(root, None)), named)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['src/lib.rs', 'src/ml.rs', 'src/one.rs', 'src/tests.rs']
+
+Second list contains 4 additional elements.
+First extra element 0:
+'src/lib.rs'
+
+- []
++ ['src/lib.rs', 'src/ml.rs', 'src/one.rs', 'src/tests.rs']
+
+======================================================================
+FAIL: test_marker_shapes (test_guard.InlineTests.test_marker_shapes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/junc/claude-wip/guard-multiline-test-marker/re/a120fa9/.claude/hooks/test_guard.py", line 449, in test_marker_shapes
+    self.assertEqual(guard.inline_region("fn a() {}\n" + line + "\n", rx) is not None, marker, line)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False != True : #[cfg(all(
+    test,
+    feature = "compression-gzip",
+))]
+
+----------------------------------------------------------------------
+Ran 154 tests in 12.637s
+
+FAILED (failures=3)
+profile: stable
+profile: stable -> development
+profile: development -> stable
+# exit 1; lnd StartedAt 2026-10-12T01:46:20.584320594Z -> 2026-10-12T01:46:20.584320594Z (unchanged)
