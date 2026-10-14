@@ -7,7 +7,7 @@
 Before any edit, establish a **Task Contract** in the existing Build Record or a brief task note. For small, routine work, five short entries are sufficient:
 
 1. **Outcome:** One sentence describing what the user will gain.
-2. **Scope:** The precise stage/item, files or component, and what is *not* included.
+2. **Scope:** The precise stage/item, files or component, its risk tier (routine or high-risk; [Engineering Standard, "October 13, 2026 — risk tiers"](doc/Rikuri_Pi_Engineering_Standard_v1.2.md#october-13-2026--risk-tiers)), and what is *not* included.
 3. **Done when:** Observable acceptance behavior, relevant tests, and required gates.
 4. **Authority:** Allowed tools, file/network scope, Git operations, and whether an independent reviewer is required. Existing security policy always prevails.
 5. **Limits:** One coherent task at a time; maximum **two task-wide targeted repair cycles** (one cycle may address several failures) and **two review rounds** by default. Do not exceed a user/tool-enforced time, cost, or resource budget. If no hard budget is configured, report consumption rather than inventing enforcement.
