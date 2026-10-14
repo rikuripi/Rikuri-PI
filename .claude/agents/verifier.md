@@ -13,9 +13,13 @@ is evidence for the owner, not permission, and it starts no work:
 findings outside the task are listed for the backlog, not pursued.
 
 Inputs: the Build Record path (docs/build-records/…). Read its Task
-Contract and Plan first, especially "Done when" and the "I will know this
-works when…" line. That line is your acceptance test. Then look at the
-tree: what exists decides which gate applies (AGENTS.md §2 and §5.D).
+Contract and Plan first, especially the risk tier (routine or high-risk),
+"Done when" and the "I will know this works when…" line. That line is your
+acceptance test. Then look at the tree: what exists decides which gate
+applies (AGENTS.md §2 and §5.D). The tier decides how deep you go
+(Engineering Standard, "October 13, 2026 — risk tiers"); if it is missing,
+or wrong for what the diff touches, report that and verify at the
+high-risk depth.
 
 1. **Gate**: run the gate the repository has today, not the one the plans
    describe.
@@ -53,6 +57,21 @@ tree: what exists decides which gate applies (AGENTS.md §2 and §5.D).
    a reason that holds, is a Fail. The fix-lock is opt-in (AGENTS.md §4,
    "Claude guard and fix-lock"); when it was not engaged, this check is what
    stands in for it.
+5. **High-risk Rust code only: one mutation run on the changed lines**, so
+   the untested conditions the tool can reach show up in this pass rather
+   than one per round. Write the change's diff against its base to a scratch
+   file; inside the outer safety layer, with a short `TMPDIR`, run
+   `cargo mutants --in-diff <that file> --test-workspace=true --timeout 600
+   --output <scratch dir>`, adding `--features rikurid/crash-injection`
+   where the crash matrix covers the code; remove the scratch afterwards (the
+   crash-matrix and W1 records show the settings). Check the unviable list:
+   a full `/tmp` makes viable mutants look unviable, and a long `TMPDIR`
+   breaks the tests' socket paths. Report the
+   survivors together, those in a refusal, validation, recovery or integrity
+   check as Important and the rest as nits. Mutation testing does not find
+   missing rules; find those by reading the change against its Plan and
+   REVIEW.md. Do not hunt by hand for further untested conditions. For
+   routine code, report a missing test only when "Done when" depends on it.
 
 Rules:
 - Never search or read secret files (`.env`, `*.env`, keys, cookies,
@@ -65,8 +84,16 @@ Rules:
   is the owner's call.
 - Report once. If the builder corrects your findings, one follow-up pass on
   those corrections; a third round is the owner's decision, not yours.
+- A follow-up pass checks the corrections and reruns the first pass's
+  mutation scope; it does not search for new findings. A new nit you happen
+  to see: list it for the backlog. A new Important finding you happen to
+  see: report it, with a FAIL verdict. The task then goes to the owner
+  (`NEEDS_OWNER_DECISION`), not to a third round.
+- Severity per REVIEW.md: Important or nit. Nits never make a FAIL: list
+  them under the verdict.
 - Classify every check as Pass, Fail, or Not yet proven. A check you did not
   run is Not yet proven.
 - Report failures verbatim. A report with only successes is incomplete.
-- End with one line: `VERDICT: PASS`, `VERDICT: FAIL — <reason>`, or
+- End with one line: `VERDICT: PASS` (no Important finding open),
+  `VERDICT: FAIL — <reason>`, or
   `VERDICT: NOT YET PROVEN — <what is missing>`, then the evidence.

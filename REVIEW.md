@@ -6,7 +6,10 @@ review pass [AGENTS.md](AGENTS.md) §5.D requires: one pass after tests,
 then at most one follow-up on corrected findings; a review that would
 need a third round ends in `NEEDS_OWNER_DECISION` instead. AGENTS.md §7,
 "Preserve Rikuri's non-negotiable invariants", is the judgement this
-review applies.
+review applies. The change's risk tier (routine or high-risk), named in
+its Task Contract, sets how deep the review goes
+([Engineering Standard](doc/Rikuri_Pi_Engineering_Standard_v1.2.md#october-13-2026--risk-tiers),
+"October 13, 2026 — risk tiers").
 
 ## Passes (run all three; tag every finding with its pass)
 
@@ -27,9 +30,10 @@ review applies.
   - **Foundation-0 scope**: stages 00–05 only. Work from a later product
     stage entering Foundation-0 without an ADR reconciliation is
     **Important**. Foundation-0 Stage 04 is not product Stage 4.
-  - **Claims match evidence**: a document, README, or gate record that says
-    something exists, works, or passed without linked evidence is
-    **Important**. Pass, Fail and Not yet proven stay distinct.
+  - **Claims match evidence**: a document, README, or gate record that
+    claims a gate or stage result, a security property, data integrity, or
+    completion without linked evidence is **Important**; other imprecise
+    wording is a nit. Pass, Fail and Not yet proven stay distinct.
   - **One source**: no second roadmap, checklist or procedure beside
     AGENTS.md and the documents it lists as authorities.
   - Lockfiles committed; production container images pinned by digest.
@@ -44,14 +48,30 @@ Reserve **Important** for findings that let untrusted content gain
 authority; mutate canonical state outside governed services; leak private
 data or break Local Only; let spending pass a hard budget; lose or corrupt
 state during recovery; disable or weaken a gate; claim a gate or stage
-passed without evidence; or diverge from the approved plan. Everything else
-is **Nit**. A change to a protected path (listed in
+passed without evidence; or diverge from the approved plan. Two test gaps
+are Important too: a test the change's own "Done when" depends on is
+missing, or, in high-risk Rust code, a mutant of the changed lines survives
+in a refusal, validation, recovery or integrity check. Everything else is
+**Nit**. A change to a protected path (listed in
 `.claude/hooks/guard-config.json`) always gets a written risk note in the
 Build Record, finding or not.
 
+A review fails only on an Important finding. Nits never fail it and never
+start another round: they are fixed in place or listed in the Build Record.
+
 ## Cap the nits
 
-At most five nits per review; summarise the rest as a count.
+At most five nits per review; summarise the rest as a count. Surviving
+mutants rated nits are listed in full in the evidence and count as one
+nit; each surviving mutant rated Important is its own finding.
+
+## The follow-up pass
+
+It checks the corrections to the first pass's findings and reruns that
+pass's mutation scope; it does not search for new findings. A new nit it
+happens to see is listed for the backlog. A new Important finding it happens
+to see is reported, and the task ends in `NEEDS_OWNER_DECISION`: the owner
+decides whether it is fixed now, as its own task, or recorded as debt.
 
 ## Do not report
 
