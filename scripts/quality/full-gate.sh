@@ -2,7 +2,7 @@
 # Full repository gate (Stage Plan S00.03). CI runs this same script
 # (.github/workflows/ci.yml), so a green CI run means this exact sequence
 # passed. It stops at the first red step: a red gate stops the line
-# (AGENTS.md, law 2). Setup: README > Running the full gate.
+# (Engineering Standard, Law 2). Setup: README > Running the full gate.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 

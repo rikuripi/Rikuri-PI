@@ -2,14 +2,14 @@
 
 How any review of a change to this repo is run: `/code-review`, the
 `verifier` subagent's report, a human reviewer, a PR bot. This is the
-review pass [AGENTS.md](AGENTS.md) §5.D requires: one pass after tests,
+review pass [AGENTS.md](AGENTS.md) §5 requires: one pass after tests,
 then at most one follow-up on corrected findings; a review that would
 need a third round ends in `NEEDS_OWNER_DECISION` instead. AGENTS.md §7,
-"Preserve Rikuri's non-negotiable invariants", is the judgement this
+"What the code must preserve", is the judgement this
 review applies. The change's risk tier (routine or high-risk), named in
 its Task Contract, sets how deep the review goes
-([Engineering Standard](doc/Rikuri_Pi_Engineering_Standard_v1.2.md#october-13-2026--risk-tiers),
-"October 13, 2026 — risk tiers").
+([Engineering Standard](doc/Rikuri_Pi_Engineering_Standard_v1.2.md#risk-tiers),
+"Risk tiers").
 
 ## Passes (run all three; tag every finding with its pass)
 
@@ -25,7 +25,7 @@ its Task Contract, sets how deep the review goes
   construction; a hard budget that unknown cost can pass; a recovery that
   promotes without validate → durable write → read-back.
 - **Compliance**: does the diff match the Build Record's Plan, its Task
-  Contract's Scope (AGENTS.md §1) and the S/T items it names? Work outside
+  Contract's Scope (AGENTS.md §3) and the S/T items it names? Work outside
   the Task Contract is a finding. Plus the rules only this repo has:
   - **Foundation-0 scope**: stages 00–05 only. Work from a later product
     stage entering Foundation-0 without an ADR reconciliation is
@@ -86,4 +86,4 @@ guard tests in `.github/workflows/claude-guard.yml` and the full gate in
 The session that wrote a change does not approve it. Review findings are
 evidence in the Build Record; the owner decides. A review does not start
 work: findings outside the task go to the backlog or the owner (AGENTS.md
-§5.C), and the independent reviewer never fixes.
+§3), and the independent reviewer never fixes.
