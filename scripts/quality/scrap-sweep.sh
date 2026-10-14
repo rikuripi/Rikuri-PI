@@ -2,7 +2,7 @@
 # Scrap Sweep (Engineering Standard, Scrap Taxonomy; Stage Plan S00.03).
 # Fails on mechanically certain residue in tracked files. Lists untracked
 # files and stashes for a human/agent disposition without failing: age or an
-# unknown purpose is not deletion authority (AGENTS.md > Scrap Sweep).
+# unknown purpose is not deletion authority (Engineering Standard > Scrap Taxonomy).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 failed=0

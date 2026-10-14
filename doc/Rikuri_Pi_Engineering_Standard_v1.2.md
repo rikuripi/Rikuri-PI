@@ -29,303 +29,191 @@ Scope changes use an ADR and update the PRD, architecture, affected acceptance t
 
 ---
 
-## 2. Standard Work
+## 2. How changes are built
 
-This document governs how software gets built here: planning, building,
-debugging, testing, review, and the periodic loops that keep a system honest
-over time. It is portable — copy it into any new project's repo and follow it
-from day one. AI assistants working in a repo containing this file are bound
-by it.
+`AGENTS.md` governs how an agent carries out one assignment: the Task Contract, the limits of two repair cycles and two review rounds, the outcomes `DONE`, `BLOCKED` and `NEEDS_OWNER_DECISION`, and stopping. This section governs what each step must contain. Where the two differ on how many times to try, `AGENTS.md` applies. Where they differ on what counts as evidence, this section applies.
 
-The goal is Toyota-style quality: not "never make mistakes," but **a system
-where mistakes cannot travel** — every defect is caught by the nearest gate,
-made loud, and converted into a permanent tripwire.
+The goal is a system where mistakes cannot travel. Every defect is caught by the nearest gate, made loud, and turned into a check. The depth of each step follows the change's risk tier.
 
----
+**Reuse rule:** evolution for existing solutions; revolution for core strength. Before building routine orchestration or infrastructure, look for a maintained implementation or an established pattern. Record its license, trust boundary, failure modes, lifecycle fit, maintenance cost and measured acceptance, and say why when custom code is chosen. AISecurity, verified context, canonical ProjectState and transaction integrity stay under Rikuri authority. An upstream feature list does not prove a Rikuri vertical slice works.
 
-## The Five Laws (apply to every section below)
+**Future-learning evidence rule:** instrument early; infer late. Every meaningful feature or task path emits enough structured, privacy-governed evidence to reconstruct:
 
-**Reuse rule:** Evolution for existing solutions; revolution for core strength. Before building routine orchestration or infrastructure, inventory a maintained implementation or established pattern and record license, trust boundary, operational failure modes, lifecycle fit, maintenance cost, and measured acceptance. Document the reason if custom code is chosen. Keep AISecurity, verified context, canonical ProjectState, and transaction integrity under Rikuri authority. An upstream feature list is not evidence that a Rikuri vertical slice works.
+- what was attempted;
+- with which execution, profile and tool configuration;
+- what happened;
+- how it was verified;
+- where a human intervened.
 
-**Future-learning evidence rule:** Instrument early; infer late. Every meaningful feature/task path must emit enough structured, privacy-governed evidence to reconstruct what was attempted, with which execution/profile/tool configuration, what actually happened, how it was verified, and where human intervention occurred. Do not add continuous surveillance merely for future learning. Do not let future learning requirements weaken data minimization.
+No continuous surveillance for future learning. Future learning never weakens data minimization.
 
-1. **Nothing is silent.** Every component either runs and is gated by a test,
-   or it is deleted. A fallback that engages is an ALERT, never just a save.
-   (Case study: a watchdog's primary restart path was dead for weeks while the
-   sudo fallback quietly recovered everything — the audit trail even recorded
-   the dead mechanism as having run.)
-2. **Stop the line.** A red gate (build, typecheck, test, smoke) halts all
-   other work until green. No "I'll fix it after this feature." No skipped,
-   excluded, or `@ts-nocheck`'d code without a counted, scheduled debt entry.
-3. **Standard work.** The checklists below are walked mechanically, every
-   time, regardless of how small the change feels. Quality must not depend on
-   anyone being sharp that day.
-4. **Alert on the absence of success, not just the presence of failure.**
-   Heartbeats over error handlers. "The upgrade checker must see a repo push
-   within 90 days or complain." (Case study: a pinned Docker repo died at
-   exactly the running version — the checker reported "up to date" for 18
-   months because it only compared against what the dead repo published.)
-5. **Encode every lesson as a gate.** A bug fixed is a bug class still alive.
-   Every incident ends with a tripwire — a test, a ratchet, a monitor, a
-   refusal-to-boot — that makes the whole CLASS impossible or loud.
+## The Five Laws
 
----
+1. **Nothing is silent.** Every component runs and is gated by a test, or it is deleted. A fallback that engages is an alert, never just a save.
+2. **Stop the line.** A red required gate halts dependent work. It does not authorize unlimited repair: after the task's two repair cycles, report `BLOCKED` with the exact failure, and the owner decides. Never disable or weaken the check. Skipped or excluded code is counted, scheduled debt.
+3. **Standard work.** The Per-Change Loop applies to every change, at its tier's depth.
+4. **Alert on the absence of success.** Last-success times and heartbeats, not only error handlers.
+5. **Turn defects into tripwires.** Every fixed defect gets a regression test. A class-wide tripwire (a test, invariant, monitor, ratchet or refusal) follows the risk tier. Every incident ends with one.
 
 ## Phase 0 — Project Bootstrap (before the first feature)
 
-Do these once, at project start. A project without them is a prototype, not
-a product.
+A project is a prototype until it has:
 
-- [ ] **Version control** with a protected main branch; work happens on
-      branches; every merge has a green CI run.
-- [ ] **CI that actually gates**: build + typecheck + unit tests + lint +
-      secret scan, none marked continue-on-error. Prove it with a
-      **red-test drill**: plant a failing test, confirm CI goes red, remove it.
-- [ ] **Pre-commit hooks**: typecheck + secret scan (gitleaks or equivalent)
-      minimum.
-- [ ] **A smoke script** (`scripts/smoke.sh` or equivalent): one command that
-      probes every service, port, and page the system claims to provide, with
-      distinct content markers (not just "port answers"), and echoes the
-      active configuration. This is the session-exit gate forever after.
-- [ ] **A debt ratchet**: counted metrics that may only go down
-      (`@ts-nocheck` count, `any` count, TODO count, script-style tests…).
-      Baselines committed; CI fails on any rise.
-- [ ] **Secrets hygiene**: no secret in the repo, ever; secrets live in
-      env files/keychains outside the tree; document where each one lives.
-- [ ] **Reproducible dependency policy**: resolved dependencies are exact in committed lockfiles; production container images are pinned by immutable digest when containers are used. Ecosystem-appropriate compatible ranges may remain in manifests, but floating deployment tags such as `:latest` are forbidden.
-- [ ] **Runtime truth over declared truth**: version/status displays must
-      probe the running process, never trust a tag, a cache, or a config.
+- a protected `main` with CI that gates: build, typecheck, tests, lint and secret scan, none allowed to fail, proven by a red-test drill;
+- a pre-commit hook with a secret scan;
+- a smoke script that checks real content, not only open ports;
+- a debt ratchet with committed baselines;
+- no secret in the repository;
+- exact dependencies in committed lockfiles, and production images pinned by digest;
+- status and version shown from the running process, not from a tag or a config file.
 
----
+For Rikuri Pi these are Stage 00 items, and the Stage Plan tracks them.
 
-## The Per-Change Loop (every feature, every fix — no exceptions)
+## Risk tiers
 
-### 1. PLAN (before writing code)
-- [ ] State the change in one sentence. If you can't, split it.
-- [ ] Identify the blast radius: which modules, which data, which auth/funds/
-      exec paths does this touch? Anything irreversible?
-- [ ] **Characterize before you change**: read the current behavior and prove
-      your understanding (run it, log it, test it). Plans built on assumed
-      behavior produce fixes for bugs that don't exist and miss the ones that
-      do. (Case study: three "big delete" refactor phases found the deletions
-      already done — and one "dead" module that was load-bearing.)
-- [ ] Decide the verification BEFORE building: "I will know this works when
-      ___." If the answer is "it compiles," you don't have a plan yet.
-- [ ] Name the **wiring point**: which real caller/entry point will exercise this change before the stage closes?
-- [ ] Identify predecessor/successor checklist dependencies. If this item slips, record which downstream work must move with it.
+**High-risk** changes touch any of:
+
+- canonical state or transactions;
+- recovery, restore, migration or deletion;
+- a trust or security boundary: instruction authority, execution trust, egress and Local Only, credentials;
+- money or budgets;
+- private data;
+- anything irreversible;
+- a control that enforces these: CI, the full gate, the guard and its policy, `REVIEW.md` and the verifier.
+
+**Routine** changes are everything else, such as:
+
+- documentation and process text;
+- tooling;
+- tests;
+- scaffolding;
+- refactors that leave high-risk behaviour unchanged;
+- messages and wording.
+
+How to tier a change:
+
+- The Task Contract's Scope names the tier.
+- When unsure, choose high-risk.
+- A routine change found to touch high-risk behaviour is re-tiered in its Build Record.
+- The tier is not the guard's "protected path": a change to a protected path gets its risk note whatever its tier.
+
+| Step | Routine | High-risk |
+| --- | --- | --- |
+| Build Record | Brief: Task Contract, plan, verification, disposition | Full, with risk and negative-test evidence |
+| Tests during the work | Targeted tests, and a regression test for every defect fixed | The same, plus the boundary, recovery and health tests the change affects |
+| Fix-lock | Opt-in; seldom worth it | Opt-in; worth engaging for a defect in high-risk code |
+| Fix the class | A search of the module touched | One repository-wide search for the same pattern; directly affected siblings fixed, the rest to the backlog |
+| Class tripwire, beyond the regression test | Only for a defect seen twice | For the failure class, where practical |
+| Independent review | Documentation only: the `AGENTS.md` §5 checks and the owner's pull-request review, no verifier. Code: one verifier pass | One verifier pass; for Rust code it includes a mutation run on the changed lines |
+
+Either tier may get one follow-up pass on corrected findings.
+
+- **The review's finish line.** Severity is `REVIEW.md`'s: Important or nit. Only an Important finding fails a pass. Nits never fail a pass and never start another one: they are fixed in place or listed in the Build Record (the owner's stop rule of 2026-10-10). A wording finding gets its fix, not a new gate. An overstated sentence is Important only when it claims a gate or stage result, a security property, data integrity or completion that the evidence does not support.
+- **Test adequacy.** In routine code, a missing test is Important only when the change's own "Done when" depends on it.
+- **The mutation run (high-risk Rust code).** The first verifier pass runs cargo-mutants on the changed lines, inside the outer safety layer. Its settings are in `.claude/agents/verifier.md` step 5.
+  - A surviving mutant in a refusal, validation, recovery or integrity check is Important; other survivors are nits.
+  - The run surfaces the untested conditions the tool can reach in one pass instead of one per round.
+  - It does not find missing rules; the reviewer finds those by reading the change against its Plan.
+  - High-risk code in other languages is judged by its own tests and "Done when".
+- **The follow-up pass.** It checks the corrections and reruns that mutation scope; it does not search for new findings. A new Important finding it happens to see ends the task in `NEEDS_OWNER_DECISION`, and the owner decides whether it is fixed now, as its own task, or recorded as debt.
+- **Controls are adequate when they cover what the repository uses.** This is the owner's decision for the guard, 2026-10-13, recorded in the [Stage 00 gate record](../docs/stage-gates/foundation0/00-bootstrap-kernel.md). A gap for a form the repository does not contain is owned debt, not a new task.
+
+## The Per-Change Loop (every change, at its tier's depth)
+
+### 1. PLAN
+- [ ] Task Contract, with the tier (`AGENTS.md` §3). A change you cannot state in one sentence gets split.
+- [ ] Characterize before changing: run or read the current behaviour; do not plan against assumed behaviour.
+- [ ] "I will know this works when ___". If the answer is "it compiles", there is no plan yet.
+- [ ] The wiring point: the real caller or entry point that will exercise the change before its stage closes. Predecessor and successor items affected by a slip.
 
 ### 2. BUILD
-- [ ] Smallest coherent increment; one coherent concern per commit. A commit may include its implementation, tests, schema/docs, and migration when those pieces are required to make the change independently understandable and buildable.
-- [ ] New code meets the bar: typed (no new unjustified `any`/`@ts-nocheck`), validated at trust boundaries, documented where non-obvious, and kept cohesive. Files above ~800 LOC trigger a review warning; above ~1200 LOC require explicit justification rather than mechanical splitting.
-- [ ] **Clean as you go**: the old version of anything you replace is removed
-      in the same change. Scaffolding and probe scripts die with the session.
-- [ ] Security question, asked explicitly every time: *does this change touch
-      authentication, money, execution, private data, project trust, child processes, or egress?* If yes: which
-      existing gate covers it, and is there a test proving the gate holds?
-      A hardening pass that breaks a legitimate path is also a defect —
-      check both directions. (Case study: a loginless-mode hardening
-      accidentally gated the login endpoint itself behind login.)
+- [ ] Smallest coherent increment. A commit may carry its implementation, tests, docs and migration together.
+- [ ] Typed code, with inputs validated at trust boundaries. Files over about 800 lines get a review warning; over about 1200 lines they need a written reason.
+- [ ] Clean as you go: the old version of anything replaced goes in the same change.
+- [ ] Ask whether the change touches authentication, money, execution, private data, project trust, child processes or egress. If it does, it is high-risk; name the gate that covers it and the test that proves the gate. Hardening that breaks a legitimate path is also a defect, so check both directions.
 
-### 3. DEBUG (when something is wrong)
-- [ ] Reproduce first. A fix without a reproduction is a guess.
-- [ ] Read the actual error/log — not what you expect it to say. The clue is
-      usually verbatim in there. (Case study: a "stuck" node was printing
-      `bad-version-reduced_data` — a consensus rejection, not a hang; every
-      restart-style "fix" would have been wrong.)
-- [ ] Fix the CLASS, not the instance: after the fix works, ask "where else
-      does this exact pattern exist?" and sweep. (Case study: one raw-template
-      copy bug appeared in three different install scripts.)
-- [ ] Before any state-changing remediation (restart, delete, config change):
-      does the evidence support THIS action, or does the symptom just
-      pattern-match a known failure?
+### 3. DEBUG
+- [ ] Reproduce first, and read the actual error.
+- [ ] Commit the failing test before the fix (`AGENTS.md` §5).
+- [ ] Fix the class at the tier's depth.
+- [ ] Before a restart, a delete or a config change, check that the evidence supports this action.
 
 ### 4. TEST / VERIFY
-- [ ] Unit tests for the logic you added — including the failure paths.
-      A test that only covers the happy path certifies nothing.
-- [ ] **Watch it actually work** in the running system — the real page, the
-      real endpoint, the real container. "Tests pass" and "it works" are
-      different claims; make both.
-- [ ] If the change alters recovery/fallback behavior: **trigger it**. A
-      recovery path that has never been exercised is a hope, not a feature.
-- [ ] Regression guard: for any bug you just fixed, prove the test fails on
-      the OLD code (revert briefly if needed). A guard that never failed
-      guards nothing.
-- [ ] **Wire test:** exercise the module through the real production-style entry point/adaptor path, not only directly through its unit-test API.
-- [ ] **Boundary test:** test the relevant trust/privacy/budget/project-execution boundary in both allowed and denied directions.
-- [ ] **Health test:** prove success updates last-success/health evidence and failure becomes visible/degraded rather than silently falling back.
+- [ ] Unit tests for the logic added, including its failure paths.
+- [ ] A regression test for a fixed bug, shown failing on the old code.
+- [ ] Wire test: the change exercised through its real entry point, not only its unit API.
+- [ ] High-risk only:
+  - **Boundary test:** the trust, privacy, budget or execution boundary, in both the allowed and the denied direction.
+  - **Recovery:** a changed recovery or fallback path, triggered in a fixture.
+  - **Health test:** success updates last-success evidence, and failure shows as degraded.
 
-### 5. CLOSE OUT (end of every change/session)
+### 5. CLOSE OUT
+- [ ] Run the full gate (build, typecheck, tests, ratchet, smoke) once, at the acceptance boundary. Targeted checks are enough during the work. A documentation-only change runs the `AGENTS.md` §5 checks. A `BLOCKED` task ends with an honest report, not a green gate.
+- [ ] Scrap Sweep (below).
+- [ ] Docs, runbooks and help updated in the same change.
+- [ ] A commit message that explains why.
+- [ ] Deploy equals build: one scripted path from source to the running system, with no hand-copied artifacts.
+- [ ] Every unchecked item gets a disposition. A deferral records its reason, dependency impact, owner, new position and trigger. No dependent work begins while this stage has an unresolved required wiring gate.
+- [ ] Implemented execution paths record the structured evidence the Future-learning evidence rule requires:
+  - a stable task or run ID;
+  - the exact execution and profile identity, where it is exposed;
+  - the verification result, separate from completion;
+  - any significant failure, retry or fallback;
+  - cost and time, when available;
+  - any material human intervention.
 
-In addition to ordinary build evidence, preserve the minimum structured execution/outcome evidence required by the Collaborative Intelligence scaffold: stable task/run reference, exact execution/profile identity where exposed, verification result, significant failure/retry/fallback, cost/time when available, and material human intervention. This is evidence capture, not behavioral inference.
-- [ ] Run the full gate: build → typecheck → unit tests → ratchet → smoke.
-      All green or the session isn't over.
-- [ ] **The Scrap Sweep** (every session, no exceptions — see the taxonomy
-      below): `git status` plus a look at the working directories. Everything
-      present is the real change or a deliberate, load-bearing new file.
-- [ ] Update the knowledge layer IN THE SAME CHANGE: docs / RAG / runbooks /
-      user-facing help for whatever behavior changed. Stale docs are silent
-      failures too.
-- [ ] Commit with a message that explains WHY (the incident, the class, the
-      decision) — the diff already shows the what.
-- [ ] Deploy = build: one scripted path from source to running system. Never
-      hand-copy artifacts; drift between source and running code is a
-      slow-motion outage.
-- [ ] Every unchecked item has a disposition. For `DEFERRED/RESEQUENCED`: write reason, dependency impact, new stage/position, owner, trigger/acceptance condition, and update the master/stage checklist ordering now.
-- [ ] Do not begin the next dependent function/feature while this stage has an unresolved required wiring gate.
+## The Scrap Taxonomy (Scrap Sweep)
 
----
+Scrap is anything that helped you reach the change but is not the change. Remove what this task created, in the same session:
 
-## The Scrap Taxonomy — what "clean" means, precisely
+- probe scripts and temporary harnesses;
+- applied one-shot scripts, which are dangerous to re-run;
+- the old version left beside the new;
+- debug residue and temporarily loosened checks;
+- stray files this task made (`.bak`, swap files, editor leftovers);
+- proven orphans, after checking imports, scripts, units, runbooks, registrations and dynamic loading.
 
-Scrap is anything that helped you get to the change but is not the change.
-It is removed **the same session it was created** — scrap left overnight
-becomes "maybe load-bearing" by next week and permanent by next month. The
-rule in both directions: **if it's junk, dump it (prove it first — zero
-importers/callers/unit/systemd/runbook references); if it should exist, wire
-it in and gate it. "Sitting there quietly" is never a third state.**
+Keep user data, reproducible migrations, rollback tools, fixtures and evidence.
 
-Delete on sight, every session:
-- [ ] **Scaffolding & probe scripts** — debug scripts, curl/test one-liners
-      saved as files, temporary harnesses. If it was the road to the fix and not
-      the fix, it dies with the session (scratchpad if worth keeping, never
-      the repo).
-- [ ] **One-shot scripts that have been applied** — migration/apply/fixup
-      scripts are DANGEROUS after they run: re-running them reinstalls the
-      old state. (Case study: an applied one-shot would have reinstalled a
-      renamed-away systemd unit; a different one actually DID install a raw
-      config template and silently killed the watchdog for four days.)
-      Their knowledge lives on in the commit message and runlog; the script
-      does not.
-- [ ] **The old version beside the new** — a replaced function, route, file,
-      or config left "just in case." The version control system is the
-      just-in-case; the working tree is not.
-- [ ] **Orphans** — code with zero reachable callers from real entry points.
-      Prove it (imports, shell scripts, systemd units, runbooks, tool
-      registrations, dynamic loading), then delete. Beware: a dead barrel
-      can re-export LIVE children — verify per child.
-- [ ] **Debug residue in real code** — console.log/print left from
-      diagnosis, commented-out blocks, temporarily-loosened checks,
-      `.skip`'d tests, hardcoded test values.
-- [ ] **Stray files** — `.bak`, `.old`, `.deleted`, editor swap/lock files
-      (these have leaked SECRETS from config dirs before), untracked files
-      nobody can name a purpose for, stale build artifacts (sweep with a
-      CLEAN build — stale artifacts make deleted code look alive).
-- [ ] **Stale state** — expired cache files, failure records from bugs since
-      fixed, stashes older than a day, branches whose work landed.
+An untracked file this task did not create is reported, not deleted: age or an unknown purpose is not deletion authority.
 
-Quarantine is never a resting state: anything excluded from CI, `@ts-nocheck`'d,
-or `.skip`'d is a **counted, ratcheted, scheduled** debt with a named phase in
-which it becomes running-and-gated or deleted.
+Other sessions' work, stale stashes, branches whose work landed and leftover worktrees are reported, not removed: the owner disposes (`AGENTS.md` §2).
 
----
+Anything excluded from CI or skipped is counted, ratcheted debt with a named stage in which it is fixed or deleted.
 
-## Periodic Loops (calendar-driven, not mood-driven)
+## Periodic Loops (owner obligations)
 
-Silent failures are found by time and use, never by the build loop. Schedule
-these; do not rely on remembering.
+These are scheduled by the owner. They are never an agent's self-assigned work, and they never run against live user state without the owner's instruction. After each one, findings become fixes, and fixes become tripwires.
 
-### Weekly (~15 minutes)
-- [ ] Run smoke; skim service/upgrade/notification pages.
-- [ ] Grep logs for engaged FALLBACKS and repeated warnings — a fallback
-      firing weekly is a primary path dying quietly.
-- [ ] `git status` on all machines: no uncommitted drift older than a week.
-
-### Monthly (one session) — DRILL, on rotation
-Pick one; rotate through all of them over the quarter:
-- [ ] **Restart drill**: clean reboot; zero manual interventions allowed.
-- [ ] **Failover drill**: kill the primary of something (process, container,
-      config); verify detection, recovery, AND that the recovery was loud.
-- [ ] **Mode-switch drill**: exercise every supported configuration
-      round-trip (engines, networks, feature flags), verifying state and
-      funds/data integrity at each hop.
-- [ ] **Restore drill**: restore a real backup into a scratch environment.
-      An unrestored backup is Schrödinger's backup.
-After every drill: findings become fixes become tripwires (Law 5).
-
-### Quarterly (one to two sessions) — ADVERSARIAL REVIEW
-- [ ] **Security pass** over auth/funds/exec paths: walk every mutation route
-      and name its gate; try the obvious bypasses; verify rate limits and
-      lockouts fire.
-- [ ] **Dead-code sweep**: import-reachability from real entry points; every
-      orphan proven-then-deleted. Verify with a CLEAN build — stale build
-      artifacts hide deletions.
-- [ ] **Dependency & image audit**: every pin still from a LIVING source
-      (check last-publish dates, not just versions); EOL check on every
-      runtime (language, OS, daemons).
-- [ ] **Architecture check**: do the docs still describe the system? Is every
-      documented invariant still tested? One impl per concern still true?
-- [ ] **Fresh-eyes review**: automated multi-agent code review of recent
-      changes, plus — before any public exposure — a human external audit of
-      the security-critical paths.
-
----
+- **Weekly:** smoke run; a scan for engaged fallbacks and repeated warnings; no uncommitted drift older than a week.
+- **Monthly, rotating drills:** restart with zero manual steps; failover, where recovery must be loud; mode switch, with integrity checked at each hop; restore of a real backup into scratch.
+- **Quarterly:**
+  - a security pass over authentication, funds and execution paths;
+  - a dead-code sweep from real entry points;
+  - a dependency and image audit (living sources, end-of-life dates);
+  - an architecture check of documents against tested invariants;
+  - a fresh-eyes review, plus a human external audit before any public exposure.
 
 ## Incident Procedure (when something breaks in production)
 
-1. **Stabilize** with the least destructive action that evidence supports.
-2. **Capture** the state before "fixing" erases it (logs, files, versions).
-3. **Root-cause to the class**: "the dashboard 502'd" is a symptom;
-   "compose-managed containers lose their network endpoint when the network
-   is recreated under them" is a class.
-4. **Tripwire it** (Law 5): a test, monitor, guard, or refusal that makes the
-   class loud or impossible.
-5. **Record it** where the next session will find it: incident log / runbook /
-   project memory — including what the false leads were.
-6. **Sweep for siblings**: the same class usually lives in more than one place.
+1. Stabilize with the least destructive action the evidence supports.
+2. Capture the state before fixing erases it.
+3. Find the cause down to its class, not just the symptom.
+4. Add a tripwire that makes the class loud or impossible.
+5. Record the incident, including the false leads, where the next session will find it.
+6. Sweep for siblings of the same class.
 
----
+## Working with AI Assistants
 
-## Working with AI Assistants (how this document gets enforced)
+AI sessions follow `AGENTS.md`. Its hard limits are backed by `.claude/hooks/guard.py` where a hook can enforce them. Speed is no exemption from the gates.
 
-Rikuri is its own first Collaborative Intelligence research subject. Claims that a prompt profile, harness, model, workflow, framing method, or learned heuristic improves work must be tested prospectively against an appropriate baseline/challenger where practical. Failures and negative results are retained as evidence. No AI-generated explanation of success substitutes for an outcome gate.
+Rikuri is its own first Collaborative Intelligence research subject:
 
-- Point every AI session at this file; its checklists are binding.
-- Demand **verification, not claims**: "tests pass" must come with the test
-  run; "it works" must come with the probe of the running system.
-- The AI must report failures verbatim — a session that only reports
-  successes is hiding the interesting parts.
-- AI-written code follows the same ratchets, the same gates, the same
-  clean-as-you-go rule. Speed is not an exemption; it is the reason the
-  gates exist.
-- Multi-session hygiene: sessions do not commit each other's in-flight work;
-  uncommitted changes older than a day get dispositioned (finished, stashed,
-  or deleted), never left ambient.
+- A claim that a prompt profile, harness, model, workflow or heuristic improves work is tested prospectively against a baseline where practical.
+- Failures and negative results are kept as evidence.
+- No AI-generated explanation of success substitutes for an outcome gate.
 
-### October 13, 2026 — bounded agent operation
-
-The owner replaced the repository's agent procedure with the [Bounded Agent Operating Standard](../AGENTS.md) (`AGENTS.md`). This Standard is unchanged in substance; the points below say how the two read together so an agent never receives conflicting instructions.
-
-- **Which governs what.** `AGENTS.md` governs how an agent carries out one assignment: the Task Contract, the limit of two repair cycles and two review rounds, the terminal outcomes `DONE`, `BLOCKED` and `NEEDS_OWNER_DECISION`, and the rule that a finished or blocked task stops. This Standard governs what each step must contain: the Per-Change Loop, the Scrap Taxonomy and the release gates. Where the two differ on how many times to try, `AGENTS.md`'s limits apply; where they differ on what counts as evidence, this Standard applies.
-- **Stop the line (Law 2) and bounded repair.** A red required gate still halts dependent work. It does not authorize unlimited repair: after the task's two repair cycles the agent reports `BLOCKED` with the exact failure and a proposed next task, and the owner decides. Disabling or weakening the check stays prohibited.
-- **The full gate at the boundary, not in the inner loop.** "Run the full gate … or the session isn't over" (Close Out) is the acceptance boundary of a coherent implementation change and the condition for claiming readiness. During implementation, targeted checks are enough. A documentation-only change runs the checks `AGENTS.md` §5.D names (links, versions, scope, `git diff --check`; the guard tests when `.claude/` changes). A `BLOCKED` session ends with an honest incomplete report; it does not need a green gate to end.
-- **Standard work (Law 3), scaled.** The checklists still apply to every change, in the brief form `AGENTS.md` allows for routine work (five Task Contract entries, a brief Build Record), without rereading the whole document set.
-- **Fix the class (Debug), within the task.** The sibling sweep is a search. Directly affected siblings are fixed in the task; other occurrences, cleanup and speculative improvements are recorded as backlog suggestions unless the Task Contract includes them. A newly discovered issue does not widen the task or renew its repair budget.
-- **Multi-session hygiene and stale state.** Uncommitted work older than a day, stashes, branches whose work landed and leftover worktrees are dispositioned by the owner. An agent reports them; it does not finish, stash, delete or reset another session's work without explicit authorization (`AGENTS.md` §2).
-- **Periodic loops** (weekly, monthly, quarterly) and drills are calendar-driven owner obligations. They are never an agent's self-assigned work during a task, and they never run against live user state without the owner's instruction.
-- **The guard** (`.claude/hooks/guard.py`, policy in `.claude/hooks/guard-config.json`) is unchanged by this clarification; its profiles and the fix-lock are described in `AGENTS.md` §4 and in the guard's own header. Reviews run per [REVIEW.md](../REVIEW.md).
-
-### October 13, 2026 — risk tiers
-
-The owner found that sessions ran long hunts and review loops. The records show two patterns this Standard left unbounded. On the Stage 00 crash matrix, verifier rounds 1–5 each failed with no runtime defect, each finding further conditions that no test isolated. On E1, rounds 2–4 failed on real defects in the candidate check it built, but rounds 5 and 6 failed "at Minor only", the record's words for findings this addendum calls nits. Nothing said which findings end a review, or how deep a small change goes. The points below set the depth by what a change can break and give the review a finish line. They add to the Laws and the Per-Change Loop; they do not replace them. Record: `docs/build-records/2026-10-13-risk-tiers.md`.
-
-- **Two tiers, named in the Task Contract's Scope (`AGENTS.md` §1).** *High-risk:* a change that touches canonical state or transactions; recovery, restore, migration or deletion; a trust or security boundary (instruction authority, execution trust, egress and Local Only, credentials); money or budgets; private data; anything irreversible; or a control that enforces these (CI, the full gate, the guard and its policy, `REVIEW.md` and the verifier). *Routine:* everything else, such as documentation and process text, tooling, tests, scaffolding, refactors that leave high-risk behaviour unchanged, messages and wording. When unsure, choose high-risk. A routine change found to touch high-risk behaviour is re-tiered in its Build Record. The tier is not the guard's "protected path": a change to a protected path gets its risk note whatever its tier.
-- **What each tier gets.**
-
-  | Step | Routine | High-risk |
-  | --- | --- | --- |
-  | Build Record | Brief: Task Contract, plan, verification, disposition | Full, with risk and negative-test evidence |
-  | Tests during the work | Targeted tests, and a regression test for every defect fixed (Per-Change Loop §4) | The same, plus the boundary, recovery and health tests the change affects |
-  | Fix-lock | Opt-in (`AGENTS.md` §4); seldom worth it | Opt-in; worth engaging for a defect in high-risk code |
-  | Fix the class (Debug) | A search of the module touched | One repository-wide search for the same pattern; directly affected siblings fixed, the rest to the backlog |
-  | Class tripwire (Law 5), beyond the regression test | Only for a defect seen twice | For the failure class, where practical: a test, invariant, monitor, ratchet or refusal |
-  | Independent review | Documentation only: the `AGENTS.md` §5.D checks and the owner's pull-request review, no verifier subagent. Code: one verifier pass | One verifier pass; for Rust code it includes a mutation run on the changed lines (below) |
-
-  In either tier, every incident ends with a tripwire (Incident Procedure; Template F), and corrected findings may get one follow-up pass (`AGENTS.md` §5.D).
-- **The review's finish line.** Severity is `REVIEW.md`'s: Important or nit. A pass fails only on an Important finding. Nits never fail a pass and never start another one: they are fixed in place or listed in the Build Record (the owner's stop rule of 2026-10-10, in the E1 record). An overstated sentence is Important only when it claims a gate or stage result, a security property, data integrity or completion that the evidence does not support; other imprecise wording is a nit.
-- **Test adequacy.** In routine code, a missing test is Important only when the change's own "Done when" depends on it. In high-risk Rust code, the first verifier pass runs cargo-mutants on the changed lines, inside the outer safety layer on the owner's machine, with the settings the crash-matrix and W1 records established: `--in-diff`, `--test-workspace=true`, `--timeout`, a short `TMPDIR`, `--output` in a scratch directory, and the `crash-injection` feature where the crash matrix covers the code. It also checks the unviable list. A surviving mutant in a high-risk check (a refusal, a validation, a recovery or an integrity check) is Important; other survivors are nits. This surfaces the untested conditions the tool can reach in one pass instead of one per round. It does not find missing rules: E1's rounds 3 and 4 failed with every compiling mutant caught but one already-deferred fallback. Finding missing rules stays the reviewer's job, done by reading the change against its Plan. High-risk code in other languages (the guard, the gate scripts, CI) is judged by its own tests and the "Done when" line.
-- **The follow-up pass checks corrections, not new ground.** It verifies the fixes to the first pass's findings and reruns that pass's mutation scope; it does not search for new findings. A new nit it happens to see is listed for the backlog. A new Important finding it happens to see is reported, and the task ends in `NEEDS_OWNER_DECISION` with the evidence: the owner decides whether it is fixed now, as its own task, or recorded as debt. No agent starts a third round (`AGENTS.md` §1, §5.D).
-- **Laws 3 and 5, read with the tiers.** "Walked mechanically, every time" means at the tier's depth. "Encode every lesson as a gate" means that every fixed defect gets its regression test, the class tripwire follows the table, and every incident gets one. A wording finding gets its fix, not a new gate.
-- **Controls are adequate when they cover what the repository uses**: the owner's decision for the guard, 2026-10-13, recorded in the [Stage 00 gate record](../docs/stage-gates/foundation0/00-bootstrap-kernel.md). A gap for a form the repository does not contain is owned debt, not a new task.
+This section was condensed on 2026-10-13 (`docs/build-records/2026-10-13-trim-agent-rules.md`). It folds in that day's two dated clarifications, "bounded agent operation" and "risk tiers"; their full text is in Git history.
 
 ---
 

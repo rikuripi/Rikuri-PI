@@ -2,7 +2,7 @@
 
 These are maintained revisions of the supplied project documents. Their original filenames and version labels are preserved. Superseded versions are retained in Git history rather than the current checkout.
 
-Coding agents start with the [Bounded Agent Operating Standard](../AGENTS.md). Use the Engineering Templates below for Build Records rather than maintaining a second checklist.
+Coding agents start with the [Agent Rules](../AGENTS.md). Use the Engineering Templates below for Build Records rather than maintaining a second checklist.
 
 ## Mission
 
