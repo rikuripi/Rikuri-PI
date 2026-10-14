@@ -6,10 +6,10 @@
 | Date | 2026-10-13 |
 | Author / agent session | Claude Code (Opus 5.5) for Henry Chen |
 | Branch | `docs/risk-tiers`, worktree `/home/junc/claude-wip/risk-tiers/rpi`, from `origin/main` `2e15f53` (the main checkout stays on `docs/bounded-agent-standard`, untouched) |
-| Commits | None yet: commit, push and PR wait for the owner |
+| Commits | `81f141a`, the change (owner, 2026-10-13: "Yes, commit push and open PR"); a second commit records this row, the status and the PR |
 | Stage Gate | N/A: working rules; no Stage 00 item, interface or gate status changes |
 | Related ADR / requirement | Owner, 2026-10-13, in the session that made this change: BUILD-PROCEDURE "too strict … every scaffolding seems to last forever … every little bug fix goes to hunt"; "Rikuri-PI is the one that seems to go into an endless hunt/loop"; approved the risk-tier proposal ("Ok, yes"). `AGENTS.md` §1, §5; the Engineering Standard's "October 13, 2026 — bounded agent operation" clarification; the owner's stop rule (2026-10-10, E1 record line 12) |
-| Status | In progress: repair cycle 1 done; follow-up verifier pass next |
+| Status | DONE locally; pushed; [PR #37](https://github.com/rikuripi/Rikuri-PI/pull/37) open; CI Not yet proven until a run is observed; the owner merges |
 
 **Risk note (protected paths):** `AGENTS.md`, `REVIEW.md`, `.claude/agents/verifier.md` and the Engineering Standard are protected paths. Guard, settings, CI and policy files are not touched. The change loosens review in seven places and tightens it in one; all eight are listed under "Owner choices" below, and each reverts by deleting the added text. The most consequential loosening is choice 2: a new Important finding seen in a follow-up pass goes to the owner instead of being fixed in the task.
 
@@ -107,7 +107,7 @@ Tier: high-risk (review and verification rules). This is a documentation and `.c
 
 - [x] Scrap sweep: the worktree holds only the five files in Scope. The checkers and test logs are in this session's scratchpad, not the repository.
 - [x] Repair cycles used: 1 of 2. Review rounds used: 2 of 2 (FAIL, then PASS on the follow-up).
-- [ ] Commit, push and pull request: waiting for the owner.
+- [x] Committed `81f141a`, pushed `docs/risk-tiers`, opened [PR #37](https://github.com/rikuripi/Rikuri-PI/pull/37) at the owner's request (2026-10-13).
 
 ## Owner choices this change exposes
 
