@@ -6,10 +6,10 @@
 | Date | 2026-10-13 |
 | Author / agent session | Claude Code (Opus 5.5) for Henry Chen |
 | Branch | `docs/trim-agent-rules`, worktree `/home/junc/claude-wip/trim/rpi`, from `origin/main` `b556200` (PR #37 merged) |
-| Commits | None yet: commit, push and PR wait for the owner |
+| Commits | `2f8e4f3`, the change (owner, 2026-10-14: "Commit, push and open PR"); a second commit records this row |
 | Stage Gate | N/A: working rules; no Stage 00 item, interface or gate status changes |
 | Related ADR / requirement | Owner, 2026-10-13: "draft the trimmed AGENTS.md … be clear about priorities, your risk limits, when to stop, and what 'done' means. Just enough test and verification, prevent it from infinite checks/loops … modify the procedure to what's reasonable and delete things that don't contribute any more benefit. Another agent doing an extra check would work also." |
-| Status | DONE locally; commit, push and PR wait for the owner |
+| Status | DONE locally; [PR #38](https://github.com/rikuripi/Rikuri-PI/pull/38) open; CI Not yet proven until a run is observed; the owner merges |
 
 **Risk note (protected paths):** `AGENTS.md`, `REVIEW.md`, `.claude/agents/verifier.md`, `.gitignore`, `scripts/quality/scrap-sweep.sh` (one comment) and the Engineering Standard are protected paths. No guard, policy, settings, CI or executable line changes. What is removed is restatement of default agent behaviour, narrative case studies and duplicated text (listed under Build). The first draft also dropped two safety rules; verifier round 1 caught them and they are restored (Debug).
 
@@ -99,7 +99,7 @@ Repair cycle 1 of 2, after verifier round 1 (FAIL; two Important findings and ei
 
 - [x] Scrap sweep: the worktree holds only the files in Scope; the checkers and logs are in the session scratchpad.
 - [x] Repair cycles: 1 of 2. Review rounds: 2 of 2.
-- [ ] Commit, push and PR: waiting for the owner.
+- [x] Committed `2f8e4f3`, pushed, opened [PR #38](https://github.com/rikuripi/Rikuri-PI/pull/38).
 
 ## Results and limitations
 
