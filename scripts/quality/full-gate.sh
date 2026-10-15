@@ -78,7 +78,7 @@ step clippy run_clippy
 step test scripts/quality/no-temp-residue.sh cargo test --workspace --locked
 step smoke scripts/quality/no-temp-residue.sh scripts/quality/smoke.sh
 step crash-matrix run_crash_matrix
-step dependencies cargo deny --locked check
+step dependencies python3 scripts/quality/dependency-check.py
 step secrets scripts/quality/secret-scan.sh
 step ratchet scripts/quality/ratchet.sh
 step contracts scripts/quality/module-contracts.sh

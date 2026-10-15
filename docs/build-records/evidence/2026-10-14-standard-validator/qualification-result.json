@@ -1,0 +1,10 @@
+{
+  "validator": "jsonschema Draft202012Validator",
+  "qualification_only": true,
+  "outcomes": {
+    "success": "DONE",
+    "failure": "BLOCKED",
+    "missing": "UNVERIFIED",
+    "denial": "NEEDS_OWNER_DECISION"
+  }
+}

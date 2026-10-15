@@ -1,0 +1,369 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "project_id": {
+      "type": "string",
+      "pattern": "^project_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "project_00000000000000000000000000"
+      },
+      "minLength": 34,
+      "maxLength": 34
+    },
+    "intent_ref": {
+      "type": "string",
+      "pattern": "^content_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "content_00000000000000000000000000"
+      },
+      "minLength": 34,
+      "maxLength": 34
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "task_00000000000000000000000000"
+      },
+      "minLength": 31,
+      "maxLength": 31
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "run_00000000000000000000000000"
+      },
+      "minLength": 30,
+      "maxLength": 30
+    },
+    "workspace_ref": {
+      "type": "string",
+      "pattern": "^content_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "content_00000000000000000000000000"
+      },
+      "minLength": 34,
+      "maxLength": 34
+    },
+    "outcome": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "interaction_mode": {
+      "type": "string",
+      "enum": [
+        "outcome",
+        "collaborative",
+        "directed"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "pattern": "^source_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+          "not": {
+            "const": "source_00000000000000000000000000"
+          },
+          "minLength": 33,
+          "maxLength": 33
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "source_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "execution_profile": {
+      "type": "object",
+      "properties": {
+        "profile_ref": {
+          "type": "string",
+          "pattern": "^content_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+          "not": {
+            "const": "content_00000000000000000000000000"
+          },
+          "minLength": 34,
+          "maxLength": 34
+        },
+        "profile_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "harness": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "runtime": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "runtime_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "local": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "profile_ref",
+        "profile_version",
+        "model",
+        "harness",
+        "runtime",
+        "runtime_version",
+        "local"
+      ],
+      "additionalProperties": false
+    },
+    "privacy": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "private",
+        "local_only",
+        "secret"
+      ]
+    },
+    "requested_capabilities": {
+      "type": "object",
+      "properties": {
+        "read_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+            "not": {
+              "pattern": "[^A-Za-z0-9_./-]"
+            }
+          },
+          "minItems": 1,
+          "maxItems": 128,
+          "uniqueItems": true
+        },
+        "write_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+            "not": {
+              "pattern": "[^A-Za-z0-9_./-]"
+            }
+          },
+          "minItems": 0,
+          "maxItems": 128,
+          "uniqueItems": true
+        },
+        "execute_checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "not": {
+              "pattern": "[^a-z0-9_.-]"
+            }
+          },
+          "minItems": 1,
+          "maxItems": 128,
+          "uniqueItems": true
+        },
+        "network": {
+          "type": "boolean"
+        },
+        "paid_inference": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "read_paths",
+        "write_paths",
+        "execute_checks",
+        "network",
+        "paid_inference"
+      ],
+      "additionalProperties": false
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "wall_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "max_workers": {
+          "const": 1
+        },
+        "max_cost_microusd": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        }
+      },
+      "required": [
+        "wall_seconds",
+        "max_attempts",
+        "max_workers",
+        "max_cost_microusd"
+      ],
+      "additionalProperties": false
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "check_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "not": {
+              "pattern": "[^a-z0-9_.-]"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "description",
+          "check_id"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 128,
+      "uniqueItems": true
+    },
+    "independent_gate": {
+      "type": "object",
+      "properties": {
+        "gate_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "verifier_actor_id": {
+          "type": "string",
+          "pattern": "^actor_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+          "not": {
+            "const": "actor_00000000000000000000000000"
+          },
+          "minLength": 32,
+          "maxLength": 32
+        },
+        "required": {
+          "const": true
+        }
+      },
+      "required": [
+        "gate_id",
+        "verifier_actor_id",
+        "required"
+      ],
+      "additionalProperties": false
+    },
+    "evidence_destination_ref": {
+      "type": "string",
+      "pattern": "^content_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "content_00000000000000000000000000"
+      },
+      "minLength": 34,
+      "maxLength": 34
+    },
+    "stop": {
+      "type": "object",
+      "properties": {
+        "on_success": {
+          "const": true
+        },
+        "on_denial": {
+          "const": true
+        },
+        "on_budget_exhaustion": {
+          "const": true
+        },
+        "on_cancel": {
+          "const": true
+        },
+        "automatic_next_task": {
+          "const": false
+        }
+      },
+      "required": [
+        "on_success",
+        "on_denial",
+        "on_budget_exhaustion",
+        "on_cancel",
+        "automatic_next_task"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "project_id",
+    "intent_ref",
+    "task_id",
+    "run_id",
+    "workspace_ref",
+    "outcome",
+    "interaction_mode",
+    "source",
+    "execution_profile",
+    "privacy",
+    "requested_capabilities",
+    "limits",
+    "acceptance",
+    "independent_gate",
+    "evidence_destination_ref",
+    "stop"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rikuri:task-contract:v1",
+  "$comment": "Design fixture v1. No permission is granted by a valid document. Local schema; no remote references."
+}

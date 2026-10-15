@@ -2,6 +2,8 @@
 # gate". Run by scripts/quality/full-gate.sh locally and in CI.
 
 [advisories]
+# Offline checks require inputs fetched within 24 hours (owner 2026-10-14).
+maximum-db-staleness = "P1D"
 # Every RustSec vulnerability fails the gate. An entry in `ignore` needs a
 # reason, an owner and a removal date in the Build Record that adds it.
 yanked = "deny"

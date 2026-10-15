@@ -1,0 +1,320 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "task_00000000000000000000000000"
+      },
+      "minLength": 31,
+      "maxLength": 31
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "run_00000000000000000000000000"
+      },
+      "minLength": 30,
+      "maxLength": 30
+    },
+    "handle_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "contract_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "source_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "PREPARED",
+        "DISPATCHING",
+        "RUNNING",
+        "STOP_UNKNOWN",
+        "STOPPED",
+        "FINALIZED",
+        "RELEASED"
+      ]
+    },
+    "execution": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "unknown",
+        "running",
+        "completed",
+        "cancelled"
+      ]
+    },
+    "acceptance": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "passed",
+        "failed"
+      ]
+    },
+    "application": {
+      "const": "not_applied"
+    },
+    "terminal": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "DONE",
+        "BLOCKED",
+        "CANCELLED",
+        "UNVERIFIED"
+      ]
+    },
+    "cancel_requested": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "task_id",
+    "run_id",
+    "handle_sha256",
+    "contract_sha256",
+    "source_sha256",
+    "phase",
+    "execution",
+    "acceptance",
+    "application",
+    "terminal",
+    "cancel_requested"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "terminal": {
+            "const": "DONE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "FINALIZED",
+              "RELEASED"
+            ]
+          },
+          "execution": {
+            "const": "completed"
+          },
+          "acceptance": {
+            "const": "passed"
+          },
+          "cancel_requested": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "PREPARED",
+              "DISPATCHING",
+              "RUNNING",
+              "STOP_UNKNOWN",
+              "STOPPED"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "terminal": {
+            "const": "NONE"
+          },
+          "acceptance": {
+            "const": "unverified"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "FINALIZED",
+              "RELEASED"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "terminal": {
+            "not": {
+              "const": "NONE"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "PREPARED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "const": "not_started"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "DISPATCHING"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "const": "unknown"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "RUNNING"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "const": "running"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "STOP_UNKNOWN"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "const": "unknown"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "STOPPED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "const": "completed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {
+            "const": "RELEASED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "not": {
+              "const": "unknown"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "acceptance": {
+            "const": "passed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "terminal": {
+            "const": "DONE"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "acceptance": {
+            "const": "failed"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "terminal": {
+            "const": "BLOCKED"
+          },
+          "execution": {
+            "const": "completed"
+          }
+        }
+      }
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rikuri:fixture:adapter-lifecycle:v1",
+  "$comment": "Synthetic simulator contract only, not registered production API/authentication."
+}

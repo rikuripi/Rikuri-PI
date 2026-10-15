@@ -1,0 +1,9 @@
+{
+  "contract/examples/mean-task.json": "62851c91d477714161a4e4439947e017f6289261d79af67882cd9e204f4010f7",
+  "contract/safety_probe_and_tests.py": "b9e0899a22e26f7424b384d07ee2c55727b09b90292a0bfe01a075b70a68e0c0",
+  "contract/task-contract.schema.json": "06996df38c65c0486a1b1c461f0e4c215abab6ab46fcb8a5b3d346c45c710a88",
+  "contract/task-result.schema.json": "59dfb56f9c62cc47d29d5fca9cbd9d3ad86ca86af59a31aaa17f332d9ac8813b",
+  "contract/tests/test_contract.py": "12eefd8c7ee6684e8b56f02e20dc2e94d6b77534663814ab6868b96aba0e3dbf",
+  "contract/validate.py": "9cad85b7d2175fbf5262c9b32cd156ae5c4038bb91af8e1f517dd5c12885d39a",
+  "launcher.sh": "af3f9dd5e444267c9c8d93a0789a618059900a57998fca29adeed2c3bfeb3001"
+}
