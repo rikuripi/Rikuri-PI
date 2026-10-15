@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "project_id": "project_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "intent_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA1",
+  "task_id": "task_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "run_id": "run_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+  "workspace_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA2",
+  "outcome": "Compute fractional averages and reject empty input.",
+  "interaction_mode": "collaborative",
+  "source": {
+    "source_id": "source_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "execution_profile": {
+    "profile_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA4",
+    "profile_version": 1,
+    "model": "synthetic-no-model",
+    "harness": "fake-adapter",
+    "runtime": "in-memory-python",
+    "runtime_version": "v1",
+    "local": true
+  },
+  "privacy": "normal",
+  "requested_capabilities": {
+    "read_paths": [
+      "mean.py"
+    ],
+    "write_paths": [
+      "mean.py"
+    ],
+    "execute_checks": [
+      "mean_fractional",
+      "mean_empty"
+    ],
+    "network": false,
+    "paid_inference": false
+  },
+  "limits": {
+    "wall_seconds": 30,
+    "max_attempts": 1,
+    "max_workers": 1,
+    "max_cost_microusd": 0
+  },
+  "acceptance": [
+    {
+      "id": "fractional-average",
+      "description": "Mean of [1,2] is 1.5.",
+      "check_id": "mean_fractional"
+    },
+    {
+      "id": "empty-input",
+      "description": "Empty input raises ValueError.",
+      "check_id": "mean_empty"
+    }
+  ],
+  "independent_gate": {
+    "gate_id": "mean-acceptance-v1",
+    "verifier_actor_id": "actor_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+    "required": true
+  },
+  "evidence_destination_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA3",
+  "stop": {
+    "on_success": true,
+    "on_denial": true,
+    "on_budget_exhaustion": true,
+    "on_cancel": true,
+    "automatic_next_task": false
+  }
+}

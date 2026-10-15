@@ -1,0 +1,36 @@
+PASS: guest exact allowlist, SHA256, root ownership and immutable staging
+PASS: external synthetic IPv4 connection refused with ENETUNREACH
+PASS: privilege, mask, route and read-only-snapshot admission checks
+test_acceptance_identity_coverage_and_write_scope (test_contract.ContractTests.test_acceptance_identity_coverage_and_write_scope) ... ok
+test_cancellation_stops_before_worker (test_contract.ContractTests.test_cancellation_stops_before_worker) ... ok
+test_changed_task_cannot_reuse_grant (test_contract.ContractTests.test_changed_task_cannot_reuse_grant) ... ok
+test_check_identifiers_have_matching_schema_limits (test_contract.ContractTests.test_check_identifiers_have_matching_schema_limits) ... ok
+test_duplicate_keys_and_nonfinite_json_refused (test_contract.ContractTests.test_duplicate_keys_and_nonfinite_json_refused) ... ok
+test_every_required_top_level_field (test_contract.ContractTests.test_every_required_top_level_field) ... ok
+test_external_scope_source_and_independence_refusals (test_contract.ContractTests.test_external_scope_source_and_independence_refusals) ... ok
+test_false_done_and_receipt_binding_refused (test_contract.ContractTests.test_false_done_and_receipt_binding_refused) ... ok
+test_finite_limits_and_no_follow_on (test_contract.ContractTests.test_finite_limits_and_no_follow_on) ... ok
+test_fractional_requirement_fails_despite_completed_worker (test_contract.ContractTests.test_fractional_requirement_fails_despite_completed_worker) ... ok
+test_local_only_requires_external_envelope_evidence (test_contract.ContractTests.test_local_only_requires_external_envelope_evidence) ... ok
+test_missing_denied_and_stale_external_grants_do_not_execute (test_contract.ContractTests.test_missing_denied_and_stale_external_grants_do_not_execute) ... ok
+test_missing_evidence_does_not_inherit_done (test_contract.ContractTests.test_missing_evidence_does_not_inherit_done) ... ok
+test_missing_nested_limit_and_unknown_authority (test_contract.ContractTests.test_missing_nested_limit_and_unknown_authority) ... ok
+test_network_paid_unknown_checks_and_retries_unsupported (test_contract.ContractTests.test_network_paid_unknown_checks_and_retries_unsupported) ... ok
+test_privacy_and_paid_budget_refusals (test_contract.ContractTests.test_privacy_and_paid_budget_refusals) ... ok
+test_relative_paths_are_not_arbitrary_commands (test_contract.ContractTests.test_relative_paths_are_not_arbitrary_commands) ... ok
+test_replay_does_not_repeat_success_or_failure (test_contract.ContractTests.test_replay_does_not_repeat_success_or_failure) ... ok
+test_reusing_run_for_different_contract_refused (test_contract.ContractTests.test_reusing_run_for_different_contract_refused) ... ok
+test_success_is_verified_but_never_applied (test_contract.ContractTests.test_success_is_verified_but_never_applied) ... ok
+test_text_is_data_and_profiles_are_provider_neutral (test_contract.ContractTests.test_text_is_data_and_profiles_are_provider_neutral) ... ok
+test_unsupported_gate_refused_before_worker (test_contract.ContractTests.test_unsupported_gate_refused_before_worker) ... ok
+test_unsupported_schema_vocabulary_refused (test_contract.ContractTests.test_unsupported_schema_vocabulary_refused) ... ok
+test_valid_contract_and_schemas (test_contract.ContractTests.test_valid_contract_and_schemas) ... ok
+test_version_ids_and_bool_integer_confusion (test_contract.ContractTests.test_version_ids_and_bool_integer_confusion) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 0.033s
+
+OK
+PASS: global restriction values unchanged {"/proc/sys/kernel/unprivileged_userns_clone": "1", "/proc/sys/kernel/apparmor_restrict_unprivileged_userns": "1"}
+Guest fixture exit: 0
+Guest staging removed

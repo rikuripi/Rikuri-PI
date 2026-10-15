@@ -1,0 +1,79 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "contract_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "artifact_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "verifier_actor_id": {
+      "type": "string",
+      "pattern": "^actor_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "actor_00000000000000000000000000"
+      },
+      "minLength": 32,
+      "maxLength": 32
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "check_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "not": {
+              "pattern": "[^a-z0-9_.-]"
+            }
+          },
+          "check_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "passed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "criterion_id",
+          "check_id",
+          "check_version",
+          "passed"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 128,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "contract_sha256",
+    "artifact_sha256",
+    "verifier_actor_id",
+    "checks"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rikuri:fixture:adapter-gate-receipt:v1",
+  "$comment": "Synthetic simulator contract only, not registered production API/authentication."
+}

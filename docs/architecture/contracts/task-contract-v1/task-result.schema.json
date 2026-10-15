@@ -1,0 +1,230 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^task_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "task_00000000000000000000000000"
+      },
+      "minLength": 31,
+      "maxLength": 31
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+      "not": {
+        "const": "run_00000000000000000000000000"
+      },
+      "minLength": 30,
+      "maxLength": 30
+    },
+    "contract_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "terminal": {
+      "type": "string",
+      "enum": [
+        "DONE",
+        "BLOCKED",
+        "NEEDS_OWNER_DECISION",
+        "CANCELLED",
+        "UNVERIFIED"
+      ]
+    },
+    "execution": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "completed",
+        "failed"
+      ]
+    },
+    "acceptance": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "unverified"
+      ]
+    },
+    "application": {
+      "const": "not_applied"
+    },
+    "independent_gate": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "not_run"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "criterion_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "check_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "not": {
+              "pattern": "[^a-z0-9_.-]"
+            }
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "evidence_ref": {
+            "type": "string",
+            "pattern": "^content_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+            "not": {
+              "const": "content_00000000000000000000000000"
+            },
+            "minLength": 34,
+            "maxLength": 34
+          },
+          "artifact_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "verifier_actor_id": {
+            "type": "string",
+            "pattern": "^actor_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+            "not": {
+              "const": "actor_00000000000000000000000000"
+            },
+            "minLength": 32,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "criterion_id",
+          "check_id",
+          "passed",
+          "evidence_ref",
+          "artifact_sha256",
+          "verifier_actor_id"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 128,
+      "uniqueItems": true
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "artifact_ref": {
+            "type": "string",
+            "pattern": "^content_[0-7][0-9A-HJKMNP-TV-Z]{25}$",
+            "not": {
+              "const": "content_00000000000000000000000000"
+            },
+            "minLength": 34,
+            "maxLength": 34
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$",
+            "not": {
+              "pattern": "[^A-Za-z0-9_./-]"
+            }
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "artifact_ref",
+          "path",
+          "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 128,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "task_id",
+    "run_id",
+    "contract_sha256",
+    "terminal",
+    "execution",
+    "acceptance",
+    "application",
+    "independent_gate",
+    "reason",
+    "evidence",
+    "artifacts"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:rikuri:task-result:v1",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "terminal": {
+            "const": "DONE"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "execution": {
+            "const": "completed"
+          },
+          "acceptance": {
+            "const": "passed"
+          },
+          "independent_gate": {
+            "const": "passed"
+          },
+          "evidence": {
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "passed": {
+                  "const": true
+                }
+              }
+            }
+          },
+          "artifacts": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

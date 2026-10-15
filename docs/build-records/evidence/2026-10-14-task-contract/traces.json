@@ -1,0 +1,113 @@
+{
+  "synthetic_only": true,
+  "traces": {
+    "success": {
+      "schema_version": 1,
+      "task_id": "task_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "run_id": "run_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "contract_sha256": "8d40e9d5d0245d8a67f163ec8fbb2055ed56d163655e450575e7142febf76313",
+      "terminal": "DONE",
+      "execution": "completed",
+      "acceptance": "passed",
+      "application": "not_applied",
+      "independent_gate": "passed",
+      "reason": "acceptance passed; stop",
+      "evidence": [
+        {
+          "criterion_id": "fractional-average",
+          "check_id": "mean_fractional",
+          "passed": true,
+          "evidence_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA7",
+          "artifact_sha256": "6307bd51d14a1f5297c594a6e26f15f6534f131a655f5b3ab6ab255791c295f4",
+          "verifier_actor_id": "actor_01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        },
+        {
+          "criterion_id": "empty-input",
+          "check_id": "mean_empty",
+          "passed": true,
+          "evidence_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA8",
+          "artifact_sha256": "6307bd51d14a1f5297c594a6e26f15f6534f131a655f5b3ab6ab255791c295f4",
+          "verifier_actor_id": "actor_01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+      ],
+      "artifacts": [
+        {
+          "artifact_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA6",
+          "path": "mean.py",
+          "sha256": "6307bd51d14a1f5297c594a6e26f15f6534f131a655f5b3ab6ab255791c295f4"
+        }
+      ]
+    },
+    "acceptance_failure": {
+      "schema_version": 1,
+      "task_id": "task_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "run_id": "run_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "contract_sha256": "8d40e9d5d0245d8a67f163ec8fbb2055ed56d163655e450575e7142febf76313",
+      "terminal": "BLOCKED",
+      "execution": "completed",
+      "acceptance": "failed",
+      "application": "not_applied",
+      "independent_gate": "failed",
+      "reason": "mandatory acceptance failed; stop",
+      "evidence": [
+        {
+          "criterion_id": "fractional-average",
+          "check_id": "mean_fractional",
+          "passed": false,
+          "evidence_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA7",
+          "artifact_sha256": "decde6b2de56c80c793512b4b415ce151e45f54d1528dd7b26246db6342f4517",
+          "verifier_actor_id": "actor_01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        },
+        {
+          "criterion_id": "empty-input",
+          "check_id": "mean_empty",
+          "passed": true,
+          "evidence_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA8",
+          "artifact_sha256": "decde6b2de56c80c793512b4b415ce151e45f54d1528dd7b26246db6342f4517",
+          "verifier_actor_id": "actor_01ARZ3NDEKTSV4RRFFQ69G5FAV"
+        }
+      ],
+      "artifacts": [
+        {
+          "artifact_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA6",
+          "path": "mean.py",
+          "sha256": "decde6b2de56c80c793512b4b415ce151e45f54d1528dd7b26246db6342f4517"
+        }
+      ]
+    },
+    "missing_evidence": {
+      "schema_version": 1,
+      "task_id": "task_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "run_id": "run_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "contract_sha256": "8d40e9d5d0245d8a67f163ec8fbb2055ed56d163655e450575e7142febf76313",
+      "terminal": "UNVERIFIED",
+      "execution": "completed",
+      "acceptance": "unverified",
+      "application": "not_applied",
+      "independent_gate": "not_run",
+      "reason": "worker completed; acceptance evidence absent",
+      "evidence": [],
+      "artifacts": [
+        {
+          "artifact_ref": "content_01ARZ3NDEKTSV4RRFFQ69G5FA6",
+          "path": "mean.py",
+          "sha256": "6307bd51d14a1f5297c594a6e26f15f6534f131a655f5b3ab6ab255791c295f4"
+        }
+      ]
+    },
+    "denial": {
+      "schema_version": 1,
+      "task_id": "task_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "run_id": "run_01ARZ3NDEKTSV4RRFFQ69G5FAV",
+      "contract_sha256": "8d40e9d5d0245d8a67f163ec8fbb2055ed56d163655e450575e7142febf76313",
+      "terminal": "NEEDS_OWNER_DECISION",
+      "execution": "not_started",
+      "acceptance": "unverified",
+      "application": "not_applied",
+      "independent_gate": "not_run",
+      "reason": "missing or stale external grant",
+      "evidence": [],
+      "artifacts": []
+    }
+  }
+}
