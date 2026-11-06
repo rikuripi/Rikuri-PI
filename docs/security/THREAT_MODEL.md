@@ -82,3 +82,11 @@ Managed retention and forgetting cover admitted Rikuri-controlled stores and res
 Before enabling a sensitive feature, link its assets, permissions, platform/configuration, observed boundary/failure/recovery evidence and remaining limits. Explain data access and destinations in ordinary language, with a usable stop/revoke path. Security health must reflect actual required protection; a live daemon alone is insufficient.
 
 Follow the [Engineering Standard](../../doc/Rikuri_Pi_Engineering_Standard_v1.2.md#security-assurance-and-upstream-maintenance) for upstream updates, incident handling, assurance statements and independent review. Keep private payloads out of public test receipts. Benchmark both attack refusal and useful authorized work before making comparative claims. Reassess this model whenever a feature introduces new data, trust boundaries, recipients, credentials or platform authority.
+
+## 8. November 6 proposed vault and mesh threat refinements
+
+[ADR 0020](../architecture/adr/0020-vault-foundation-reconciliation.md) preserves the Foundation trust assumptions and existing-stage gates. New proposed acceptance in [Test Strategy §21](../../doc/Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#21-november-6-amendment-acceptance) is Not yet proven.
+
+Add confused-deputy scope spoofing across principal/vault/project/thread; inference prefix/KV/media/LoRA cache leakage; stale worker advertisements and expired leases; stream replay into wrong scopes; uncertain external side-effect retries; plaintext in temporary/index/backup/log stores; and model-authored skills or experiments seeking canonical promotion. Controls are trusted broker binding, minimal context, scoped instances/caches, reserved resources, current-revocation recovery and independent commit/acceptance. VLT, ENV, HOME and ARI cases cover these boundaries.
+
+Shared host administration can expose inference plaintext; consumer GPU isolation is not assumed. An encrypted tunnel is transport protection, not permission or administrator-private compute. Vault-local cannot silently move to another worker/cloud. Stronger guest-kernel requirements refuse unsupported hardware. Keep treasury/signing/node services outside worker reach. No new runtime security claim, backend preference or root-compromise guarantee is adopted.

@@ -243,3 +243,13 @@ A project may be shown, shipped, or opened to others only when:
 
 Until every box is checked, the honest label is "prototype" — and prototypes
 don't take deposits, hold keys, or accept strangers' trust.
+
+## November 6 amendment implementation evidence
+
+Proposed feature-specific refinement under [ADRs 0020–0022](../docs/architecture/adr/0020-vault-foundation-reconciliation.md); this does not change the per-change procedure, risk tiers, review/repair limits or Foundation gate definitions.
+
+Before adopting a vault/sandbox/mesh/reflective feature, map its requirement and actual stage owner to [Test Strategy §21](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#21-november-6-amendment-acceptance). Record Pass/Fail/Not yet proven, exact source revision, fixture/commands, OS/kernel/architecture and backend/model/harness/tool/skill/policy digests as relevant, allowed/denied/failure outcomes, current-revocation recovery, independent acceptance and limitations. Synthetic schema tests establish shape only; actual containment, encryption and concurrent isolation require real entry-point evidence on the selected platform. Version changes trigger the existing requalification policy, not a newly invented universal blocker.
+
+New cryptography/storage choices require vetted implementation/license, key lifecycle, metadata/index leakage review, migration/forget/restore proof and rollback before real ingestion. New remote or inference-sharing paths require explicit administrator/plaintext trust, per-scope logs/cache tests, scoped leases and no privacy downgrade. Never copy production secrets into fixtures. Budgets reserve before spending; unknown hard cost refuses the path. Any failed mandatory security, state-integrity or cross-user isolation case blocks dependent feature admission regardless of aggregate benchmark score.
+
+Reflective experiments predeclare tasks, acceptance, tool/skill versions, privacy, budgets, stop/no-progress rules, repeat count and promotion/rollback criteria. Retain useful failed-attempt evidence under consent/minimization/retention, not unrestricted internal reasoning. Report final outcomes and raw resource measurements; ratios with zero/unknown denominators remain undefined/unknown. A model's self-score and generic green tests cannot replace task-specific independent acceptance. No new experiments, installations, accounts or training runs are authorized by this text.

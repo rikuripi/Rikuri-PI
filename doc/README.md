@@ -99,3 +99,7 @@ The owner accepted ADR 0006’s architectural direction after review and clarifi
 ## Orchard TaskContract v1 draft
 
 The [versioned contract and fixture](../docs/architecture/contracts/task-contract-v1/README.md) define provider-neutral requests and separate execution/acceptance/application outcomes. The closed JSON shapes and offline fixture checker are experimental design scaffolding, not a production adapter or permission authority. See the [contract Build Record](../docs/build-records/2026-10-14-orchard-task-contract-v1.md) for test/review evidence and limitations. Foundation-0 gates and sequencing are unchanged.
+
+## November 6 proposed vault, mesh and reflective harness reconciliation
+
+The three [deduplicated source amendments and hashes](references/2026-11-amendments/README.md) and supplied AREX discussion are reconciled by [ADR 0020](../docs/architecture/adr/0020-vault-foundation-reconciliation.md), [ADR 0021](../docs/architecture/adr/0021-sandbox-mesh-contracts.md) and [ADR 0022](../docs/architecture/adr/0022-adaptive-reflection-evidence.md). PRD §30, Architecture §47, the dated Engineering/Stage Plan/Master Sequence refinements and Test Strategy §21 specify proposed admission work without replacing the maintained authorities. Owner adoption and implementation admission remain pending; all new runtime acceptance is Not yet proven. Foundation encryption/restore, Ubuntu/Option C, credential-free workers, creative-studio order and historical evidence remain intact. [Build Record](../docs/build-records/2026-11-06-vault-mesh-adaptive-reflection.md).

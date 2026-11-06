@@ -498,3 +498,14 @@ The v1.6 stop-the-line table carries forward unchanged. Three rules are added fo
 - [x] ADR 0000 reconciles the PRD, Architecture, Engineering Standard, and Master Build Sequence with this scope (September 24, 2026); preserve continuous macOS core tests and defer native envelope claims.
 - [ ] Run the one-day S00.13 backend admission probe (OpenShell first) on the actual reference installation and schedule E2 for the first two build days of October
 - [x] Agree on the six owner-facing stage demos and evidence-receipt format before the first build change (owner, October 5, 2026: demos as in the table above; receipt format in the [Stage 00 record](../docs/stage-gates/foundation0/00-bootstrap-kernel.md#receipt); [Build Record](../docs/build-records/2026-10-05-stage-00-kickoff.md))
+
+## November 6 proposed amendment crosswalk — baseline preserved
+
+[ADR 0020](../docs/architecture/adr/0020-vault-foundation-reconciliation.md) reconciles source stage names; [Master Build Sequence refinement](Rikuri_Pi_Master_Build_Sequence_v1.1.md#november-6-proposed-amendment-dispositions) owns proposed product-stage additions. This entry changes no checkbox, gate, S/T/E ordinal, date or completion status.
+
+- Foundation Stage 01 S01.01–03/S01.06–11 and T01.01–16 retain encrypted content, provenance, canonical identity, projections, deletion and restore obligations. They are not postponed to product Stage 1. Proposed principal/vault scopes and product portability proofs extend later readiness; no new Foundation multi-user gate is introduced.
+- Stage 02 S02.01–04 retains context/policy/Secret refusal; Stage 03 retains actual Ubuntu process/network/descendant admission. Foundation workers remain credential-free with no permitted external destination; the existing deferred broker/destination qualification is unchanged.
+- Stage 04 retains Pi execution, bounded profiles and verification, not learned routing or multi-agent expansion. Source sandbox S0–S5/E1–E6 are unadopted source-local names and cannot replace existing experiments or order.
+- Product Stage 1 proposed vault/mesh-ready contracts follow the Foundation gates; Stage 3/4/6/7/8/10 retain Link, measured routing, governance, mesh, rich domains and learned-reflection ownership respectively. Source Stages 2/3/4 do not renumber creative studio or pull family mesh into Foundation.
+
+All new VLT/ENV/HOME/ARI acceptance specifications are Not yet proven and are not Foundation T IDs. A requested Foundation baseline change would need an explicit owner-approved rebaseline and coordinated gate/test revision, not this proposal.

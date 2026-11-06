@@ -299,3 +299,19 @@ The owner asked whether the September 30 order still holds after the September 2
 | Option C broker/destination qualification, expected position CLARIFIED | Expected product Stage 1 | Expected Stage 5, or Stage 8 developer pack; Stage 1 if S1.04 cannot use prepared dependencies | Follows the first credential/network-permitted worker | Product owner / security implementer | Test Strategy §8.2 broker and destination rows |
 
 See ADR 0000 October 2 sequence clarification.
+
+## November 6 proposed amendment dispositions
+
+This is a proposed refinement of the existing sequence, not another roadmap. [ADR 0020](../docs/architecture/adr/0020-vault-foundation-reconciliation.md) reconciles sources and costs; owner adoption and estimates precede new implementation tasks. No current gate is marked passed or redefined.
+
+| Disposition | Existing stage owner and work | Admission / evidence |
+| --- | --- | --- |
+| KEEP existing vault protection early | Foundation Stage 01 encrypted content/keys/forget/restore; 02 policy; 03 actual containment | Existing F/W/T gates unchanged; never defer protection to product 1 |
+| PROPOSE product 1 readiness refinement | Before expanded ingestion, explicitly bind principal/vault/space/project/thread; scoped broker/derivatives, clean-device export/restore and model swap; simulate two identities/projects/threads. Single-node versioned device/job/lease/stream/artifact and minimal skill/feedback seams reuse S1.03/04 | VLT-01–05 and HOME-01; no multi-user UI, remote worker, vector mandate, new crypto dependency or full Skills product. Existing S1.01–04 remain; estimate refinements after adoption |
+| MAP source remote phase to product 3 | Paired laptop/workstation, authenticated gateway/Tailscale, scoped worker leases, ordered stream/resume, cancellation, revocation and visible offline state | Existing Link prerequisites plus HOME-02/03 and ENV cases for actual path; no raw inference-port exposure |
+| MAP adaptive harness/placement to product 4 | Capability profiles and versioned operational skills; matched-budget conventional/reflective/hybrid and skill ablations; feedback/checkpoints and improvement-efficiency evidence; residency and whole-job placement measurements | ARI-01–04; no learned user model, automatic policy change or score-based security exception |
+| MAP source family phase to product 6 | Independent principals, explicit grants, private inference caches and concurrent resource fairness with failure isolation | HOME-04/05 after Stage 3/5 and relevant resource evidence; group keying and sharing are explicit scoped work, not automatic household trust |
+| KEEP replication/resource integration at product 7 | Multi-node resource catalog, independent backup, device replacement and current-revocation sync semantics | Existing replication/recovery gate plus applicable VLT/HOME cases; compute dispatch is distinct from replication |
+| DEFER optional advanced mechanisms | Stronger backend/platform assurance at each relevant feature admission; multimodal/device depth Stage 8; SSD caching/model splitting/GPU partitioning only bounded research; cross-episode learning/trajectory reuse Stage 10 after 4/6 | Measured compatibility, security and value; explicit consent for training; no guarantee from vendor feature lists |
+
+Source sandbox experiments have source-local names, not new entries in the Foundation experiment register. Any admitted backend must meet minimum verified sufficiency; the OpenShell-first Ubuntu candidate and credential-free Foundation scope stand. Failing an applicable privacy/isolation/integrity gate blocks that dependent capability. Creative-studio Stage 2 priorities and optional Stage 8 developer pack remain unchanged.
