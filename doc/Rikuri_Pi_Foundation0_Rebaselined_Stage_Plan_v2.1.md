@@ -509,3 +509,7 @@ The v1.6 stop-the-line table carries forward unchanged. Three rules are added fo
 - Product Stage 1 proposed vault/mesh-ready contracts follow the Foundation gates; Stage 3/4/6/7/8/10 retain Link, measured routing, governance, mesh, rich domains and learned-reflection ownership respectively. Source Stages 2/3/4 do not renumber creative studio or pull family mesh into Foundation.
 
 All new VLT/ENV/HOME/ARI acceptance specifications are Not yet proven and are not Foundation T IDs. A requested Foundation baseline change would need an explicit owner-approved rebaseline and coordinated gate/test revision, not this proposal.
+
+## November 6 owner acceptance of ADRs 0020–0022
+
+The owner accepted the vault, execution/mesh and adaptive-reflection architectural direction after independent review. Earlier proposed labels in the November 6 refinements record their proposal origin; owner adoption is now complete. Implementation admission, estimates and separately scoped tasks remain pending; no future acceptance test or current gate is marked passed. Existing Foundation commitments and stage dependencies are unchanged. [Acceptance record](../docs/build-records/2026-11-06-adr-0020-0022-owner-acceptance.md).

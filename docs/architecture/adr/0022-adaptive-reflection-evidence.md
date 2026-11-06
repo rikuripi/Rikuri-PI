@@ -1,9 +1,13 @@
 # ADR 0022 — Adaptive reflection with independent control and evidence
 
 **Date:** 2026-11-06
-**Status:** PROPOSED — documentation integration requested; owner adoption, implementation admission and any protected rebaseline are pending.
+**Status:** OWNER-ACCEPTED — architectural direction accepted November 6, 2026; normal merge pending; implementation admission remains Not yet proven.
 **Supersedes:** None. ADR 0000 and accepted ADRs remain authoritative.
 **Owners:** Product owner; security, storage and platform implementers for affected features.
+
+## Owner acceptance — November 6, 2026
+
+The owner explicitly accepted ADRs 0020–0022 after independent review (PASS; no Important findings) and correction of the nonblocking Orchard wording nit. The proposed decision below is now accepted architectural direction; its original proposal wording is retained for history. Acceptance authorizes no implementation, experiment, migration, protected rebaseline or gate closure. Existing Foundation commitments remain unchanged. See the [acceptance record](../../build-records/2026-11-06-adr-0020-0022-owner-acceptance.md).
 
 ## Context and source limits
 

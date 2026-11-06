@@ -1901,3 +1901,7 @@ Charter items that are new features rather than promises are recorded in the [pa
 | ARI-003 | Compare matched-budget strategies with final success, reliability, recovery, interventions and delta verified quality per measured resource; unknown denominators stay unknown. No benchmark establishes general reliability or continuous weight learning. | Product 4, ARI-01/04 |
 
 Acceptance details: [Test Strategy §21](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#21-november-6-amendment-acceptance). Vault/This Device Only does not relax existing Local Only or Secret rules. Proposed product Stage 1 refinements do not revise Foundation gates, dates or S/T/E IDs; owner adoption and estimates precede execution.
+
+## November 6 owner acceptance of ADRs 0020–0022
+
+The owner accepted the vault, execution/mesh and adaptive-reflection architectural direction after independent review. Earlier proposed labels in the November 6 refinements record their proposal origin; owner adoption is now complete. Implementation admission, estimates and separately scoped tasks remain pending; no future acceptance test or current gate is marked passed. Existing Foundation commitments and stage dependencies are unchanged. [Acceptance record](../docs/build-records/2026-11-06-adr-0020-0022-owner-acceptance.md).

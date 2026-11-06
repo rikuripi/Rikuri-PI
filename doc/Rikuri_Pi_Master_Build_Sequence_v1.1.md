@@ -315,3 +315,7 @@ This is a proposed refinement of the existing sequence, not another roadmap. [AD
 | DEFER optional advanced mechanisms | Stronger backend/platform assurance at each relevant feature admission; multimodal/device depth Stage 8; SSD caching/model splitting/GPU partitioning only bounded research; cross-episode learning/trajectory reuse Stage 10 after 4/6 | Measured compatibility, security and value; explicit consent for training; no guarantee from vendor feature lists |
 
 Source sandbox experiments have source-local names, not new entries in the Foundation experiment register. Any admitted backend must meet minimum verified sufficiency; the OpenShell-first Ubuntu candidate and credential-free Foundation scope stand. Failing an applicable privacy/isolation/integrity gate blocks that dependent capability. Creative-studio Stage 2 priorities and optional Stage 8 developer pack remain unchanged.
+
+## November 6 owner acceptance of ADRs 0020–0022
+
+The owner accepted the vault, execution/mesh and adaptive-reflection architectural direction after independent review. Earlier proposed labels in the November 6 refinements record their proposal origin; owner adoption is now complete. Implementation admission, estimates and separately scoped tasks remain pending; no future acceptance test or current gate is marked passed. Existing Foundation commitments and stage dependencies are unchanged. [Acceptance record](../docs/build-records/2026-11-06-adr-0020-0022-owner-acceptance.md).
