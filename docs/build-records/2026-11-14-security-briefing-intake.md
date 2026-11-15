@@ -9,7 +9,7 @@
 | Commits | `d47b86f`, the change (owner, 2026-11-14: "commit, push and open a PR"); a second commit records this row, the status and the PR |
 | Stage Gate | N/A: no Foundation-0 item, interface or gate status changes |
 | Related ADR / requirement | PRD §10 (SEC-008, SEC-014, SEC-021, SEC-029, SEC-030); [threat model](../security/THREAT_MODEL.md) §5; [Test Strategy](../../doc/Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md) §8.2 and §17; [PARKING_LOT.md](../PARKING_LOT.md) (baseline frozen; a corrected security requirement goes through a dated ADR with matching tests) |
-| Status | DONE locally; pushed; [PR #40](https://github.com/rikuripi/Rikuri-PI/pull/40) open; CI Not yet proven until a run is observed; the owner merges |
+| Status | DONE locally; pushed; [PR #40](https://github.com/rikuripi/Rikuri-PI/pull/40) open; **BLOCKED on CI**: `Full gate (Ubuntu)` fails at the dependencies gate on two advisories that this change does not touch (see Close-out) |
 
 ## Task Contract
 
@@ -162,7 +162,7 @@ All repairs edit only text this change added; a word-level diff against `1469f89
 | Local links and anchors in added lines | Pass: 18 links in the added lines and this record, 0 broken (author's script; the verifier's own script agreed on both passes) |
 | `git diff --check` | Pass: exit 0, no output, after repair 1 |
 | Additions only | Pass: `git diff --word-diff=porcelain` against `1469f89` shows 0 removed words, after repair 1 |
-| Full gate | Not run: documentation only; CI runs it on a pull request |
+| Full gate | **Fail** in CI, [run 43656243685](https://github.com/rikuripi/Rikuri-PI/actions/runs/43656243685) on `0b4015b`, 2026-11-15: `GATE dependencies: FAIL`, cargo-deny "advisories FAILED, bans ok, licenses ok, sources ok". RUSTSEC-2026-0459 (`libsqlite3-sys` 0.38.2 through `rusqlite` 0.40.2, bundled SQLite; fix in 0.39.0 with `rusqlite` 0.41) and RUSTSEC-2026-0486 (`rustix` 1.1.5 through `tempfile`, a dev dependency; fix in 1.1.6). Neither `Cargo.toml` nor `Cargo.lock` is in this change's diff. The last CI run on `main` (`1469f89`, 2026-10-15) passed, before those advisories were in the database the gate reads. Gates after dependencies did not report. Not run locally |
 | Independent check (verifier) | Pass 1: FAIL, one Important finding (above). Repair 1. Follow-up pass: **PASS**, no Important finding open; guard tests `OK (skipped=1)`. Five nits left for the backlog, listed below. This was the last review round the contract allows |
 
 **Nits left after the follow-up pass (backlog, not fixed here because no review round remains):**
@@ -177,5 +177,5 @@ All repairs edit only text this change added; a word-level diff against `1469f89
 - **Outcome:** all seven proposals are in the PRD, ADR 0000, the Test Strategy and the threat model as dated, unimplemented requirements, with one repair cycle and a passing follow-up check.
 - **Evidence:** §8, at `d47b86f` (the verifier passes ran on the same content before it was committed).
 - **Safety:** requirement text only; additions tighten and none loosens. No code, control, CI, guard or setting changed. No secret file read. The rikurinode repository was read only through `git show origin/main:` in a separate local clone and was not modified.
-- **Status:** DONE locally; committed as `d47b86f`, pushed, [PR #40](https://github.com/rikuripi/Rikuri-PI/pull/40) open. CI Not yet proven until a `Full gate (Ubuntu)` run on the PR is observed; the owner merges. Two owner decisions stay open: whether Foundation-0 Stage 04 or Stage 02 takes the SEC-008 or SEC-030 fixtures (ADR addendum), and the parking-lot candidates (§5).
-- **Next:** one task, not started: carry the rikurinode draft into that repository as its own Build Record and adopt its six proposals there.
+- **Status:** DONE locally; committed as `d47b86f`, pushed, [PR #40](https://github.com/rikuripi/Rikuri-PI/pull/40) open. **BLOCKED** on CI: `Full gate (Ubuntu)` fails at the dependencies gate on RUSTSEC-2026-0459 and RUSTSEC-2026-0486 (§8). The failure is outside this task's scope (documentation only) and is not repaired here: bumping `rusqlite` to 0.41 changes the storage crate's SQLite and its declared Rust version, which is high-risk work with its own Build Record, and an ignore entry would weaken the gate. `main` would fail the same gate on a fresh run. The owner merges once the gate is green. Two owner decisions stay open: whether Foundation-0 Stage 04 or Stage 02 takes the SEC-008 or SEC-030 fixtures (ADR addendum), and the parking-lot candidates (§5).
+- **Next:** one task, not started: clear RUSTSEC-2026-0459 and RUSTSEC-2026-0486 on its own branch (update `rusqlite`/`libsqlite3-sys` and `rustix`, check the toolchain pin against the new minimum Rust versions, full gate on Ubuntu), then re-run this PR's CI. After that, the rikurinode draft still waits to be carried into that repository.
