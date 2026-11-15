@@ -99,3 +99,7 @@ The owner accepted ADR 0006’s architectural direction after review and clarifi
 ## Orchard TaskContract v1 draft
 
 The [versioned contract and fixture](../docs/architecture/contracts/task-contract-v1/README.md) define provider-neutral requests and separate execution/acceptance/application outcomes. The closed JSON shapes and offline fixture checker are experimental design scaffolding, not a production adapter or permission authority. See the [contract Build Record](../docs/build-records/2026-10-14-orchard-task-contract-v1.md) for test/review evidence and limitations. Foundation-0 gates and sequencing are unchanged.
+
+## November 14 security briefing intake
+
+The owner adopted seven requirement changes from a disposal of 52 daily AI-security briefings: dated additions to PRD SEC-008, SEC-014, SEC-021, SEC-029 and SEC-030, and new rows SEC-033 (bounded outbound conduct) and SEC-034 (admission of connectors, MCP servers, plugins and skills). See the [ADR 0000 addendum](Rikuri_Pi_ADR_0000_Foundation0_Scope_Reconciliation.md#november-14-2026--security-briefing-intake), [Test Strategy §21](Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md#21-security-briefing-intake-acceptance), the [threat model](../docs/security/THREAT_MODEL.md) §5 and the [Build Record](../docs/build-records/2026-11-14-security-briefing-intake.md). Foundation-0 gates are unchanged; nothing is implemented and all rows are Not yet proven.
