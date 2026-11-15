@@ -6,10 +6,10 @@
 | Date | 2026-11-14 |
 | Author / agent session | Claude Code (Fable 5.2) for the owner |
 | Branch | `claude/security-briefings-prd-updates-24600b`, worktree `.claude/worktrees/security-briefings-prd-updates-24600b`, from `main` `1469f89` |
-| Commits | One commit for the change (owner, 2026-11-14: "commit, push and open a PR"); a second commit records the pull request here |
+| Commits | `d47b86f`, the change (owner, 2026-11-14: "commit, push and open a PR"); a second commit records this row, the status and the PR |
 | Stage Gate | N/A: no Foundation-0 item, interface or gate status changes |
 | Related ADR / requirement | PRD §10 (SEC-008, SEC-014, SEC-021, SEC-029, SEC-030); [threat model](../security/THREAT_MODEL.md) §5; [Test Strategy](../../doc/Rikuri_Pi_Foundation0_Test_Replay_and_Acceptance_Strategy_v1.2.md) §8.2 and §17; [PARKING_LOT.md](../PARKING_LOT.md) (baseline frozen; a corrected security requirement goes through a dated ADR with matching tests) |
-| Status | See Close-out |
+| Status | DONE locally; pushed; [PR #40](https://github.com/rikuripi/Rikuri-PI/pull/40) open; CI Not yet proven until a run is observed; the owner merges |
 
 ## Task Contract
 
@@ -175,7 +175,7 @@ All repairs edit only text this change added; a word-level diff against `1469f89
 ## Close-out
 
 - **Outcome:** all seven proposals are in the PRD, ADR 0000, the Test Strategy and the threat model as dated, unimplemented requirements, with one repair cycle and a passing follow-up check.
-- **Evidence:** §8, at the uncommitted working-tree state on `1469f89`. No CI run; nothing was pushed.
+- **Evidence:** §8, at `d47b86f` (the verifier passes ran on the same content before it was committed).
 - **Safety:** requirement text only; additions tighten and none loosens. No code, control, CI, guard or setting changed. No secret file read. The rikurinode repository was read only through `git show origin/main:` in a separate local clone and was not modified.
-- **Status:** DONE locally, uncommitted. CI Not yet proven: no pull request exists. Two owner decisions stay open: whether Foundation-0 Stage 04 or Stage 02 takes the SEC-008 or SEC-030 fixtures (ADR addendum), and the parking-lot candidates (§5).
+- **Status:** DONE locally; committed as `d47b86f`, pushed, [PR #40](https://github.com/rikuripi/Rikuri-PI/pull/40) open. CI Not yet proven until a `Full gate (Ubuntu)` run on the PR is observed; the owner merges. Two owner decisions stay open: whether Foundation-0 Stage 04 or Stage 02 takes the SEC-008 or SEC-030 fixtures (ADR addendum), and the parking-lot candidates (§5).
 - **Next:** one task, not started: carry the rikurinode draft into that repository as its own Build Record and adopt its six proposals there.
