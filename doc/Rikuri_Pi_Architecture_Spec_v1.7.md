@@ -915,6 +915,20 @@ orchestration remains later and must be evaluated against simpler
 single-model execution for quality, latency, cost, privacy, and failure
 recovery.
 
+### 12.4 RIEMS strategy-selection boundary (future; not implemented)
+
+**November 17, 2026 — owner-approved design; proposed repository adoption.** [ADR 0007](../docs/architecture/adr/0007-riems-outcome-driven-execution.md) extends Architecture §§11–18 without replacing their owners. RIEMS is an **outcome-driven strategy-evaluation layer**, not another intent parser, job queue, policy/budget service, model router, Verification Manager or canonical ProjectState.
+
+**Data and authority path:** authenticated user/Task Contract → Capability Planner `TaskRequirements` → RIEMS versioned `ExecutionStrategyDecision` (admissible candidates, tradeoffs, confidence, fallback) → existing Execution Profile/Router (concrete model, harness, machine, tools and verifier) → semantic scheduler (DAG readiness, barriers, leases, revision/approval gates) → shared durable asynchronous runtime (bounded dispatch, checkpoint, wait/resume, retry/cancel/recovery) → independent acceptance and Rikuri-owned Performance Ledger. AISecurity, Vault, Budget Governor, human approvals and current ProjectState remain binding before execution and again on resume.
+
+In a future RIEMS-enabled flow, RIEMS proposes the overall strategy, including whether specialist work is justified. The router implements an admitted strategy through the concrete profile composition described in §12.3.
+
+**Method choice:** eliminate strategies violating hard security, privacy, scope, spending, deadline policy, approval or quality-floor constraints before optimization. Compare deterministic tooling, strong single-agent execution and limited genuinely independent specialists only when coordination, integration, rework and uncertain resource costs are justified by expected *verified* success, quality or deadline reliability. Explicit exploration budgets may justify higher-cost creative work. Utilization and token throughput are never success measures.
+
+**Replanning and contracts:** slippage, verification failure, resource contention, stale revisions or changed user constraints can trigger a versioned and bounded strategy proposal; only scheduler readiness and authorized routing admit work. Preserve idempotency, causal barriers, acknowledgements and transactional state evolution; stale results cannot commit or appear green. Reuse existing task, ledger and budget identities. Conceptual `TaskContract`, `StrategyCandidate`, `ExecutionStrategyDecision` and `ExecutionObservation` in ADR 0007 do **not** create a second canonical schema or task-status enum.
+
+**Release seams:** Foundation-0 is measurement-first, with no predictive optimizer or new gates. Stage 1 collects baselines; Stage 4 compares admitted model/profile/tool choices without unproven learned routing; Stage 6 benchmarks one-worker versus justified teams after workflow/governance/durable-runtime qualification; Stage 7 separately qualifies trusted Rikuri Link/Mesh placement, user/project isolation and fairness. Do not infer pooled VRAM/RAM or automatically enroll financial/Bitcoin nodes.
+
 # 13. Model and Runtime Adapter Architecture
 
 Rikuri separates model execution from agent behavior and treats each as

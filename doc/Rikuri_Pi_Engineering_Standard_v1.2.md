@@ -47,6 +47,8 @@ The goal is a system where mistakes cannot travel. Every defect is caught by the
 
 No continuous surveillance for future learning. Future learning never weakens data minimization.
 
+**RIEMS evidence discipline — November 17, 2026 (future design only):** [ADR 0007](../docs/architecture/adr/0007-riems-outcome-driven-execution.md) measures success by independently verified outcomes. Candidate team/method strategies must be compared with deterministic and strong single-worker baselines. Record forecast-versus-actual quality, deadline/time, resource/API costs, coordination, failures, rework and uncertainty. Worker count, utilization and throughput alone are not acceptance. Existing policy, privacy and release gates remain hard prerequisites. This creates no Foundation-0 gate or automatic authorization.
+
 ## The Five Laws
 
 1. **Nothing is silent.** Every component runs and is gated by a test, or it is deleted. A fallback that engages is an alert, never just a save.
