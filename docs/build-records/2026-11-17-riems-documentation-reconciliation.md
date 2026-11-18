@@ -41,3 +41,16 @@ N/A. This is documentation adoption.
 ### Publication authorization
 
 The owner subsequently authorized committing the nine reviewed files, pushing the RIEMS feature branch, and opening a documentation pull request against `main`. The pull request records the published revision and CI results.
+
+## November 18, 2026 — PR #43 conflict resolution
+
+### Task Contract
+
+1. **Outcome.** Reconcile PR #43 with the updated main branch.
+2. **Scope.** Routine documentation conflict resolution on the existing RIEMS branch, preserving both sets of changes and current gate authority.
+3. **Done when.** The resolved diff against main passes whitespace, link and numbering checks, and GitHub reports no merge conflict.
+4. **Authority.** Fetch main, integrate it into the feature branch, resolve documentation conflicts, commit and push the feature branch, and inspect PR status. Routine documentation requires no independent agent check.
+5. **Limits.** One task, up to two repair cycles and two review rounds.
+
+- Preserved the November 14 security briefing index entry from main and placed the November 17 RIEMS entry after it. The PRD merged automatically and retains both the RIEMS requirements and the upstream security changes.
+- Local checks passed against main at `7bdf4ba` for whitespace, changed-file scope, local Markdown links and fragments, and RIEMS requirement numbering. See [PR #43](https://github.com/rikuripi/Rikuri-PI/pull/43) for mergeability and CI evidence.
