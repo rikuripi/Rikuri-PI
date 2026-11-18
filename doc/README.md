@@ -99,3 +99,7 @@ The owner accepted ADR 0006’s architectural direction after review and clarifi
 ## Orchard TaskContract v1 draft
 
 The [versioned contract and fixture](../docs/architecture/contracts/task-contract-v1/README.md) define provider-neutral requests and separate execution/acceptance/application outcomes. The closed JSON shapes and offline fixture checker are experimental design scaffolding, not a production adapter or permission authority. See the [contract Build Record](../docs/build-records/2026-10-14-orchard-task-contract-v1.md) for test/review evidence and limitations. Foundation-0 gates and sequencing are unchanged.
+
+## November 17 RIEMS outcome-driven execution direction
+
+Owner-approved future direction: [ADR 0007](../docs/architecture/adr/0007-riems-outcome-driven-execution.md) defines the RIEMS control-plane boundary; [Orchard RIEMS integration](Rikuri_Pi_Orchard_RIEMS_Integration_2026-11-17.md) defines the software-domain consumer. See [PRD §9.23](Rikuri_Pi_PRD_v1.2.md#923-riems--outcome-driven-execution-management-post-foundation), [Architecture §12.4](Rikuri_Pi_Architecture_Spec_v1.7.md#124-riems-strategy-selection-boundary-future-not-implemented), the [Master Build Sequence](Rikuri_Pi_Master_Build_Sequence_v1.1.md), and the [Build Record](../docs/build-records/2026-11-17-riems-documentation-reconciliation.md). **Design only:** no RIEMS optimizer exists yet; Foundation-0 Stage Plan v2.1, gate authority and Orchard one-worker defaults do not change.

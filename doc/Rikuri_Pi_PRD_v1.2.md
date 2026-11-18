@@ -870,6 +870,24 @@ September 26, 2026 clarification: users should request a useful outcome and rece
 
 Business, research, mathematical and video-production presets are illustrative future applications, not promises of specific commercial integrations. Foundation-0 retains only existing §9.20 evidence, identity, privacy and extension-friendly contracts; it does not implement a preset manager, plugin marketplace, team orchestrator or simulation/media suite.
 
+## 9.23 RIEMS — outcome-driven execution management (post-Foundation)
+
+November 17, 2026 — **owner-approved future architectural direction; not implemented**. [ADR 0007](../docs/architecture/adr/0007-riems-outcome-driven-execution.md) establishes RIEMS above the semantic scheduler/durable runtime, after the existing Capability Planner. It consumes `TaskRequirements` and current task, authority and budget contracts; the existing router still resolves concrete execution profiles. These are P1 post-Foundation requirements, not Foundation-0 gates or evidence of a working optimizer.
+
+| ID | Pri | Requirement | Acceptance for future implementation |
+|---|---|---|---|
+| RIEMS-001 | P1 | Outcome-first contract | Versioned objective, deliverable, acceptance/evidence, quality floor, deadline/pace, budget, privacy, risk and human authority survive handoffs without a competing intent schema. |
+| RIEMS-002 | P1 | Minimum adequate strategy | For complex tasks compare deterministic tooling, strong single-worker baseline and a justified limited specialist option; no fixed crew-size target. |
+| RIEMS-003 | P1 | Dependency and resource admission | Critical path, slack, waiting, integration, local/mesh/cloud resources, quotas, conflict and unknowns are evaluated; policy and scheduler still govern admission. |
+| RIEMS-004 | P1 | Explainable selection | Versioned decisions record candidates, constraint checks, evidence, confidence, predicted time/cost/quality/risk and fallback, with proportional user-facing explanation. |
+| RIEMS-005 | P1 | Adaptive bounded replanning | Blocked tools, slippage, verification failure, task revision or capacity changes yield traceable reconsideration; never skip policy, approval, budget or mandatory quality gates. |
+| RIEMS-006 | P1 | Durable execution | Shared runtime yields waiting workers; resumed work is authenticated and revision-correct, with idempotent dispatch, retries and no duplicate/silent side effects. |
+| RIEMS-007 | P1 | Independent outcome verification | Acceptance against current task requirements and artifact revisions, not agent declarations, process exit or UI status, controls completion. |
+| RIEMS-008 | P1 | Evidence-based learning | Existing Performance Ledger compares predictions with actual cost/time/quality, resource occupancy, failure and rework; promotions are bounded, reviewed and reversible. |
+| RIEMS-009 | P1 | Human-friendly control | Simple outcome/pace/cost controls with optional expert override, inspection, pause and cancel; no model/app/agent expertise required. |
+
+**Sequence:** product Stage 1 measures single-worker/tool-only baselines; Stage 4 compares routing economics; Stage 6 qualifies critical-path-aware strategy and justified teams; Stage 7 separately qualifies trusted mesh placement. [Orchard RIEMS boundary](Rikuri_Pi_Orchard_RIEMS_Integration_2026-11-17.md) is a software-project domain specialization, not a second authority. Foundation-0 Stage Plan v2.1, W1/F1–F10, F4-lite and single-worker defaults remain unchanged. Evaluate verified completion rate, quality, deadline reliability, total time/cost per verified outcome, rework, incidents and uncertainty—not agent count.
+
 # 10. Security and Trust Requirements
 
 **Protecting the user's private information, financial records, personal files/photos/videos, proprietary and professional databases, and secrets is Rikuri Pi's highest product responsibility.** Confidentiality, protection against unauthorized changes, and dependable recovery take priority over convenience, autonomy and feature coverage. A capability stays unavailable when its required protection cannot be established.

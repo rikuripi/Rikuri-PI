@@ -133,3 +133,9 @@ Naming is a UI concern; durable API names and truth states remain technical and 
 ## Summary rule
 
 **Build one small, demonstrably useful vertical slice at a time.** Each slice must show real user value, one accountable owner per durable capability, enforceable trust boundaries, proof of actual end-to-end wiring, a comprehensible receipt, and a stop condition. The project grows by adding verified capabilities to one kernel—not by multiplying clever but disconnected systems.
+
+---
+
+## November 17, 2026 — RIEMS consumer boundary (owner-approved design; not implemented)
+
+This historical proposal remains retained context. [RIEMS ADR 0007](../docs/architecture/adr/0007-riems-outcome-driven-execution.md) assigns outcome-oriented strategy choice to Rikuri's shared control plane. The [Orchard companion](Rikuri_Pi_Orchard_RIEMS_Integration_2026-11-17.md) describes software-development specialization; it does not admit a production Orchard scheduler, new approval/budget state, multi-agent crew or migration. Orchard v0.3 remains a bounded one-Codex-worker prototype with separate review/apply/recovery evidence. Product Stages 1/4/6/7 respectively measure single-worker baselines, routing alternatives, justified team selection and trusted mesh placement. No Foundation-0 gate, Orchard milestone or automatic workflow changes.

@@ -82,6 +82,8 @@ S1.04 runs with dependencies prepared outside the worker (for example a vendored
 
 Before any Stage 1 or later worker receives a credential or a permitted network destination (for example dependency fetch in the Stage 8 developer pack, formerly Stage 1 items 5/8), that path must pass the Option C broker and permitted-destination qualification deferred from Foundation-0 ([Stage Plan deferral table](Rikuri_Pi_Foundation0_Rebaselined_Stage_Plan_v2.1.md#deferral-and-resequencing-table); Test Strategy §8.2). Until then it stays unavailable.
 
+**RIEMS Stage-1 measurement seam (design only; not a new gate):** record scoped coding objective, source revision, task-specific acceptance, actual tool/agent/verification time and cost, retries, failures and rework for representative single-worker jobs. Compare deterministic methods where appropriate. This provides baseline observations for [ADR 0007](../docs/architecture/adr/0007-riems-outcome-driven-execution.md), not permission to launch a team.
+
 **Stage 1 gate:** supported imported sources survive restart with accurate coverage and provenance; inspection does not execute; one admitted development change and external handoff retain verification and project continuity. Unsupported provider history is visibly incomplete. Full native IDE dogfood is deferred to Stage 8's optional developer pack.
 
 ---
@@ -162,6 +164,8 @@ Build order:
 14. Background probation/revalidation daemon with thermal/battery/idle policy.
 15. Bounded composite execution (lead plus specialists), including a vision-specialist fixture, under per-role capability, privacy, verification, and shared budget limits; no bypass of later multi-agent governance.
 
+**RIEMS Stage-4 evidence seam:** compare deterministic, single-worker, model, harness and tool-routing alternatives using existing Execution Profiles and Performance Ledger. Report predicted versus realized time/cost, confidence, failures and rework. No learned automatic strategy promotion without existing qualification gates. See [ADR 0007](../docs/architecture/adr/0007-riems-outcome-driven-execution.md).
+
 **Stage 4 gate:** adding a new compatible model normally requires registry/profile data and evaluation, not core code; Auto can explain why it selected model+runtime+harness+machine+privacy path.
 
 **Collaborative Intelligence prerequisite:** Model onboarding/calibration must preserve versioned prompt/frame/context profile identity and exposed reasoning/sampling settings in benchmark evidence so later cognitive recipes can compare “same model, better operation” rather than relying on model-name rankings. Seed values, when supported, are reproducibility/variance metadata rather than durable quality labels.
@@ -184,6 +188,8 @@ Before implementing a fleet, pin and evaluate Paperclip as a reference: event-dr
 
 Order: typed/versioned Rikuri Workflow IR -> schema/policy/security validation -> human review gates -> durable DAG/checkpoints/waits/retries/cancellation/recovery -> immutable deployment versions + event history -> Paperclip reference evaluation/ADRs -> Project Lifecycle Kernel (Frame/Shape/Plan/Execute/Verify/Deliver/Learn) -> intent-led team proposal with scope/cost/access/review -> coordinator/COO role -> specialists -> evaluator -> team budgets -> parallel isolation -> Strategy Council -> scenario packets -> Project Graph -> integration/review workflows -> coordinator scorecard.
 
+**RIEMS Stage-6 qualification (future; within existing stage authority):** after governance, scheduler and durable-runtime prerequisites, compare strong deterministic/single-worker baselines with limited genuinely parallel specialists; estimate critical path, slack, integration and coordination costs, resource admission and verification overhead. Reject extra workers on serial bottlenecks. Demonstrate revision-correct yield/resume, bounded traceable replan, stale/duplicate event refusal, policy-safe deadline changes and independent acceptance. The owner may override an eligible method; a worker turn or crew never proves task completion. See [ADR 0007](../docs/architecture/adr/0007-riems-outcome-driven-execution.md) and the [Orchard consumer boundary](Rikuri_Pi_Orchard_RIEMS_Integration_2026-11-17.md).
+
 Parallel code-changing workers need branch/worktree isolation, which the September 30 resequencing moved to the Stage 8 developer pack. If Stage 6's selected tasks include parallel code changes, pull forward only that isolation service, under the same ProjectTrust and Option C admission, and record it per §B; otherwise Stage 6 demonstrates uplift on non-coding tasks. Agents propose or repair workflows; deterministic infrastructure owns accepted execution. Each workflow records proposer/provenance, exact approved version, capabilities and credential scopes, data classes, outbound destinations, budget envelope, triggers, approvals, modifications, and outcomes. Governance is implemented and tested before autonomous workflow deployment.
 
 After the existing workflow/policy/governance substrate is verified, implement the minimum shared conversation in this order:
@@ -204,6 +210,8 @@ The gate also includes S6.C4's shared human–AI conversation, with both authori
 # Stage 7 — Personal Mesh + persistent responsibilities
 
 Order: second-device identity -> encrypted event/version replication -> conflict semantics -> optional hub -> resource catalog across nodes -> selective sharing scopes -> durable responsibilities -> digest/attention sync -> CRDT only where simultaneous text editing proves necessary.
+
+**RIEMS Stage-7 placement seam (future):** separately qualify trusted cross-machine placement under Link/Mesh identity, Vault and user/project isolation, resource fairness, privacy/data-locality, network and cost policy. Do not assume shared GPU memory or enroll financial/Bitcoin-node compute by default. Revocation, recovery and refusal of cross-user context/cache reuse need negative tests.
 
 **Gate:** replacement/offline/reconnect/concurrent-update scenarios converge without silent loss; backup remains independent from sync.
 
